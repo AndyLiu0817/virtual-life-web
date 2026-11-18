@@ -83,7 +83,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   const pawn = page.locator(".board-pawn");
   const map = page.getByRole("group", { name: "國中地圖" });
   const status = page.locator(".board-status");
-  const roll = page.getByRole("button", { name: "擲骰" });
+  const roll = page.locator("#roll");
   const dialog = page.getByRole("dialog");
   await expect(tile).toHaveCount(18);
   await expect(pawn).toHaveAttribute("data-tile", "0");
