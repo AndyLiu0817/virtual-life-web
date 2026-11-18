@@ -17,14 +17,14 @@ const sprite = (name: string) => sprites[`./board-art/${name}.webp`];
 type Pose = "stand" | "left" | "right" | "win";
 // Love art is part of the tilesheet, while the junior rules use seven kinds.
 const claySides = {
-  start: "#bb801d",
-  event: "#16869e",
-  game: "#398b71",
-  club: "#1a829d",
-  quiz: "#b7831b",
-  contest: "#bd5d32",
-  love: "#b34f60",
-  fork: "#a99a84",
+  start: "#af8727",
+  event: "#3293a1",
+  game: "#55947b",
+  club: "#3293a1",
+  quiz: "#af8727",
+  contest: "#af5e2e",
+  love: "#af5857",
+  fork: "#a59e97",
 } satisfies Record<TileKind | "love", string>;
 
 export function boardView(
@@ -36,7 +36,13 @@ export function boardView(
   debug: boolean,
   follow: (point: { x: number; y: number }) => void,
 ) {
-  const { centers, wall, tileTop } = measureTrack(layout);
+  const {
+    centers,
+    body,
+    footprint,
+    depth: thickness,
+    tileTop,
+  } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
   const scenery = juniorScenery[orientation].map((object, id) => {
@@ -55,9 +61,9 @@ export function boardView(
       y: center.y,
       markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${tileLabels[kind]}">
         <g transform="translate(${center.x} ${center.y})">
-          <use href="#clay-wall" class="paver-shadow" transform="translate(0 1.6)"/>
-          <use href="#clay-wall" fill="${claySides[kind]}"/>
-          <use href="#clay-wall" fill="url(#clay-side-light)"/>
+          <use href="#clay-footprint" class="paver-shadow" transform="translate(0 ${thickness})"/>
+          <use href="#clay-body" fill="${claySides[kind]}"/>
+          <use href="#clay-body" fill="url(#clay-side-light)"/>
         </g>
         <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="-.5" y="-.5" width="1" height="1" preserveAspectRatio="none" transform="${tileTop(center)}" clip-path="url(#clay-top)"/>
       </g>`,
@@ -66,17 +72,18 @@ export function boardView(
   svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
   svg.innerHTML = `
     <defs>
-      <path id="clay-wall" d="${wall}"/>
+      <path id="clay-body" d="${body}"/>
+      <path id="clay-footprint" d="${footprint}"/>
       <clipPath id="clay-top" clipPathUnits="objectBoundingBox">
         <path d="M ${clayRadius} 0 H ${1 - clayRadius} Q 1 0 1 ${clayRadius}
           V ${1 - clayRadius} Q 1 1 ${1 - clayRadius} 1 H ${clayRadius}
           Q 0 1 0 ${1 - clayRadius} V ${clayRadius} Q 0 0 ${clayRadius} 0 Z"/>
       </clipPath>
       <linearGradient id="clay-side-light" x2="100%" y2="56%">
-        <stop stop-color="#fff2d2" stop-opacity=".3"/>
+        <stop stop-color="#fff2d2" stop-opacity=".12"/>
         <stop offset=".49" stop-color="#fff2d2" stop-opacity=".04"/>
-        <stop offset=".52" stop-color="#352122" stop-opacity=".13"/>
-        <stop offset="1" stop-color="#352122" stop-opacity=".26"/>
+        <stop offset=".52" stop-color="#352122" stop-opacity=".07"/>
+        <stop offset="1" stop-color="#352122" stop-opacity=".15"/>
       </linearGradient>
       <image id="scene-art" href="${assets.junior[orientation]}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
       ${scenery

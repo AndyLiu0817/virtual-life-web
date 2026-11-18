@@ -13,23 +13,28 @@ export const clayRadius = 0.19;
 export function measureTrack(layout: BoardLayout) {
   const w = layout.halfWidth * 0.982;
   const h = layout.halfHeight * 0.982;
-  const depth = 5.5;
+  const depth = w * 0.2;
   const roundX = w * clayRadius;
   const roundY = h * clayRadius;
   const outerX = w - roundX;
   const frontY = h - roundY;
-  // The two rounded front faces are extruded vertically in screen space.
-  const wall = `M ${-outerX} ${-roundY}
-    Q ${-w} 0 ${-outerX} ${roundY}
-    L ${-roundX} ${frontY} Q 0 ${h} ${roundX} ${frontY}
-    L ${outerX} ${roundY} Q ${w} 0 ${outerX} ${-roundY}
-    V ${depth - roundY} Q ${w} ${depth} ${outerX} ${depth + roundY}
-    L ${roundX} ${depth + frontY} Q 0 ${depth + h} ${-roundX} ${depth + frontY}
-    L ${-outerX} ${depth + roundY} Q ${-w} ${depth} ${-outerX} ${depth - roundY} Z`;
+  const sideX = w - roundX / 2;
+  // Split the left and right corner curves at their vertical tangents.
+  // The upper and lower contours then connect without gaps or folded edges.
+  const behind = `M ${-sideX} 0
+    Q ${-sideX} ${-roundY / 2} ${-outerX} ${-roundY}
+    L ${-roundX} ${-frontY} Q 0 ${-h} ${roundX} ${-frontY}
+    L ${outerX} ${-roundY} Q ${sideX} ${-roundY / 2} ${sideX} 0`;
+  const front = (y: number) =>
+    `Q ${sideX} ${y + roundY / 2} ${outerX} ${y + roundY}
+    L ${roundX} ${y + frontY} Q 0 ${y + h} ${-roundX} ${y + frontY}
+    L ${-outerX} ${y + roundY} Q ${-sideX} ${y + roundY / 2} ${-sideX} ${y}`;
+  const body = `${behind} V ${depth} ${front(depth)} Z`;
+  const footprint = `${behind} ${front(0)} Z`;
   const centers = layout.cells.map((cell) => project(layout, cell));
   const tileTop = ({ x, y }: (typeof centers)[number]) =>
     `matrix(${w} ${h} ${-w} ${h} ${x} ${y})`;
-  return { centers, wall, tileTop };
+  return { centers, body, footprint, depth, tileTop };
 }
 
 export function debugGrid(layout: BoardLayout) {

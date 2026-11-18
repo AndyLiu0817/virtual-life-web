@@ -43,7 +43,9 @@
 }
 .paver-shadow {
   fill: #352d23;
-  opacity: 0.32;
+  stroke: #352d23;
+  stroke-width: 2.5px;
+  opacity: 0.42;
   filter: blur(1.8px);
 }
 .pawn-shadow {
