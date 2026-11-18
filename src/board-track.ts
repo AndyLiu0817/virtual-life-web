@@ -1,98 +1,43 @@
-import type { BoardLayout } from "./data/board-layout";
+import type { BoardLayout, Cell } from "./data/board-layout";
 
-type Point = { x: number; y: number };
-const groundScale = 0.62;
-
-function tileGeometry(
-  center: Point,
-  tangent: number,
-  length: number,
-  width: number,
-) {
-  // Rotate on the ground plane first, then project that plane onto the map.
-  const angle = Math.atan2(Math.sin(tangent) / groundScale, Math.cos(tangent));
-  const upright = ((angle + 1.5 * Math.PI) % Math.PI) - Math.PI / 2;
-  const along = { x: Math.cos(upright), y: groundScale * Math.sin(upright) };
-  const across = { x: -Math.sin(upright), y: groundScale * Math.cos(upright) };
-  const halfLength = length / (2 * Math.hypot(along.x, along.y));
-  const halfWidth = width / 2;
-  // Beveled corners keep the outline and the thin side readable at map scale.
-  const corner = 2;
-  const outline = [
-    [-halfLength + corner, -halfWidth],
-    [halfLength - corner, -halfWidth],
-    [halfLength, -halfWidth + corner],
-    [halfLength, halfWidth - corner],
-    [halfLength - corner, halfWidth],
-    [-halfLength + corner, halfWidth],
-    [-halfLength, halfWidth - corner],
-    [-halfLength, -halfWidth + corner],
-  ];
+function project(layout: BoardLayout, [column, row]: Cell) {
   return {
-    face: `M ${outline.map(([u, v]) => `${center.x + along.x * u + across.x * v},${center.y + along.y * u + across.y * v}`).join(" L ")} Z`,
-    print: `matrix(${along.x} ${along.y} ${across.x} ${across.y} ${center.x} ${center.y})`,
-    iconSize: Math.min(halfLength * 1.72, width * 0.87),
+    x: layout.origin[0] + (column - row) * layout.halfWidth,
+    y: layout.origin[1] + (column + row) * layout.halfHeight,
   };
 }
 
 export function measureTrack(layout: BoardLayout) {
-  const centers = new Map<number, Point>();
-  const pavers = new Map<number, ReturnType<typeof tileGeometry>>();
-  const edges = new Map<string, (progress: number) => Point>();
+  const { halfWidth, halfHeight } = layout;
+  const tileWidth = halfWidth * 0.982;
+  const tileHeight = halfHeight * 0.982;
+  const centers = layout.cells.map((cell) => project(layout, cell));
+  const pavers = centers.map(({ x, y }) => ({
+    face: `M ${x} ${y - tileHeight} L ${x + tileWidth} ${y} L ${x} ${y + tileHeight} L ${x - tileWidth} ${y} Z`,
+    print: `translate(${x} ${y}) scale(1 ${Math.min(0.78, (halfHeight / halfWidth) * 1.28)})`,
+    iconSize: halfWidth * 0.98,
+  }));
+  return { centers, pavers };
+}
 
-  for (const track of layout.tracks) {
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", track.path);
-    const length = path.getTotalLength();
-    const point = (distance: number) => path.getPointAtLength(distance);
-    const angle = (distance: number) => {
-      const before = point(distance - 1);
-      const after = point(distance + 1);
-      return Math.atan2(after.y - before.y, after.x - before.x);
-    };
-    // Anchored landmarks split a track into equally spaced spans.
-    const last = track.tiles.length - 1;
-    const anchors = [
-      [0, 0],
-      ...track.tiles.flatMap((id, index) =>
-        track.offsets?.[id] === undefined ? [] : [[index, track.offsets[id]]],
-      ),
-      [last, 1],
-    ];
-    const distances: number[] = [];
-    for (let span = 1; span < anchors.length; span++) {
-      const [from, start] = anchors[span - 1];
-      const [to, end] = anchors[span];
-      for (let i = from; i <= to; i++) {
-        distances[i] =
-          length * (start + ((end - start) * (i - from)) / (to - from));
-      }
-    }
-
-    track.tiles.forEach((id, index) => {
-      const distance = distances[index];
-      const center = point(distance);
-      const junction = index === 0 || index === last;
-      if (!centers.has(id)) centers.set(id, center);
-      if (index > 0) {
-        const previous = track.tiles[index - 1];
-        const start = distances[index - 1];
-        const between = (progress: number) =>
-          point(start + (distance - start) * progress);
-        edges.set(`${previous}:${id}`, between);
-        edges.set(`${id}:${previous}`, (progress) => between(1 - progress));
-      }
-      if (pavers.has(id)) return;
-
-      const before = distance - (distances[index - 1] ?? -Infinity);
-      const after = (distances[index + 1] ?? Infinity) - distance;
-      const extent = Math.min(
-        Math.min(before, after) * (junction ? 0.64 : 0.76),
-        track.maxPaverLength ?? 43,
-      );
-      const width = track.width * (junction ? 0.83 : 0.96);
-      pavers.set(id, tileGeometry(center, angle(distance), extent, width));
-    });
-  }
-  return { centers, pavers, edges };
+export function debugGrid(layout: BoardLayout) {
+  const columns = layout.cells.map(([column]) => column);
+  const rows = layout.cells.map(([, row]) => row);
+  const left = Math.min(...columns) - 0.5;
+  const right = Math.max(...columns) + 0.5;
+  const top = Math.min(...rows) - 0.5;
+  const bottom = Math.max(...rows) + 0.5;
+  const line = (from: Cell, to: Cell) => {
+    const a = project(layout, from);
+    const b = project(layout, to);
+    return `<path d="M ${a.x} ${a.y} L ${b.x} ${b.y}"/>`;
+  };
+  return [
+    ...Array.from({ length: right - left + 1 }, (_, i) =>
+      line([left + i, top], [left + i, bottom]),
+    ),
+    ...Array.from({ length: bottom - top + 1 }, (_, i) =>
+      line([left, top + i], [right, top + i]),
+    ),
+  ].join("");
 }

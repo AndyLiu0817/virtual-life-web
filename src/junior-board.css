@@ -59,8 +59,8 @@
 .path-debug path {
   fill: none;
   stroke: #f02c7c;
-  stroke-width: 2;
-  stroke-dasharray: 4 3;
+  stroke-width: 0.75;
+  opacity: 0.64;
 }
 .path-debug circle {
   fill: #f02c7c;
@@ -185,12 +185,6 @@
   .board-status > div:last-child {
     grid-column: auto;
   }
-}
-
-.scenery-shadow {
-  fill: #253b1d;
-  opacity: 0.29;
-  filter: blur(2px);
 }
 
 .pawn-silhouette {

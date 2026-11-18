@@ -1,5 +1,6 @@
 import type { BoardLayout, Orientation } from "./board-layout";
 import { juniorLayouts } from "./junior-layout";
+import { juniorLoop, juniorShortcut } from "./junior-routes";
 
 export const tileLabels = {
   start: "起點",
@@ -24,39 +25,67 @@ export interface Board {
   tiles: readonly Tile[];
 }
 
-// Tile indices are stable save IDs. The first route at each fork follows
-// the outer loop.
+// The first 18 entries retain their save IDs. Allocate the remaining event
+// tiles by the MVP v3 ratio, keeping a single START and two junctions.
+const tileKinds: readonly TileKind[] = [
+  "start",
+  "event",
+  "game",
+  "club",
+  "fork",
+  "quiz",
+  "event",
+  "game",
+  "quiz",
+  "event",
+  "contest",
+  "game",
+  "event",
+  "club",
+  "fork",
+  "quiz",
+  "game",
+  "event",
+  "event",
+  "game",
+  "quiz",
+  "contest",
+  "event",
+  "game",
+  "quiz",
+  "event",
+  "event",
+  "contest",
+  "event",
+  "game",
+  "quiz",
+  "event",
+  "club",
+  "game",
+  "quiz",
+  "event",
+  "game",
+  "club",
+  "event",
+  "club",
+  "quiz",
+  "game",
+];
+
+const routes = tileKinds.map(() => [] as number[]);
+// The first option at each fork always follows the outer loop.
+juniorLoop.forEach((id, index) =>
+  routes[id].push(juniorLoop[(index + 1) % juniorLoop.length]),
+);
+juniorShortcut.slice(1).forEach((id, index) => {
+  const previous = juniorShortcut[index];
+  routes[previous].push(id);
+  routes[id].push(previous);
+});
+
 export const juniorBoard: Board = {
   turns: 15,
   start: 0,
   layouts: juniorLayouts,
-  tiles: [
-    { kind: "start", next: [1] },
-    { kind: "event", next: [2] },
-    { kind: "game", next: [3] },
-    { kind: "club", next: [4] },
-    { kind: "fork", next: [5, 17] },
-    { kind: "quiz", next: [6] },
-    { kind: "event", next: [7] },
-    { kind: "game", next: [8] },
-    { kind: "quiz", next: [9] },
-    { kind: "event", next: [10] },
-    {
-      kind: "contest",
-      next: [11],
-    },
-    { kind: "game", next: [12] },
-    { kind: "event", next: [13] },
-    { kind: "club", next: [14] },
-    {
-      kind: "fork",
-      next: [15, 17],
-    },
-    { kind: "quiz", next: [16] },
-    { kind: "game", next: [0] },
-    {
-      kind: "event",
-      next: [4, 14],
-    },
-  ],
+  tiles: tileKinds.map((kind, id) => ({ kind, next: routes[id] })),
 };

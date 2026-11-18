@@ -27,7 +27,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
     .poll(() =>
       backdrop.evaluate((img) => (img as HTMLImageElement).currentSrc),
     )
-    .toContain("map_junior_portrait_final");
+    .toContain("map_junior_noroad_portrait_final");
   await expect(page.getByText("5,000 元")).toBeVisible();
   await page.getByRole("button", { name: "儲存到存檔格" }).click();
   await page.locator("#use-1").click();
@@ -51,7 +51,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
     .poll(() =>
       backdrop.evaluate((img) => (img as HTMLImageElement).currentSrc),
     )
-    .toContain("map_junior_landscape_final");
+    .toContain("map_junior_noroad_landscape_final");
   await page.getByRole("button", { name: "回標題" }).click();
 
   await page.locator("#file").setInputFiles({
@@ -85,7 +85,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   const status = page.locator(".board-status");
   const roll = page.locator("#roll");
   const dialog = page.getByRole("dialog");
-  await expect(tile).toHaveCount(18);
+  await expect(tile).toHaveCount(42);
   await expect(pawn).toHaveAttribute("data-tile", "0");
   await expect(status).toContainText("1 ／ 15");
   async function checkLayout() {
@@ -113,7 +113,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
 
   await roll.click();
   await expect(dialog).toContainText("遊戲：第 6 步製作中");
-  await expect(pawn).toHaveAttribute("data-tile", "16");
+  await expect(pawn).toHaveAttribute("data-tile", "41");
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(status).toContainText("3 ／ 15");
   for (let turn = 3; turn <= 15; turn++) {
@@ -156,8 +156,24 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await page.getByRole("button", { name: "確認開局" }).click();
 
   const track = page.locator(".board-track");
-  await expect(track.locator(".path-debug path")).toHaveCount(3);
-  await expect(track.locator(".path-debug text")).toHaveCount(18);
+  await expect(track.locator(".path-debug path").first()).toBeAttached();
+  const gridSlopes = await track
+    .locator(".path-debug path")
+    .evaluateAll((lines) =>
+      [
+        ...new Set(
+          lines.map((line) => {
+            const [x1, y1, x2, y2] = line
+              .getAttribute("d")!
+              .match(/-?[\d.]+/g)!
+              .map(Number);
+            return Math.sign((y2 - y1) / (x2 - x1));
+          }),
+        ),
+      ].sort(),
+    );
+  expect(gridSlopes).toEqual([-1, 1]);
+  await expect(track.locator(".path-debug text")).toHaveCount(42);
   await expect(track.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
 
   const trace = await page.evaluateHandle(() => {
@@ -298,22 +314,37 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
   await expect(anchors.locator(".scenery-anchor")).toHaveCount(9);
 
   const pawn = track.locator(".board-pawn");
-  const annex = track.locator('[data-name="庭園小教室"]');
-  const mask = track.locator("#pawn-occlusion use").last();
-  await expect(pawn).toHaveAttribute("data-tile", "0");
+  await page.getByRole("button", { name: "擲骰" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "確定" }).click();
+  await expect(page.getByRole("status")).toContainText("已自動存檔");
+
+  const library = track.locator('[data-name="圖書館"]');
+  const libraryId = await library.getAttribute("data-scenery");
+  const mask = track.locator(
+    `#pawn-occlusion [data-mask-depth="${libraryId}"]`,
+  );
+  await expect(pawn).toHaveAttribute("data-tile", "2");
   await expect(mask).toHaveAttribute("visibility", "hidden");
 
-  await page.getByRole("button", { name: "擲骰" }).click();
-  const dialog = page.getByRole("dialog");
-  await dialog.getByRole("button", { name: "確定" }).click();
-  await expect(pawn).toHaveAttribute("data-tile", "2");
+  await page.evaluate(() => {
+    const key = "virtual-life-web:v3:slot:0";
+    const save = JSON.parse(localStorage.getItem(key)!);
+    localStorage.setItem(
+      key,
+      JSON.stringify({ ...save, boardTile: 37, previousTile: 36 }),
+    );
+  });
+  await page.reload();
+  await page.getByRole("button", { name: "繼續遊戲" }).click();
+  await page.locator("#use-0").click();
+  await expect(pawn).toHaveAttribute("data-tile", "37");
   await expect(mask).toHaveAttribute("visibility", "visible");
   await expect(track.locator(".pawn-silhouette")).toHaveAttribute(
     "href",
     "#pawn-pose-stand",
   );
   expect(
-    await annex.evaluate((building) =>
+    await library.evaluate((building) =>
       Boolean(
         building.compareDocumentPosition(
           building.parentElement!.querySelector(".board-pawn")!,
@@ -321,6 +352,7 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
       ),
     ),
   ).toBe(true);
+  await toggle.check();
 
   async function checkTilePrints() {
     const obscured = await track.evaluate((svg) => {
@@ -331,10 +363,6 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
         shape: svg.querySelector<SVGPolygonElement>(
           `#scenery-outline-${object.dataset.scenery}`,
         )!,
-        matrix: object
-          .querySelector("g")!
-          .transform.baseVal.consolidate()!
-          .matrix.inverse(),
       }));
       return [...svg.querySelectorAll<SVGGElement>(".board-tile")].flatMap(
         (tile) => {
@@ -348,9 +376,8 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
           );
           const visible = samples.filter((point) =>
             buildings.every(
-              ({ y, shape, matrix }) =>
-                y <= Number(tile.dataset.depth) ||
-                !shape.isPointInFill(point.matrixTransform(matrix)),
+              ({ y, shape }) =>
+                y <= Number(tile.dataset.depth) || !shape.isPointInFill(point),
             ),
           );
           return visible.length < 6 ? [tile.dataset.tile] : [];
@@ -362,7 +389,7 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
 
   await checkTilePrints();
   await page.setViewportSize({ width: 430, height: 932 });
-  await expect(anchors.locator(".scenery-anchor")).toHaveCount(6);
+  await expect(anchors.locator(".scenery-anchor")).toHaveCount(9);
   await expect(anchors).toBeVisible();
   await checkTilePrints();
   await toggle.uncheck();

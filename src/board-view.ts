@@ -1,5 +1,5 @@
 import { assets } from "./assets";
-import { measureTrack } from "./board-track";
+import { debugGrid, measureTrack } from "./board-track";
 import type { BoardLayout, Orientation } from "./data/board-layout";
 import { juniorScenery } from "./data/junior-scenery";
 import { tileLabels, type TileKind } from "./data/junior";
@@ -34,29 +34,22 @@ export function boardView(
   debug: boolean,
   follow: (point: { x: number; y: number }) => void,
 ) {
-  const { centers, pavers, edges } = measureTrack(layout);
+  const { centers, pavers } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
   const scenery = juniorScenery[orientation].map((object, id) => {
-    const [sourceX, sourceY] = object.anchor;
-    const [x, y, scale] = object.placement ?? [sourceX, sourceY, 1];
-    const transform = `translate(${x} ${y}) scale(${scale}) translate(${-sourceX} ${-sourceY})`;
-    return { ...object, id, x, y, transform };
+    const [x, y] = object.anchor;
+    return { ...object, id, x, y };
   });
-  const layers = scenery.map(
-    ({ id, name, y, transform, source, placement }) => ({
-      y,
-      markup: `<g class="board-scenery" data-scenery="${id}" data-name="${name}" data-depth="${y}" aria-hidden="true">
-      ${placement ? `<ellipse class="scenery-shadow" cx="${placement[0]}" cy="${y}" rx="24" ry="7"/>` : ""}
-      <g transform="${transform}" clip-path="url(#scenery-clip-${id})">
-        <use href="#scene-art-${source}"/>
-      </g>
+  const layers = scenery.map(({ id, name, y }) => ({
+    y,
+    markup: `<g class="board-scenery" data-scenery="${id}" data-name="${name}" data-depth="${y}" aria-hidden="true">
+      <use href="#scene-art" clip-path="url(#scenery-clip-${id})"/>
     </g>`,
-    }),
-  );
-  for (const [id, center] of centers) {
+  }));
+  for (const [id, center] of centers.entries()) {
     const { kind } = tiles[id];
-    const { face, print, iconSize } = pavers.get(id)!;
+    const { face, print, iconSize } = pavers[id];
     layers.push({
       y: center.y,
       markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${tileLabels[kind]}">
@@ -75,8 +68,7 @@ export function boardView(
         <stop stop-color="white" stop-opacity=".34"/>
         <stop offset="1" stop-color="white" stop-opacity="0"/>
       </linearGradient>
-      <image id="scene-art-landscape" href="${assets.junior.landscape}" width="780" height="439" preserveAspectRatio="none"/>
-      <image id="scene-art-portrait" href="${assets.junior.portrait}" width="439" height="780" preserveAspectRatio="none"/>
+      <image id="scene-art" href="${assets.junior[orientation]}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
       ${scenery
         .map(
           ({
@@ -90,7 +82,6 @@ export function boardView(
         <rect width="1" height="1" fill="white"/>
         <g transform="scale(${1 / layout.width} ${1 / layout.height})">
           ${scenery
-            .filter((object) => !object.placement)
             .map(
               ({ id }) =>
                 `<use href="#scenery-outline-${id}" fill="black" stroke="white" stroke-width="2"/>`,
@@ -101,8 +92,8 @@ export function boardView(
       <mask id="pawn-occlusion" maskUnits="userSpaceOnUse" x="0" y="0" width="${layout.width}" height="${layout.height}" mask-type="alpha">
         ${scenery
           .map(
-            ({ id, transform }) =>
-              `<use data-mask-depth="${id}" href="#scenery-outline-${id}" transform="${transform}" visibility="hidden"/>`,
+            ({ id }) =>
+              `<use data-mask-depth="${id}" href="#scenery-outline-${id}" visibility="hidden"/>`,
           )
           .join("")}
       </mask>
@@ -132,8 +123,8 @@ export function boardView(
     ${
       debug
         ? `<g class="path-debug" aria-hidden="true">
-      ${layout.tracks.map(({ path }) => `<path d="${path}"/>`).join("")}
-      ${[...centers].map(([id, { x, y }]) => `<circle cx="${x}" cy="${y}" r="2.5"/><text x="${x}" y="${y - 5}">${id}</text>`).join("")}
+      ${debugGrid(layout)}
+      ${centers.map(({ x, y }, id) => `<circle cx="${x}" cy="${y}" r="2.5"/><text x="${x}" y="${y - 5}">${id}</text>`).join("")}
     </g>
     <g class="scenery-debug" aria-hidden="true">
       ${scenery
@@ -211,7 +202,7 @@ export function boardView(
   }
 
   function place(id: number, pose: "stand" | "win", facing: number) {
-    draw(centers.get(id)!, pose, facing);
+    draw(centers[id], pose, facing);
     if (pawn.dataset.tile !== String(id)) pawn.dataset.tile = String(id);
     pawn.setAttribute(
       "aria-label",
@@ -228,13 +219,16 @@ export function boardView(
       facing: number,
       stride: boolean,
     ) {
-      const lane = edges.get(`${from}:${to}`)!;
+      const start = centers[from];
+      const end = centers[to];
       const phase = Math.min(1, progress / 0.78);
       const travel = phase * phase * (3 - 2 * phase);
-      const point = lane(travel);
-      const dx =
-        lane(Math.min(1, travel + 0.04)).x - lane(Math.max(0, travel - 0.04)).x;
-      const direction = Math.abs(dx) < 0.12 ? facing : dx < 0 ? 1 : -1;
+      const dx = end.x - start.x;
+      const point = {
+        x: start.x + dx * travel,
+        y: start.y + (end.y - start.y) * travel,
+      };
+      const direction = dx === 0 ? facing : dx < 0 ? 1 : -1;
       const lift = 4 * travel * (1 - travel) * layout.pawnHeight * 0.21;
       const landing = Math.max(0, (progress - 0.78) / 0.22);
       draw(
