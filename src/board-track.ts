@@ -7,17 +7,29 @@ function project(layout: BoardLayout, [column, row]: Cell) {
   };
 }
 
+// The crop and the extruded edge share this radius in ground coordinates.
+export const clayRadius = 0.19;
+
 export function measureTrack(layout: BoardLayout) {
-  const { halfWidth, halfHeight } = layout;
-  const tileWidth = halfWidth * 0.982;
-  const tileHeight = halfHeight * 0.982;
+  const w = layout.halfWidth * 0.982;
+  const h = layout.halfHeight * 0.982;
+  const depth = 5.5;
+  const roundX = w * clayRadius;
+  const roundY = h * clayRadius;
+  const outerX = w - roundX;
+  const frontY = h - roundY;
+  // The two rounded front faces are extruded vertically in screen space.
+  const wall = `M ${-outerX} ${-roundY}
+    Q ${-w} 0 ${-outerX} ${roundY}
+    L ${-roundX} ${frontY} Q 0 ${h} ${roundX} ${frontY}
+    L ${outerX} ${roundY} Q ${w} 0 ${outerX} ${-roundY}
+    V ${depth - roundY} Q ${w} ${depth} ${outerX} ${depth + roundY}
+    L ${roundX} ${depth + frontY} Q 0 ${depth + h} ${-roundX} ${depth + frontY}
+    L ${-outerX} ${depth + roundY} Q ${-w} ${depth} ${-outerX} ${depth - roundY} Z`;
   const centers = layout.cells.map((cell) => project(layout, cell));
-  const pavers = centers.map(({ x, y }) => ({
-    face: `M ${x} ${y - tileHeight} L ${x + tileWidth} ${y} L ${x} ${y + tileHeight} L ${x - tileWidth} ${y} Z`,
-    print: `translate(${x} ${y}) scale(1 ${Math.min(0.78, (halfHeight / halfWidth) * 1.28)})`,
-    iconSize: halfWidth * 0.98,
-  }));
-  return { centers, pavers };
+  const tileTop = ({ x, y }: (typeof centers)[number]) =>
+    `matrix(${w} ${h} ${-w} ${h} ${x} ${y})`;
+  return { centers, wall, tileTop };
 }
 
 export function debugGrid(layout: BoardLayout) {

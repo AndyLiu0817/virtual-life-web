@@ -1,11 +1,11 @@
 import { assets } from "./assets";
-import { debugGrid, measureTrack } from "./board-track";
+import { clayRadius, debugGrid, measureTrack } from "./board-track";
 import type { BoardLayout, Orientation } from "./data/board-layout";
 import { juniorScenery } from "./data/junior-scenery";
 import { tileLabels, type TileKind } from "./data/junior";
 
 const sprites = import.meta.glob<string>(
-  "./board-art/{*-print,boy-*,girl-*}.webp",
+  "./board-art/{*-clay,boy-*,girl-*}.webp",
   {
     eager: true,
     query: "?url",
@@ -15,15 +15,17 @@ const sprites = import.meta.glob<string>(
 const sprite = (name: string) => sprites[`./board-art/${name}.webp`];
 
 type Pose = "stand" | "left" | "right" | "win";
-const paint: Record<TileKind, string> = {
-  start: "#e9b750",
-  event: "#61b5c2",
-  game: "#79c1a3",
-  club: "#79a7c5",
-  quiz: "#e5be66",
-  contest: "#e69460",
-  fork: "#e9dfc5",
-};
+// Love art is part of the tilesheet, while the junior rules use seven kinds.
+const claySides = {
+  start: "#bb801d",
+  event: "#16869e",
+  game: "#398b71",
+  club: "#1a829d",
+  quiz: "#b7831b",
+  contest: "#bd5d32",
+  love: "#b34f60",
+  fork: "#a99a84",
+} satisfies Record<TileKind | "love", string>;
 
 export function boardView(
   svg: SVGSVGElement,
@@ -34,7 +36,7 @@ export function boardView(
   debug: boolean,
   follow: (point: { x: number; y: number }) => void,
 ) {
-  const { centers, pavers } = measureTrack(layout);
+  const { centers, wall, tileTop } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
   const scenery = juniorScenery[orientation].map((object, id) => {
@@ -49,24 +51,32 @@ export function boardView(
   }));
   for (const [id, center] of centers.entries()) {
     const { kind } = tiles[id];
-    const { face, print, iconSize } = pavers[id];
     layers.push({
       y: center.y,
       markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${tileLabels[kind]}">
-        <path class="paver-shadow" d="${face}" transform="translate(0 4)"/>
-        <path class="paver-side" d="${face}" fill="${paint[kind]}" transform="translate(0 2.6)"/>
-        <path class="paver-top" d="${face}" fill="${paint[kind]}"/>
-        <path d="${face}" fill="url(#paver-light)"/>
-        <image href="${sprite(`${kind}-print`)}" x="${-iconSize / 2}" y="${-iconSize / 2}" width="${iconSize}" height="${iconSize}" transform="${print}"/>
+        <g transform="translate(${center.x} ${center.y})">
+          <use href="#clay-wall" class="paver-shadow" transform="translate(0 1.6)"/>
+          <use href="#clay-wall" fill="${claySides[kind]}"/>
+          <use href="#clay-wall" fill="url(#clay-side-light)"/>
+        </g>
+        <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="-.5" y="-.5" width="1" height="1" preserveAspectRatio="none" transform="${tileTop(center)}" clip-path="url(#clay-top)"/>
       </g>`,
     });
   }
   svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
   svg.innerHTML = `
     <defs>
-      <linearGradient id="paver-light" x2="0%" y2="100%">
-        <stop stop-color="white" stop-opacity=".34"/>
-        <stop offset="1" stop-color="white" stop-opacity="0"/>
+      <path id="clay-wall" d="${wall}"/>
+      <clipPath id="clay-top" clipPathUnits="objectBoundingBox">
+        <path d="M ${clayRadius} 0 H ${1 - clayRadius} Q 1 0 1 ${clayRadius}
+          V ${1 - clayRadius} Q 1 1 ${1 - clayRadius} 1 H ${clayRadius}
+          Q 0 1 0 ${1 - clayRadius} V ${clayRadius} Q 0 0 ${clayRadius} 0 Z"/>
+      </clipPath>
+      <linearGradient id="clay-side-light" x2="100%" y2="56%">
+        <stop stop-color="#fff2d2" stop-opacity=".3"/>
+        <stop offset=".49" stop-color="#fff2d2" stop-opacity=".04"/>
+        <stop offset=".52" stop-color="#352122" stop-opacity=".13"/>
+        <stop offset="1" stop-color="#352122" stop-opacity=".26"/>
       </linearGradient>
       <image id="scene-art" href="${assets.junior[orientation]}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
       ${scenery
