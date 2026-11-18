@@ -1,0 +1,326 @@
+{
+  "good": [
+    {
+      "id": "junior-good-01",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "粉筆救援隊",
+      "text": "你接住從講桌滾下來的粉筆。老師正式任命你為「本節課地心引力管理員」。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-02",
+      "scene": "library",
+      "npc": "classmate-b",
+      "title": "借書附贈掌聲",
+      "text": "圖書館的掃碼機突然模仿海豹叫。全桌以為是你設計的音效，默默比了十二個讚。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-03",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "失物招領的冠軍",
+      "text": "你把走廊上撿到的一隻拖鞋送去失物招領。工友翻出另一隻，宣布你成功撮合了一對。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-04",
+      "scene": "field",
+      "npc": "senior-boy",
+      "title": "逆風接力",
+      "text": "風把接力棒吹回你手上。學長看了半天，決定把這一招登記成「回頭是岸」。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-05",
+      "scene": "clubroom",
+      "npc": "senior-girl",
+      "title": "紙飛機首航",
+      "text": "你的紙飛機繞過電風扇，平安降落在社團簽到表。學姐替它補簽了出席。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-06",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "題號神預測",
+      "text": "你一坐下就猜這次最後一題是第二十題。監考老師看完卷子，第一次對你的直覺肅然起敬。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-07",
+      "scene": "auditorium",
+      "npc": "host",
+      "title": "麥克風認親",
+      "text": "麥克風只在你說「喂」的時候有聲音。主持人請你再喂兩聲，宣布音響正式通過測試。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-08",
+      "scene": "festival",
+      "npc": "emcee",
+      "title": "全校最圓",
+      "text": "園遊會老師請你畫一顆湯圓，評審一致認為像滿月。攤位用獎金買下這張招牌。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-good-09",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "奶泡有名字",
+      "text": "你把像馬鈴薯的奶泡命名為「地瓜伯」。店員笑到把命名費列進今日帳本。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-good-10",
+      "scene": "arcade_rain",
+      "npc": "classmate-a",
+      "title": "按錯的奇蹟",
+      "text": "你本來要按開始，不小心按到示範。機台自己拿了滿分，同學拜託你教他怎麼輸入名字。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-11",
+      "scene": "gate_dusk",
+      "npc": "janitor",
+      "title": "校門口的預言",
+      "text": "你說再三秒就會有葉子飄下來。工友在第三秒掃過來一整袋，說你實在太謙虛。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-12",
+      "scene": "riverside",
+      "npc": "passerby",
+      "title": "河堤指揮家",
+      "text": "你揮手指路，剛好一整排鴨子一起轉彎。路人問你下週還有沒有演出。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-13",
+      "scene": "nurse",
+      "npc": "nurse",
+      "title": "身高的第二意見",
+      "text": "量身高的儀器突然多報一公分。護理師請你把頭髮壓平，仍堅持給你的瀏海一張獎狀。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-14",
+      "scene": "clinic",
+      "npc": "nurse",
+      "title": "候診區猜謎王",
+      "text": "候診機叫了「八十八號」，你舉起兩個八字手勢。護理師笑到把你列入本週最佳冷笑話。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-15",
+      "scene": "library",
+      "npc": "teacher",
+      "title": "書籤徵稿",
+      "text": "你用一張畫著打哈欠恐龍的紙當書籤。老師轉身就用徵稿獎金把它買下，說這是最誠實的閱讀心得。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-good-16",
+      "scene": "field",
+      "npc": "senior-boy",
+      "title": "加油聲的回音",
+      "text": "你在操場喊「加油」，音箱剛好回播三次。學長替你掛名為四人加油團。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-17",
+      "scene": "clubroom",
+      "npc": "senior-girl",
+      "title": "橡皮筋演奏家",
+      "text": "社團缺了一根琴弦，你拿橡皮筋彈一聲。學姐聽完，說這首曲子叫《預算用完了》。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-18",
+      "scene": "festival",
+      "npc": "classmate-b",
+      "title": "幸運號碼牌",
+      "text": "同學把摸彩號碼倒過來看，剛好念到你的號碼。主持人一核對，你跟倒著看的號碼都中獎了。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-good-19",
+      "scene": "hallway",
+      "npc": "classmate-a",
+      "title": "倒帶廣播",
+      "text": "廣播卡在「請同學保持」，你順口接了「可愛」。整條走廊立刻安靜三秒，然後一起笑出聲。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-good-20",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "橡皮擦代班",
+      "text": "老師找不到板擦，你借出橡皮擦。它擦掉了黑板上一個句號，全班鼓掌歡送它退休。",
+      "reward": "stat"
+    }
+  ],
+  "bad": [
+    {
+      "id": "junior-bad-01",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "書包翻面上課",
+      "text": "你打開書包找課本，才發現自己帶的是裝餐盒的保冷袋。老師請你的飯糰先翻到第十二頁。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-02",
+      "scene": "library",
+      "npc": "classmate-b",
+      "title": "最吵的安靜",
+      "text": "你想在圖書館悄悄撕開貼紙，聲音卻像拉開舞台布幕。隔壁同學抬頭問表演幾點開始。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-03",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "拖把敬禮",
+      "text": "你對走廊盡頭點頭打招呼。工友走近才發現，你剛才向他立著晾乾的拖把敬了三次禮。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-04",
+      "scene": "field",
+      "npc": "senior-boy",
+      "title": "衝線的是鞋帶",
+      "text": "跑步比賽還沒開始，你的鞋帶先越過起跑線。學長拿秒錶替它記了一個犯規。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-05",
+      "scene": "clubroom",
+      "npc": "senior-girl",
+      "title": "全員靜音彩排",
+      "text": "你非常投入地吹奏直笛。學姐提醒你，笛口的清潔套還沒拔。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-06",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "答案卡的自拍照",
+      "text": "你把姓名端端正正寫在草稿紙上，答案卡倒是一片空白。監考老師請你把明星簽名移到正確位置。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-07",
+      "scene": "auditorium",
+      "npc": "host",
+      "title": "致謝致到自己",
+      "text": "彩排時你拿錯手卡，把「謝謝主持人」念了三次。主持人在台下回了三次「不客氣」。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-08",
+      "scene": "festival",
+      "npc": "emcee",
+      "title": "撈到的是盆",
+      "text": "你豪氣包下最後幾張撈球紙網，結果每張都在水面上直接化開。老闆送你一張紙巾擦手。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-bad-09",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "珍珠走錯棚",
+      "text": "你點了兩份加料，才發現飲料點成熱清湯。店員端來一碗漂著珍珠的湯，照單收費。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-bad-10",
+      "scene": "arcade_rain",
+      "npc": "classmate-a",
+      "title": "投幣式旁觀",
+      "text": "你一口氣投了好幾枚代幣才發現選的是雙人對戰。隔壁同學坐下來，免費贏了你一局。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-bad-11",
+      "scene": "gate_dusk",
+      "npc": "janitor",
+      "title": "校門相反方向",
+      "text": "你對警衛室說再見，轉身又走回校內。工友還沒說話，就又聽你說了一次早安。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-12",
+      "scene": "riverside",
+      "npc": "passerby",
+      "title": "逆風午餐",
+      "text": "你沿河堤追一張被風吹走的餐巾。它最後貼在長椅底下，路人說：「它先幫你佔位了。」",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-13",
+      "scene": "nurse",
+      "npc": "nurse",
+      "title": "冰敷口袋",
+      "text": "你把冰袋捧得很小心，聊了半天才發現自己一直冰敷的是制服口袋。護理師說口袋恢復得不錯。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-14",
+      "scene": "clinic",
+      "npc": "nurse",
+      "title": "叫號聽錯兩次",
+      "text": "叫號機喊了你的號碼，你以為在播氣溫。等到第二次才站起來，還對護理師說今天真熱。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-15",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "自動舉手裝置",
+      "text": "你伸懶腰伸到一半，老師點你回答問題。你慢慢把另一隻手也放下，假裝在做雙手投降。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-16",
+      "scene": "library",
+      "npc": "teacher",
+      "title": "借到續集的續集",
+      "text": "你為了趕快讀完，直接借了第三集。才看完第一頁，就知道主角改名了兩次。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-17",
+      "scene": "field",
+      "npc": "senior-boy",
+      "title": "哨聲的替身",
+      "text": "你聽見哨音立刻起跑，跑了半圈才發現是同學在擠一隻橡皮鴨。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-18",
+      "scene": "clubroom",
+      "npc": "senior-girl",
+      "title": "海報的倒轉人生",
+      "text": "你自費印了一疊社團海報，貼完才發現把社團時間寫成凌晨三點。學姐說她那時確實很有空。",
+      "reward": "cash"
+    },
+    {
+      "id": "junior-bad-19",
+      "scene": "hallway",
+      "npc": "classmate-a",
+      "title": "早安巡迴演出",
+      "text": "你在走廊向同一位同學說了四次早安。第四次他停下來，請你直接預祝他晚安。",
+      "reward": "stat"
+    },
+    {
+      "id": "junior-bad-20",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "翻頁選手",
+      "text": "你看大家紛紛翻面，也俐落地翻了頁。監考老師看了一眼，提醒你連桌墊也一起翻過去了。",
+      "reward": "stat"
+    }
+  ]
+}
