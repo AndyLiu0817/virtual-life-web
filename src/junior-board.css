@@ -82,16 +82,13 @@
   display: grid;
   gap: 0.6rem;
 }
-#overview {
-  justify-self: start;
-}
 #overview[aria-pressed="true"] {
   outline: 2px solid #23737c;
   outline-offset: 2px;
 }
 .board-controls header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.15rem 0.55rem;

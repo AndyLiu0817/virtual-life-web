@@ -49,8 +49,10 @@ export function showJuniorBoard(
       <svg class="board-track" preserveAspectRatio="none"></svg></div>
     </div>
     <section class="board-controls">
-      <header><h1 tabindex="-1">國中棋盤</h1><h2 id="character-name"></h2></header>
-      <button class="action" id="overview" type="button" aria-pressed="false">看全圖</button>
+      <header>
+        <div><h1 tabindex="-1">國中棋盤</h1><h2 id="character-name"></h2></div>
+        <button class="action" id="overview" type="button" aria-pressed="false">看全圖</button>
+      </header>
       <dl class="board-status" aria-label="玩家狀態"></dl>
       <div class="board-roll">
         <button class="action" id="roll" type="button">擲骰</button>
