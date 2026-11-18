@@ -16,6 +16,7 @@ import { STAT_LABELS, type Stat } from "./game/opening";
 import type { Save } from "./game/saves";
 import "./junior-board.css";
 
+const walkStepMs = 550;
 const stepsByTile = {
   event: 3,
   game: 6,
@@ -95,7 +96,6 @@ export function showJuniorBoard(
     camera.follow,
   );
   let facing = 1;
-  let stride = false;
   let landed = save.boardTile;
   let pose: "stand" | "win" = "stand";
   let moving: { from: number; to: number; progress: number } | undefined;
@@ -114,7 +114,7 @@ export function showJuniorBoard(
       camera.follow,
     );
     if (moving) {
-      view.step(moving.from, moving.to, moving.progress, facing, stride);
+      facing = view.step(moving.from, moving.to, moving.progress);
     } else {
       view.place(landed, pose, facing);
     }
@@ -173,19 +173,20 @@ export function showJuniorBoard(
   }
 
   async function animateStep(from: number, to: number) {
-    stride = !stride;
     if (!reducedMotion) {
       await new Promise<void>((resolve) => {
-        let started: number | undefined;
+        const started = performance.now();
         function frame(now: number) {
-          started ??= now;
-          const progress = Math.min(1, (now - started) / 300);
+          const progress = Math.max(
+            0,
+            Math.min(1, (now - started) / walkStepMs),
+          );
           moving = { from, to, progress };
-          facing = view.step(from, to, progress, facing, stride);
+          facing = view.step(from, to, progress);
           if (progress < 1) requestAnimationFrame(frame);
           else resolve();
         }
-        requestAnimationFrame(frame);
+        frame(started);
       });
     }
     moving = undefined;

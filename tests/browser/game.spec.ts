@@ -179,29 +179,37 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   const trace = await page.evaluateHandle(() => {
     const pawn = document.querySelector(".board-pawn")!;
     const landings: string[] = [];
-    const airborne = new Set<string>();
+    const frames = new Map<string, Set<string>>();
     new MutationObserver((records) => {
       for (const record of records) {
         if (record.attributeName === "data-tile") {
           landings.push(pawn.getAttribute("data-tile")!);
-        } else if (record.target instanceof SVGImageElement) {
-          const transform = record.target.getAttribute("transform");
-          if (transform?.startsWith("translate(0 -")) {
-            airborne.add(record.target.dataset.pose!);
-          }
         }
       }
+      const image = pawn.querySelector<SVGImageElement>(
+        'image[visibility="visible"]',
+      )!;
+      const pose = image.dataset.pose!;
+      if (pose === "stand") return;
+      const tile = pawn.getAttribute("data-tile")!;
+      if (!frames.has(tile)) frames.set(tile, new Set());
+      frames.get(tile)!.add(`${pose}:${image.getAttribute("transform")}`);
     }).observe(pawn, { subtree: true, attributes: true });
-    return { landings, airborne };
+    return { landings, frames };
   });
 
   await page.getByRole("button", { name: "擲骰" }).click();
   await expect(page.getByRole("dialog")).toContainText("遊戲：第 6 步製作中");
   expect(await trace.evaluate(({ landings }) => landings)).toEqual(["1", "2"]);
-  expect(await trace.evaluate(({ airborne }) => [...airborne])).toEqual([
-    "left",
-    "right",
-  ]);
+  const leftWalk = Array.from(
+    { length: 8 },
+    (_, index) => `front-${index + 1}:scale(-1 1)`,
+  );
+  expect(
+    await trace.evaluate(({ frames }) =>
+      [...frames.values()].map((set) => [...set]),
+    ),
+  ).toEqual([leftWalk, leftWalk]);
 
   async function checkLanding(viewBox: string) {
     await expect(track).toHaveAttribute("viewBox", viewBox);

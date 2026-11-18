@@ -5,7 +5,7 @@ import { juniorScenery } from "./data/junior-scenery";
 import { tileLabels, type TileKind } from "./data/junior";
 
 const sprites = import.meta.glob<string>(
-  "./board-art/{*-clay,boy-*,girl-*}.webp",
+  "./board-art/{*-clay,boy-{stand,win},girl-{stand,win},walk-junior/*}.webp",
   {
     eager: true,
     query: "?url",
@@ -14,7 +14,10 @@ const sprites = import.meta.glob<string>(
 );
 const sprite = (name: string) => sprites[`./board-art/${name}.webp`];
 
-type Pose = "stand" | "left" | "right" | "win";
+const walkFrames = 8;
+const walkSets = ["front", "back"] as const;
+type WalkSet = (typeof walkSets)[number];
+type Pose = "stand" | "win" | `${WalkSet}-${number}`;
 // Love art is part of the tilesheet, while the junior rules use seven kinds.
 const claySides = {
   start: "#af8727",
@@ -44,6 +47,8 @@ export function boardView(
     tileTop,
   } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
+  const walkHeight = layout.pawnHeight * 1.08;
+  const walkWidth = (walkHeight * 104) / 192;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
   const scenery = juniorScenery[orientation].map((object, id) => {
     const [x, y] = object.anchor;
@@ -106,6 +111,11 @@ export function boardView(
             .join("")}
         </g>
       </mask>
+      <radialGradient id="pawn-base-glow">
+        <stop stop-color="#bdffff" stop-opacity=".95"/>
+        <stop offset=".52" stop-color="#64f7ff" stop-opacity=".8"/>
+        <stop offset="1" stop-color="#37ddff" stop-opacity="0"/>
+      </radialGradient>
       <filter id="pawn-silhouette-ink" color-interpolation-filters="sRGB" x="-15%" y="-15%" width="130%" height="130%">
         <feGaussianBlur in="SourceAlpha" stdDeviation=".36" result="soft-alpha"/>
         <feFlood flood-color="#d3f4fa" flood-opacity=".46" result="ink"/>
@@ -126,8 +136,9 @@ export function boardView(
       .map(({ markup }) => markup)
       .join("")}
     <g class="board-pawn" role="img">
-      <ellipse class="pawn-shadow" rx="${pawnWidth * 0.37}" ry="${pawnWidth * 0.12}"/>
-      ${(["stand", "left", "right", "win"] as const)
+      <ellipse class="pawn-shadow" rx="${pawnWidth * 0.37}" ry="${pawnWidth * 0.12}" opacity=".65"/>
+      <ellipse class="pawn-base" rx="${pawnWidth * 0.52}" ry="${pawnWidth * 0.19}" fill="url(#pawn-base-glow)"/>
+      ${(["stand", "win"] as const)
         .map((pose) => {
           const height =
             pose === "win" && gender === "boy"
@@ -137,6 +148,14 @@ export function boardView(
           const y = -(layout.pawnHeight * sole) / 197;
           return `<image id="pawn-pose-${pose}" data-pose="${pose}" href="${sprite(`${gender}-${pose}`)}" x="${-pawnWidth / 2}" y="${y}" width="${pawnWidth}" height="${height}" visibility="hidden"/>`;
         })
+        .join("")}
+      ${walkSets
+        .flatMap((set) =>
+          Array.from({ length: walkFrames }, (_, index) => {
+            const pose = `${set}-${index + 1}`;
+            return `<image id="pawn-pose-${pose}" data-pose="${pose}" href="${sprite(`walk-junior/${gender}-${pose}`)}" x="${-walkWidth / 2}" y="${-walkHeight}" width="${walkWidth}" height="${walkHeight}" visibility="hidden"/>`;
+          }),
+        )
         .join("")}
     </g></g>
     <g clip-path="url(#pawn-occlusion)" aria-hidden="true">
@@ -165,7 +184,6 @@ export function boardView(
     }
   `;
   const pawn = svg.querySelector<SVGGElement>(".board-pawn")!;
-  const shadow = pawn.querySelector("ellipse")!;
   const depth = pawn.parentElement!;
   const depthNodes = [...depth.querySelectorAll<SVGGElement>("[data-depth]")];
   const depths = depthNodes.map((layer) => Number(layer.dataset.depth));
@@ -185,8 +203,6 @@ export function boardView(
     { x, y }: { x: number; y: number },
     pose: Pose,
     facing: number,
-    lift = 0,
-    squash = 0,
   ) {
     const image = poses[pose];
     if (visible !== image) {
@@ -211,15 +227,9 @@ export function boardView(
     }
     silhouette.setAttribute("transform", `translate(${x} ${y})`);
     follow({ x: x / layout.width, y: y / layout.height });
-    image.setAttribute(
-      "transform",
-      `translate(0 ${-lift}) scale(${facing * (1 + squash * 0.5)} ${1 - squash})`,
-    );
-    shadow.setAttribute("opacity", String(0.65 - lift / layout.pawnHeight));
-    shadow.setAttribute(
-      "transform",
-      `scale(${1 - lift / (layout.pawnHeight * 2)})`,
-    );
+    const flip = `scale(${facing} 1)`;
+    if (image.getAttribute("transform") !== flip)
+      image.setAttribute("transform", flip);
   }
 
   function place(id: number, pose: "stand" | "win", facing: number) {
@@ -233,33 +243,21 @@ export function boardView(
 
   return {
     place,
-    step(
-      from: number,
-      to: number,
-      progress: number,
-      facing: number,
-      stride: boolean,
-    ) {
+    step(from: number, to: number, progress: number) {
       const start = centers[from];
       const end = centers[to];
-      const phase = Math.min(1, progress / 0.78);
-      const travel = phase * phase * (3 - 2 * phase);
       const dx = end.x - start.x;
-      const point = {
-        x: start.x + dx * travel,
-        y: start.y + (end.y - start.y) * travel,
-      };
-      const direction = dx === 0 ? facing : dx < 0 ? 1 : -1;
-      const lift = 4 * travel * (1 - travel) * layout.pawnHeight * 0.21;
-      const landing = Math.max(0, (progress - 0.78) / 0.22);
+      const dy = end.y - start.y;
+      const set: WalkSet = dy > 0 ? "front" : "back";
+      const mirrored = set === "front" ? dx < 0 : dx > 0;
+      const frame = Math.min(walkFrames, Math.floor(progress * walkFrames) + 1);
       draw(
-        point,
-        stride ? "left" : "right",
-        direction,
-        lift,
-        Math.sin(Math.PI * landing) * 0.17,
+        { x: start.x + dx * progress, y: start.y + dy * progress },
+        `${set}-${frame}`,
+        mirrored ? -1 : 1,
       );
-      return direction;
+      // The existing idle and victory art faces left in its source image.
+      return dx < 0 ? 1 : -1;
     },
   };
 }
