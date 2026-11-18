@@ -2,6 +2,7 @@ import examResult from "../art/cg_exam_result_final.jpg";
 import { sceneArt } from "./event-view";
 import {
   type Attempt,
+  allowsAssists,
   passScore,
   questionsById,
   remainingAssists,
@@ -16,19 +17,20 @@ export function showAssessment(
   onProgress: (() => void) | undefined,
   onComplete: () => void,
 ) {
-  const quiz = attempt.kind === "quiz";
-  const title = quiz
-    ? "小考"
-    : attempt.kind === "highEntrance"
-      ? "升高中考試"
-      : "大學聯考";
+  const presentation = {
+    quiz: ["小考", "classroom", "teacher"],
+    highEntrance: ["升高中考試", "exam", "proctor"],
+    universityEntrance: ["大學聯考", "exam", "proctor"],
+    contestTrivia: ["智囊搶答", "auditorium", "host"],
+  };
+  const [title, scene, npc] = presentation[attempt.kind];
   container.innerHTML = `<section class="assessment" aria-label="${title}">
-    <div class="assessment-art" data-tone="scene">${quiz ? sceneArt("classroom", "teacher") : sceneArt("exam", "proctor")}</div>
+    <div class="assessment-art" data-tone="scene">${sceneArt(scene, npc)}</div>
     <div class="assessment-copy">
       <header><h1 id="assessment-title">${title}</h1><p class="assessment-meta"></p></header>
       <h2 class="assessment-question" tabindex="-1"></h2>
       <div class="assessment-options"></div>
-      ${quiz ? "" : `<div class="assessment-help"><p role="status"></p><button class="action" type="button">智力輔助</button></div>`}
+      ${allowsAssists(attempt.kind) ? `<div class="assessment-help"><p role="status"></p><button class="action" type="button">智力輔助</button></div>` : ""}
       <p class="assessment-save" role="status" hidden></p>
     </div>
   </section>`;

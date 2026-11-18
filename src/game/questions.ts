@@ -32,6 +32,18 @@ export const questionsById = new Map(
 );
 export const examPlans = {
   quiz: ["easy", "easy", "easy", "easy", "normal"],
+  contestTrivia: [
+    "easy",
+    "easy",
+    "easy",
+    "easy",
+    "easy",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+  ],
   highEntrance: [
     "normal",
     "normal",
@@ -58,6 +70,8 @@ export const examPlans = {
   ],
 } as const;
 export type Assessment = keyof typeof examPlans;
+export const allowsAssists = (kind: Assessment) =>
+  kind === "highEntrance" || kind === "universityEntrance";
 
 function shuffle<T>(items: readonly T[], random: () => number): T[] {
   const result = [...items];
@@ -113,7 +127,12 @@ export const quizReward = (correct: number) =>
 const optionIndex = z.number().int().min(0).max(3);
 export const attemptSchema = z
   .object({
-    kind: z.enum(["quiz", "highEntrance", "universityEntrance"]),
+    kind: z.enum([
+      "quiz",
+      "highEntrance",
+      "universityEntrance",
+      "contestTrivia",
+    ]),
     items: z.array(
       z.object({
         id: text.refine((id) => questionsById.has(id)),
@@ -142,7 +161,7 @@ export const attemptSchema = z
       }
       unanswered = answer === null;
     }
-    return used <= (kind === "quiz" ? 0 : 3);
+    return used <= (allowsAssists(kind) ? 3 : 0);
   });
 export type Attempt = z.infer<typeof attemptSchema>;
 
@@ -167,7 +186,7 @@ export const scoreAttempt = (attempt: Attempt) =>
   ).length;
 
 export const remainingAssists = (attempt: Attempt, intellect: number) =>
-  attempt.kind === "quiz"
+  !allowsAssists(attempt.kind)
     ? 0
     : Math.max(
         0,

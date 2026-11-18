@@ -1,3 +1,7 @@
+import { activityPrompt, promptForClub } from "./activity-view";
+import { playContest } from "./contest-view";
+import { clubChoice, clubs, isClubId, visitClub } from "./game/clubs";
+import { nextMatch } from "./game/contests";
 import { assets } from "./assets";
 import { juniorBoard as board, tileLabels } from "./data/junior";
 import { boardCamera } from "./board-camera";
@@ -23,7 +27,7 @@ import {
   walkingSteps,
 } from "./game/deities";
 import { drawEvent } from "./game/events";
-import { changeText, eventPresentation } from "./event-view";
+import { changeText, eventPresentation, sceneArt } from "./event-view";
 import { showAssessment } from "./exam-view";
 import { quizReward, scoreAttempt, startAssessment } from "./game/questions";
 import type { Save } from "./game/saves";
@@ -31,12 +35,6 @@ import "./junior-board.css";
 import "./event-view.css";
 
 const walkStepMs = 550;
-const stepsByTile = {
-  game: 6,
-  club: 5,
-  contest: 5,
-} as const;
-
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
@@ -85,6 +83,7 @@ export function showJuniorBoard(
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
       <h2 id="board-prompt"></h2><p class="board-detail"></p><div class="actions"></div>
     </form></dialog>
+    <dialog class="event-dialog activity-dialog" aria-labelledby="activity-title"></dialog>
     <dialog class="assessment-dialog" aria-labelledby="assessment-title"></dialog>
     <dialog class="event-dialog" aria-labelledby="event-title" aria-describedby="event-text event-result">
       <form method="dialog">
@@ -149,7 +148,10 @@ export function showJuniorBoard(
   orientationChange.observe(find(".board-map"));
 
   const dialog = find<HTMLDialogElement>(".board-dialog");
-  const eventDialog = find<HTMLDialogElement>(".event-dialog");
+  const eventDialog = find<HTMLDialogElement>(
+    ".event-dialog:not(.activity-dialog)",
+  );
+  const activityDialog = find<HTMLDialogElement>(".activity-dialog");
   const roll = find<HTMLButtonElement>("#roll");
   const dice = find(".dice");
   const total = find("#dice-total");
@@ -180,6 +182,9 @@ export function showJuniorBoard(
 
   function status() {
     const deity = activeDeity(save);
+    const clubId = save.clubHistory.find(
+      ({ stage }) => stage === save.stage,
+    )?.clubId;
     const fields = [
       ["回合", `${Math.min(save.turn + 1, board.turns)} ／ ${board.turns}`],
       ["骰子", `${diceCount(save)} 顆`],
@@ -189,6 +194,7 @@ export function showJuniorBoard(
         "附身神祇",
         deity ? `${deities[deity.id].name}・${deity.remainingTurns} 回合` : "—",
       ],
+      ["社團", clubId && isClubId(clubId) ? clubs[clubId].name : "—"],
       ["人生經驗", save.experience],
       ["收集卡", `${save.cards.length} 張`],
       ...Object.entries(STAT_LABELS).map(([key, label]) => [
@@ -280,10 +286,11 @@ export function showJuniorBoard(
     save = updated;
     status();
     const presentation = eventPresentation(outcome);
-    const stage = find(".event-stage");
+    const stage = eventDialog.querySelector<HTMLElement>(".event-stage")!;
     stage.dataset.tone = presentation.tone;
     stage.innerHTML = presentation.art;
-    find(".event-label").textContent = presentation.label;
+    eventDialog.querySelector<HTMLElement>(".event-label")!.textContent =
+      presentation.label;
     find("#event-title").textContent = presentation.title;
     find("#event-text").textContent = presentation.text;
     find("#event-result").textContent = presentation.result;
@@ -347,6 +354,47 @@ export function showJuniorBoard(
       "小考成績",
       `答對 ${correct} ／ 5 題・智力 ＋${gained}・現金 ＋${reward.cash} 元`,
     );
+  }
+
+  async function playClubVisit() {
+    const visit = visitClub(save);
+    if (!visit) return;
+    save = visit.save;
+    status();
+    await activityPrompt(activityDialog, {
+      art: sceneArt(visit.scene, "senior-girl"),
+      speaker: "社團學姊",
+      title: visit.club.name,
+      text: visit.text,
+      details: [
+        visit.changes.map(changeText).join("・"),
+        ...(visit.cash
+          ? [changeText({ target: "cash", amount: visit.cash })]
+          : []),
+      ],
+    });
+  }
+
+  async function automaticContest() {
+    const match = nextMatch(save, "turn");
+    if (!match) return;
+    save = await playContest(activityDialog, quizDialog, save, match, false);
+    status();
+    persist();
+  }
+
+  async function contestTile() {
+    const match = nextMatch(save, "tile");
+    if (match) {
+      save = await playContest(activityDialog, quizDialog, save, match, true);
+    } else {
+      await activityPrompt(activityDialog, {
+        art: sceneArt("auditorium", "host"),
+        speaker: "大賽主持人",
+        title: "大賽觀賽",
+        text: "這場已經比完啦！你留下來幫忙，把最後一排椅子也排得像頒獎隊伍。",
+      });
+    }
   }
 
   async function playTurn() {
@@ -417,10 +465,9 @@ export function showJuniorBoard(
     const kind = board.tiles[save.boardTile].kind;
     const deityJustArrived = kind === "event" && (await playEvent());
     if (kind === "quiz") await playQuiz();
-    if (kind in stepsByTile)
-      await prompt(
-        `${tileLabels[kind]}：第 ${stepsByTile[kind as keyof typeof stepsByTile]} 步製作中`,
-      );
+    if (kind === "club") await playClubVisit();
+    if (kind === "contest") await contestTile();
+    if (kind === "game") await prompt("遊戲：第 6 步製作中");
 
     const finished = finishTurn(save, deityJustArrived);
     save = finished.save;
@@ -432,10 +479,10 @@ export function showJuniorBoard(
       orientationChange.disconnect();
       actions.entrance(save);
       return;
-    } else {
-      roll.disabled = false;
-      roll.focus();
     }
+    await automaticContest();
+    roll.disabled = false;
+    roll.focus();
     navigation.forEach((button) => (button.disabled = false));
   }
 
@@ -452,4 +499,22 @@ export function showJuniorBoard(
   placePawn("stand");
   roll.onclick = () => void playTurn();
   find("h1").focus();
+
+  async function startBoard() {
+    const needsClub = clubChoice(save, "junior");
+    if (!needsClub && !nextMatch(save, "turn")) return;
+    roll.disabled = true;
+    navigation.forEach((button) => (button.disabled = true));
+    if (needsClub) {
+      save = await promptForClub(activityDialog, save, "junior");
+      status();
+      persist();
+    }
+    await automaticContest();
+    roll.disabled = false;
+    navigation.forEach((button) => (button.disabled = false));
+    roll.focus();
+  }
+
+  void startBoard();
 }
