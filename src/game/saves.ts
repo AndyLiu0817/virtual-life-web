@@ -9,6 +9,8 @@ import {
   type Profile,
 } from "./opening";
 
+import { clubStages } from "./clubs";
+import { contestEventIds } from "./contests";
 import { attemptSchema } from "./questions";
 
 export const SAVE_VERSION = 1;
@@ -57,10 +59,24 @@ const saveSchema = z
       .nullable()
       .default(null),
     examResultPending: z.boolean().default(false),
-    clubHistory: z.array(
-      z.object({ stage: school, clubId: z.string(), visits: count }),
-    ),
-    competitions: z.array(z.object({ id: z.string(), rank: count.min(1) })),
+    clubHistory: z
+      .array(z.object({ stage: school, clubId: z.string(), visits: count }))
+      .default([]),
+    competitions: z
+      .array(
+        z.union([
+          z.object({
+            stage: z.enum(clubStages),
+            matchNumber: count.min(1),
+            event: z.enum(contestEventIds),
+            score: z.number().nonnegative(),
+            rank: count.min(1).max(4),
+            elapsedMs: count.optional(),
+          }),
+          z.object({ id: z.string(), rank: count.min(1) }),
+        ]),
+      )
+      .default([]),
     partner: nullableId,
     affection: count.max(99),
     spouse: nullableId,

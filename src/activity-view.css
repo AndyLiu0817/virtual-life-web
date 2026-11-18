@@ -1,0 +1,97 @@
+.activity-dialog {
+  width: min(calc(100% - 1.5rem), 950px);
+}
+.activity-dialog form,
+.rhythm-round {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.activity-dialog .event-stage {
+  height: auto;
+  min-height: 270px;
+}
+.activity-dialog .event-npc {
+  height: 81%;
+  bottom: 0;
+}
+.activity-dialog .event-copy {
+  align-content: center;
+  gap: 0.8rem;
+  border-top: 0;
+  border-left: 3px solid #d9ad63;
+}
+.activity-options {
+  display: grid;
+  gap: 0.5rem;
+}
+.activity-options.clubs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.activity-option {
+  display: grid;
+  align-content: center;
+  gap: 0.15rem;
+  min-height: 54px;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #91b2a5;
+  border-radius: 0.65rem;
+  background: #ebf4ec;
+  color: #213b40;
+  text-align: left;
+  font: inherit;
+  line-height: 1.28;
+  cursor: pointer;
+}
+.activity-option:hover,
+.activity-option:focus-visible {
+  background: #d6eade;
+  outline: 2px solid #327069;
+  outline-offset: 1px;
+}
+.activity-option span {
+  font-size: 0.85rem;
+}
+.activity-details {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.65rem;
+  background: #ebf4ec;
+  color: #285b55;
+  list-style: none;
+  font-weight: 700;
+}
+.rhythm-tap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  touch-action: manipulation;
+}
+.rhythm-note {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-size: 333px 188px;
+  background-position: -18px -14px;
+}
+.rhythm-tap.on-beat {
+  background: #ffd077;
+  color: #17383b;
+  outline: 3px solid #9a510d;
+}
+@media (orientation: portrait) {
+  .activity-dialog form,
+  .rhythm-round {
+    grid-template-columns: 1fr;
+  }
+  .activity-dialog .event-stage {
+    height: clamp(130px, 29dvh, 300px);
+    min-height: 0;
+  }
+  .activity-dialog .event-copy {
+    border-left: 0;
+    border-top: 3px solid #d9ad63;
+  }
+}

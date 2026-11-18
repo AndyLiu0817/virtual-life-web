@@ -1,13 +1,18 @@
 import { expect, test, type Page } from "@playwright/test";
+import { chooseClub } from "../../src/game/clubs";
 import { createSave, type Save } from "../../src/game/saves";
 
 const saveKey = "virtual-life-web:v3:slot:0";
-const initial = createSave({
-  gender: "boy",
-  name: "小宇",
-  birthday: { month: 3, day: 21 },
-  bloodType: "A",
-});
+const initial = chooseClub(
+  createSave({
+    gender: "boy",
+    name: "小宇",
+    birthday: { month: 3, day: 21 },
+    bloodType: "A",
+  }),
+  "junior",
+  "study",
+);
 
 async function loadBoard(
   page: Page,
@@ -208,7 +213,7 @@ test("迷途使自選岔路並減一步，最後一回合結束時消失", async
   });
   await page.getByRole("button", { name: "擲骰" }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog).toContainText("社團");
+  await expect(dialog).toContainText("研習社");
   await expect(page.locator(".board-pawn")).toHaveAttribute("data-tile", "39");
   await expect(dialog.getByRole("button", { name: /沿外圈/ })).toHaveCount(0);
   await dialog.getByRole("button", { name: "確定" }).click();

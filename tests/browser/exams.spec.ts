@@ -1,14 +1,19 @@
 import { expect, test, type Page } from "@playwright/test";
+import { chooseClub } from "../../src/game/clubs";
 import { createSave, type Save } from "../../src/game/saves";
 import { questionBank } from "../../src/game/questions";
 
 const slot = "virtual-life-web:v3:slot:0";
-const player = createSave({
-  name: "小晴",
-  gender: "girl",
-  birthday: { month: 5, day: 13 },
-  bloodType: "A",
-});
+const player = chooseClub(
+  createSave({
+    name: "小晴",
+    gender: "girl",
+    birthday: { month: 5, day: 13 },
+    bloodType: "A",
+  }),
+  "junior",
+  "study",
+);
 
 async function seed(page: Page, save: Save) {
   await page.goto("/");
