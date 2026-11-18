@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { juniorBoard } from "../data/junior";
 import {
   BLOOD_TYPES,
   calculateOpening,
@@ -55,6 +56,23 @@ const saveSchema = z
     deity: z.object({ id: z.string(), remainingTurns: count }).nullable(),
     retrogradeTurns: count,
     turnaroundTurns: count,
+    retrogradeRepeated: z.boolean().default(false),
+    boardTile: count.default(juniorBoard.start),
+    previousTile: count.nullable().default(null),
+    nextTile: count.nullable().default(null),
+  })
+  .refine((save) => {
+    if (save.stage !== "junior") return true;
+    const tile = juniorBoard.tiles[save.boardTile];
+    const previous = save.previousTile;
+    const next = save.nextTile;
+    return Boolean(
+      tile &&
+      (previous === null ||
+        juniorBoard.tiles[previous]?.next.includes(save.boardTile)) &&
+      (next === null || (next !== previous && tile.next.includes(next))) &&
+      tile.next.some((id) => id !== previous),
+    );
   })
   .refine(
     (save) =>
