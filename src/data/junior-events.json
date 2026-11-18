@@ -59,7 +59,7 @@
     {
       "id": "junior-good-08",
       "scene": "festival",
-      "npc": "emcee",
+      "npc": "vendor",
       "title": "全校最圓",
       "text": "園遊會老師請你畫一顆湯圓，評審一致認為像滿月。攤位用獎金買下這張招牌。",
       "reward": "cash"
@@ -221,7 +221,7 @@
     {
       "id": "junior-bad-08",
       "scene": "festival",
-      "npc": "emcee",
+      "npc": "vendor",
       "title": "撈到的是盆",
       "text": "你豪氣包下最後幾張撈球紙網，結果每張都在水面上直接化開。老闆送你一張紙巾擦手。",
       "reward": "cash"
@@ -285,7 +285,7 @@
     {
       "id": "junior-bad-16",
       "scene": "library",
-      "npc": "teacher",
+      "npc": "librarian",
       "title": "借到續集的續集",
       "text": "你為了趕快讀完，直接借了第三集。才看完第一頁，就知道主角改名了兩次。",
       "reward": "stat"
@@ -293,7 +293,7 @@
     {
       "id": "junior-bad-17",
       "scene": "field",
-      "npc": "senior-boy",
+      "npc": "classmate-a",
       "title": "哨聲的替身",
       "text": "你聽見哨音立刻起跑，跑了半圈才發現是同學在擠一隻橡皮鴨。",
       "reward": "stat"

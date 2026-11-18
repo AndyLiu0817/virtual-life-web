@@ -40,13 +40,15 @@
   height: 88%;
   max-width: 74%;
 }
-.event-stage[data-tone="scene"] .event-portrait {
-  height: 70%;
-  margin-right: clamp(1rem, 8%, 5rem);
-  border: 3px solid #f7edce;
-  border-bottom: 0;
-  border-radius: 1rem 1rem 0 0;
-  box-shadow: 0 5px 25px #102e3c75;
+.event-npc {
+  position: absolute;
+  right: clamp(1rem, 9%, 5rem);
+  bottom: -3%;
+  height: 74%;
+  width: auto;
+  max-width: 52%;
+  object-fit: contain;
+  object-position: right bottom;
 }
 .event-stage:not([data-tone="scene"]) .event-portrait {
   justify-self: center;
@@ -91,6 +93,10 @@
 @media (orientation: portrait) {
   .event-stage {
     height: clamp(150px, 48dvh, 430px);
+  }
+  .event-npc {
+    right: 6%;
+    height: 68%;
   }
   .event-copy .action {
     flex: 1;

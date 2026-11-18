@@ -62,6 +62,8 @@ for (const scene of [
     random: [0.8, 0, 0, 0, 0],
     result: "智力 ＋10",
     name: "good-landscape",
+    background: "classroom",
+    npc: "teacher",
     width: 1080,
     height: 664,
   },
@@ -71,6 +73,8 @@ for (const scene of [
     random: [0.8, 0.9, 0.36, 0],
     result: "現金 −200 元",
     name: "bad-portrait",
+    background: "festival",
+    npc: "clerk",
     width: 390,
     height: 844,
   },
@@ -94,29 +98,59 @@ for (const scene of [
     ).toBeVisible();
     await expect(dialog).toContainText(scene.label);
     await expect(dialog).toContainText(scene.result);
-    await expect(dialog.locator("svg image")).toHaveAttribute(
-      "href",
-      /npc_final|deities_bad_final/,
-    );
     if (scene.label === "神祇登場") {
-      await expect(dialog.locator("svg image")).toHaveAttribute(
+      const sprite = dialog.locator("svg image");
+      await expect(sprite).toHaveAttribute("href", /deities_bad_final/);
+      await expect(sprite).toHaveAttribute(
         "clip-path",
         "url(#empty-bag-outline)",
       );
+      await sprite.evaluate(async (element) => {
+        const image = new Image();
+        image.src = element.getAttribute("href")!;
+        await image.decode();
+      });
     } else {
       const background = dialog.locator(".event-background");
       await expect(background).toHaveAttribute(
         "src",
-        /event_(classroom|festival)_final/,
+        new RegExp(`event_${scene.background}_final`),
       );
-      await background.evaluate((img: HTMLImageElement) => img.decode());
+      await background.evaluate((image: HTMLImageElement) => image.decode());
+      const npc = dialog.locator(".event-npc");
+      await expect(npc).toHaveAttribute(
+        "src",
+        new RegExp(`/${scene.npc}[^/]*\\.webp$`),
+      );
+      const transparency = await npc.evaluate(
+        async (image: HTMLImageElement) => {
+          await image.decode();
+          const canvas = document.createElement("canvas");
+          canvas.width = image.naturalWidth;
+          canvas.height = image.naturalHeight;
+          const context = canvas.getContext("2d")!;
+          context.drawImage(image, 0, 0);
+          const pixels = context.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          ).data;
+          return [
+            pixels[3],
+            pixels[(canvas.width - 1) * 4 + 3],
+            pixels[
+              (Math.floor(canvas.height / 2) * canvas.width +
+                Math.floor(canvas.width / 2)) *
+                4 +
+                3
+            ],
+          ];
+        },
+      );
+      expect(transparency).toEqual([0, 0, 255]);
     }
-    await dialog.locator("svg image").evaluate(async (sprite) => {
-      const image = new Image();
-      image.src = sprite.getAttribute("href")!;
-      await image.decode();
-      await new Promise(requestAnimationFrame);
-    });
+    await page.evaluate(() => new Promise(requestAnimationFrame));
     const confirm = dialog.getByRole("button", { name: "確定" });
     await expect(confirm).toBeInViewport();
     expect((await confirm.boundingBox())!.height).toBeGreaterThanOrEqual(44);

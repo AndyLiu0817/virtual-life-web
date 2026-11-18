@@ -1,4 +1,3 @@
-import npcSheet from "../art/npc_final.jpg";
 import goodSheet from "../art/deities_good_final.jpg";
 import badSheet from "../art/deities_bad_final.jpg";
 import {
@@ -17,27 +16,17 @@ const scenes = import.meta.glob<string>("../art/event_*_final.jpg", {
   query: "?url",
 });
 
-const npcRows = [
-  {
-    ids: ["teacher", "proctor", "senior-boy", "senior-girl", "host", "nurse"],
-    edges: [52, 249, 444, 643, 833, 1044, 1235],
-    y: 30,
-    height: 315,
-  },
-  {
-    ids: [
-      "classmate-a",
-      "classmate-b",
-      "emcee",
-      "clerk",
-      "janitor",
-      "passerby",
-    ],
-    edges: [54, 245, 436, 640, 825, 1049, 1258],
-    y: 354,
-    height: 340,
-  },
-];
+// Individual alpha-matted portraits from art/npc_final.jpg.
+const npcPortraits = import.meta.glob<string>("./event-art/npc/*.webp", {
+  eager: true,
+  import: "default",
+  query: "?url",
+});
+
+const npcByRole: Record<string, string> = {
+  librarian: "teacher",
+  vendor: "clerk",
+};
 
 function sheetCrop(
   url: string,
@@ -57,13 +46,6 @@ function sheetCrop(
   return `<svg class="event-portrait" viewBox="${x} ${y} ${width} ${height}" aria-hidden="true">
     ${outline}<image href="${url}" width="1280" height="720"${shadowless ? ' clip-path="url(#empty-bag-outline)"' : ""}/>
   </svg>`;
-}
-
-function npcPortrait(id: string) {
-  const row = npcRows.find(({ ids }) => ids.includes(id))!;
-  const index = row.ids.indexOf(id);
-  const x = row.edges[index];
-  return sheetCrop(npcSheet, x, row.y, row.edges[index + 1] - x, row.height);
 }
 
 function deityPortrait(id: DeityId) {
@@ -115,7 +97,9 @@ export function eventPresentation(outcome: EventOutcome) {
 
   const { story } = outcome;
   const background = scenes[`../art/event_${story.scene}_final.jpg`];
-  const art = `<img class="event-background" src="${background}" alt="">${npcPortrait(story.npc)}`;
+  const npc =
+    npcPortraits[`./event-art/npc/${npcByRole[story.npc] ?? story.npc}.webp`];
+  const art = `<img class="event-background" src="${background}" alt=""><img class="event-npc" src="${npc}" alt="">`;
   if (outcome.kind === "protected") {
     return {
       tone: "scene",
