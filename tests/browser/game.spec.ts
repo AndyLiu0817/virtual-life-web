@@ -276,3 +276,95 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
   expect(await status.boundingBox()).toEqual(portraitStatus);
   await expect(map.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
 });
+
+test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨點", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1240, height: 740 });
+  await page.addInitScript(() => {
+    Math.random = () => 0.1;
+  });
+  await page.goto("/?debug=path");
+  await page.getByRole("button", { name: "開始新人生" }).click();
+  await page.getByLabel("名字").fill("小宇");
+  await page.getByRole("button", { name: "查看開局結果" }).click();
+  await page.getByRole("button", { name: "確認開局" }).click();
+
+  const track = page.locator(".board-track");
+  const anchors = track.locator(".scenery-debug");
+  const toggle = page.getByRole("checkbox", { name: "顯示前景物件錨點" });
+  await expect(anchors).toBeHidden();
+  await toggle.check();
+  await expect(anchors).toBeVisible();
+  await expect(anchors.locator(".scenery-anchor")).toHaveCount(9);
+
+  const pawn = track.locator(".board-pawn");
+  const annex = track.locator('[data-name="庭園小教室"]');
+  const mask = track.locator("#pawn-occlusion use").last();
+  await expect(pawn).toHaveAttribute("data-tile", "0");
+  await expect(mask).toHaveAttribute("visibility", "hidden");
+
+  await page.getByRole("button", { name: "擲骰" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "確定" }).click();
+  await expect(pawn).toHaveAttribute("data-tile", "2");
+  await expect(mask).toHaveAttribute("visibility", "visible");
+  await expect(track.locator(".pawn-silhouette")).toHaveAttribute(
+    "href",
+    "#pawn-pose-stand",
+  );
+  expect(
+    await annex.evaluate((building) =>
+      Boolean(
+        building.compareDocumentPosition(
+          building.parentElement!.querySelector(".board-pawn")!,
+        ) & Node.DOCUMENT_POSITION_PRECEDING,
+      ),
+    ),
+  ).toBe(true);
+
+  async function checkTilePrints() {
+    const obscured = await track.evaluate((svg) => {
+      const buildings = [
+        ...svg.querySelectorAll<SVGGElement>(".board-scenery"),
+      ].map((object) => ({
+        y: Number(object.dataset.depth),
+        shape: svg.querySelector<SVGPolygonElement>(
+          `#scenery-outline-${object.dataset.scenery}`,
+        )!,
+        matrix: object
+          .querySelector("g")!
+          .transform.baseVal.consolidate()!
+          .matrix.inverse(),
+      }));
+      return [...svg.querySelectorAll<SVGGElement>(".board-tile")].flatMap(
+        (tile) => {
+          const icon = tile.querySelector("image")!;
+          const matrix = icon.transform.baseVal.consolidate()!.matrix;
+          const step = icon.width.baseVal.value * 0.22;
+          const samples = [-step, 0, step].flatMap((x) =>
+            [-step, 0, step].map((y) =>
+              new DOMPoint(x, y).matrixTransform(matrix),
+            ),
+          );
+          const visible = samples.filter((point) =>
+            buildings.every(
+              ({ y, shape, matrix }) =>
+                y <= Number(tile.dataset.depth) ||
+                !shape.isPointInFill(point.matrixTransform(matrix)),
+            ),
+          );
+          return visible.length < 6 ? [tile.dataset.tile] : [];
+        },
+      );
+    });
+    expect(obscured).toEqual([]);
+  }
+
+  await checkTilePrints();
+  await page.setViewportSize({ width: 430, height: 932 });
+  await expect(anchors.locator(".scenery-anchor")).toHaveCount(6);
+  await expect(anchors).toBeVisible();
+  await checkTilePrints();
+  await toggle.uncheck();
+  await expect(anchors).toBeHidden();
+});

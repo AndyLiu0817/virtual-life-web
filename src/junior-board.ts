@@ -42,6 +42,7 @@ export function showJuniorBoard(
   actions: BoardActions,
 ) {
   let save = initial;
+  const debug = new URLSearchParams(location.search).get("debug") === "path";
   const { portrait, landscape } = assets.junior;
   app.innerHTML = `<main class="stage junior">
     <div class="board-map" role="group" aria-label="國中地圖">
@@ -53,6 +54,7 @@ export function showJuniorBoard(
         <div><h1 tabindex="-1">國中棋盤</h1><h2 id="character-name"></h2></div>
         <button class="action" id="overview" type="button" aria-pressed="false">看全圖</button>
       </header>
+      ${debug ? '<label class="board-debug-option"><input id="scenery-anchors" type="checkbox"> 顯示前景物件錨點</label>' : ""}
       <dl class="board-status" aria-label="玩家狀態"></dl>
       <div class="board-roll">
         <button class="action" id="roll" type="button">擲骰</button>
@@ -77,11 +79,16 @@ export function showJuniorBoard(
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const camera = boardCamera(find(".board-world"), reducedMotion);
   const media = matchMedia("(orientation: portrait)");
-  const debug = new URLSearchParams(location.search).get("debug") === "path";
+  if (debug) {
+    const anchors = find<HTMLInputElement>("#scenery-anchors");
+    anchors.onchange = () =>
+      track.classList.toggle("show-scenery-anchors", anchors.checked);
+  }
   let orientation: Orientation = media.matches ? "portrait" : "landscape";
   let view = boardView(
     track,
     board.layouts[orientation],
+    orientation,
     board.tiles,
     save.gender,
     debug,
@@ -100,6 +107,7 @@ export function showJuniorBoard(
     view = boardView(
       track,
       board.layouts[orientation],
+      orientation,
       board.tiles,
       save.gender,
       debug,

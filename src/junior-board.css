@@ -24,6 +24,7 @@
 }
 
 .board-map picture {
+  mask: url(#scenery-ground);
   display: block;
   height: 100%;
 }
@@ -184,4 +185,40 @@
   .board-status > div:last-child {
     grid-column: auto;
   }
+}
+
+.scenery-shadow {
+  fill: #253b1d;
+  opacity: 0.29;
+  filter: blur(2px);
+}
+
+.pawn-silhouette {
+  filter: brightness(0) invert(1) drop-shadow(0 0 1.2px #23536c);
+  opacity: 0.48;
+  pointer-events: none;
+}
+
+.scenery-debug {
+  display: none;
+  pointer-events: none;
+}
+.show-scenery-anchors .scenery-debug {
+  display: inline;
+}
+.scenery-anchor circle {
+  fill: #fbe373;
+  stroke: #1d3338;
+  stroke-width: 1.4px;
+}
+.scenery-anchor text {
+  fill: #fff3a7;
+  font: bold 11px sans-serif;
+  text-anchor: middle;
+  stroke: #1d3338;
+  stroke-width: 2.6px;
+  paint-order: stroke;
+}
+.board-debug-option {
+  font-size: 0.82rem;
 }
