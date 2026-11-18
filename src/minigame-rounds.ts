@@ -4,7 +4,12 @@ import {
   minigames,
   type RoundScore,
 } from "./game/minigames";
-import { sprite } from "./minigame-art";
+import {
+  shootingFeedback,
+  shootingSprite,
+  shootingTargets,
+  sprite,
+} from "./minigame-art";
 
 type Elements = { field: HTMLElement; score: HTMLElement; clock: HTMLElement };
 type Round = (elements: Elements) => Promise<RoundScore>;
@@ -166,42 +171,56 @@ const shoot: Round = async ({ field, score, clock }) => {
     { length: 9 },
     (_, i) =>
       `<button class="mg-target" type="button" aria-label="命中靶子" style="grid-area:${Math.floor(i / 3) + 1} / ${(i % 3) + 1}" hidden></button>`,
-  ).join("")}</div>`;
+  ).join("")}</div>
+  <div class="mg-shot-feedback" aria-hidden="true" hidden>
+    ${shootingSprite(shootingFeedback.hit)}${shootingSprite(shootingFeedback.miss)}
+  </div>`;
   const targets = Array.from(
-    field.querySelectorAll<HTMLButtonElement>("button"),
+    field.querySelectorAll<HTMLButtonElement>(".mg-target"),
   );
-  const period = 920;
-  const visible = 745;
+  const feedback = field.querySelector<HTMLElement>(".mg-shot-feedback")!;
+  const period = 1250;
+  const visible = 1100;
   const duration = 30;
   let previous = -1;
-  let current = -1;
+  let current: HTMLButtonElement | undefined;
   let cycle = -1;
   let hits = 0;
+  let feedbackUntil = 0;
   const start = performance.now();
   const hideTarget = () => {
-    if (current >= 0) targets[current].hidden = true;
-    current = -1;
+    if (current) current.hidden = true;
+    current = undefined;
   };
   const paintScore = () => {
     score.textContent = `命中 ${hits} 個`;
   };
   paintScore();
-  targets.forEach((target, index) =>
-    pointerClick(target, () => {
-      const elapsed = performance.now() - start;
-      if (
-        current !== index ||
-        elapsed >= duration * 1000 ||
-        Math.floor(elapsed / period) !== cycle ||
-        elapsed % period >= visible
-      )
-        return;
+
+  // Score the target actually displayed when the pointer goes down.
+  // Keyboard-generated clicks never pass through this handler.
+  const shootAt = (event: PointerEvent) => {
+    const elapsed = performance.now() - start;
+    if (!event.isPrimary || event.button !== 0 || elapsed >= duration * 1000)
+      return;
+
+    const hit = current !== undefined && event.target === current;
+    if (hit) {
       hits++;
       paintScore();
       hideTarget();
-    }),
-  );
+    }
+    const bounds = field.getBoundingClientRect();
+    feedback.style.left = `${event.clientX - bounds.left}px`;
+    feedback.style.top = `${event.clientY - bounds.top}px`;
+    feedback.dataset.shot = hit ? "hit" : "miss";
+    feedback.hidden = false;
+    feedbackUntil = elapsed + (hit ? 320 : 210);
+  };
+  field.addEventListener("pointerdown", shootAt);
+
   await timedRound(clock, duration, start, (elapsed) => {
+    if (elapsed >= feedbackUntil) feedback.hidden = true;
     const next = Math.floor(elapsed / period);
     if (next !== cycle) {
       hideTarget();
@@ -209,12 +228,13 @@ const shoot: Round = async ({ field, score, clock }) => {
       const offset = 1 + Math.floor(Math.random() * (targets.length - 1));
       previous = (previous + offset) % targets.length;
       if (elapsed % period >= visible) return;
-      current = previous;
-      targets[current].innerHTML = sprite("shoot", cycle % 4);
-      targets[current].hidden = false;
+      current = targets[previous];
+      current.innerHTML = sprite("shoot", cycle % shootingTargets.length);
+      current.hidden = false;
     }
     if (elapsed % period >= visible) hideTarget();
   });
+  field.removeEventListener("pointerdown", shootAt);
   return { score: hits };
 };
 
