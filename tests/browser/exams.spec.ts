@@ -21,6 +21,7 @@ async function seed(page: Page, save: Save) {
     ([key, data]) => localStorage.setItem(key, JSON.stringify(data)),
     [slot, save] as const,
   );
+  await page.reload();
   await load(page);
 }
 

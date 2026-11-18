@@ -30,6 +30,7 @@ import { drawEvent } from "./game/events";
 import { changeText, eventPresentation, sceneArt } from "./event-view";
 import { showAssessment } from "./exam-view";
 import { quizReward, scoreAttempt, startAssessment } from "./game/questions";
+import { playMinigame } from "./minigame-view";
 import type { Save } from "./game/saves";
 import "./junior-board.css";
 import "./event-view.css";
@@ -467,7 +468,7 @@ export function showJuniorBoard(
     if (kind === "quiz") await playQuiz();
     if (kind === "club") await playClubVisit();
     if (kind === "contest") await contestTile();
-    if (kind === "game") await prompt("遊戲：第 6 步製作中");
+    if (kind === "game") save = await playMinigame(activityDialog, save);
 
     const finished = finishTurn(save, deityJustArrived);
     save = finished.save;

@@ -11,6 +11,7 @@ import {
 
 import { clubStages } from "./clubs";
 import { contestEventIds } from "./contests";
+import { minigameIds, minigameTiers } from "./minigames";
 import { attemptSchema } from "./questions";
 
 export const SAVE_VERSION = 1;
@@ -75,6 +76,17 @@ const saveSchema = z
           }),
           z.object({ id: z.string(), rank: count.min(1) }),
         ]),
+      )
+      .default([]),
+    minigames: z
+      .array(
+        z.object({
+          stage: z.enum([...school.options, "graduated", "earlyExit"]),
+          game: z.enum(minigameIds),
+          score: z.number().nonnegative(),
+          tier: z.enum(minigameTiers),
+          elapsedMs: count.optional(),
+        }),
       )
       .default([]),
     partner: nullableId,

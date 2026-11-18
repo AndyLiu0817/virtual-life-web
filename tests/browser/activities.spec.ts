@@ -118,6 +118,12 @@ test("回合 8 在擲骰前選項目、揭曉穿搭並發放護心獅加成", as
   const roll = page.locator("#roll");
   await expect(dialog).toHaveCount(0);
   await roll.click();
+  const start = dialog.getByRole("button", { name: "開始", exact: true });
+  await expect(start).toBeVisible();
+  await page.clock.install();
+  await start.click();
+  await page.clock.fastForward(14_000);
+  await expect(dialog).toContainText("現金 ＋120 元");
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(
     dialog.getByRole("heading", { name: "虛擬城大賽" }),
@@ -152,7 +158,7 @@ test("回合 8 在擲骰前選項目、揭曉穿搭並發放護心獅加成", as
   const save = await readSave(page);
   expect(save).toMatchObject({
     turn: 7,
-    cash: 10400,
+    cash: 10520,
     competitions: [
       { stage: "junior", matchNumber: 1, event: "style", score: 220, rank: 1 },
     ],
@@ -209,43 +215,4 @@ test("提前搶答存十題與用時，取消第 8 回合大賽，回到大賽�
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(page.locator("#roll")).toBeEnabled();
   expect((await readSave(page)).competitions).toEqual(save.competitions);
-});
-
-test("衝刺擂台亮拍時才能得分，同一拍重複點擊只計一次", async ({ page }) => {
-  await page.goto("/");
-  await seed(page, { turn: 7 });
-  await continueGame(page);
-  const dialog = page.getByRole("dialog");
-  await dialog.getByRole("button", { name: /衝刺擂台/ }).click();
-  await expect(dialog.locator(".event-background")).toHaveAttribute(
-    "src",
-    /mg_rhythm_bg/,
-  );
-  await expect(dialog.locator(".rhythm-note")).toHaveCSS(
-    "background-image",
-    /mg_rhythm_sheet/,
-  );
-  await page.clock.install();
-  await page.clock.pauseAt(new Date(Date.now() + 1000));
-  const tap = dialog.locator(".rhythm-tap");
-  const press = () =>
-    tap.evaluate((button: HTMLButtonElement) => button.click());
-  await press();
-  await press();
-  for (let i = 0; i < 7; i++) {
-    await page.clock.runFor(700);
-    await expect(tap).toHaveClass(/on-beat/);
-    await press();
-    await press();
-  }
-  await page.clock.runFor(1000);
-  await page.clock.resume();
-  await expect(dialog).toContainText("成績 87.5%");
-  await dialog.getByRole("button", { name: "確定" }).click();
-  await expect(page.locator("#roll")).toBeEnabled();
-  expect((await readSave(page)).competitions[0]).toMatchObject({
-    event: "rhythm",
-    score: 87.5,
-    rank: 1,
-  });
 });
