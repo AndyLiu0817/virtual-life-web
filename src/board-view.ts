@@ -111,16 +111,20 @@ export function boardView(
             .join("")}
         </g>
       </mask>
-      <radialGradient id="pawn-base-glow">
-        <stop stop-color="#bdffff" stop-opacity=".95"/>
-        <stop offset=".52" stop-color="#64f7ff" stop-opacity=".8"/>
-        <stop offset="1" stop-color="#37ddff" stop-opacity="0"/>
-      </radialGradient>
       <filter id="pawn-silhouette-ink" color-interpolation-filters="sRGB" x="-15%" y="-15%" width="130%" height="130%">
         <feGaussianBlur in="SourceAlpha" stdDeviation=".36" result="soft-alpha"/>
         <feFlood flood-color="#d3f4fa" flood-opacity=".46" result="ink"/>
         <feComposite in="ink" in2="soft-alpha" operator="in"/>
       </filter>
+      <mask id="pawn-visible" maskUnits="userSpaceOnUse" x="0" y="0" width="${layout.width}" height="${layout.height}">
+        <rect width="${layout.width}" height="${layout.height}" fill="white"/>
+        ${scenery
+          .map(
+            ({ id }) =>
+              `<use data-pawn-cover="${id}" href="#scenery-outline-${id}" fill="black" visibility="hidden"/>`,
+          )
+          .join("")}
+      </mask>
       <clipPath id="pawn-occlusion" clipPathUnits="userSpaceOnUse">
         ${scenery
           .map(
@@ -135,9 +139,10 @@ export function boardView(
       .sort((a, b) => a.y - b.y)
       .map(({ markup }) => markup)
       .join("")}
+    </g>
+    <g mask="url(#pawn-visible)">
     <g class="board-pawn" role="img">
       <ellipse class="pawn-shadow" rx="${pawnWidth * 0.37}" ry="${pawnWidth * 0.12}" opacity=".65"/>
-      <ellipse class="pawn-base" rx="${pawnWidth * 0.52}" ry="${pawnWidth * 0.19}" fill="url(#pawn-base-glow)"/>
       ${(["stand", "win"] as const)
         .map((pose) => {
           const height =
@@ -184,14 +189,15 @@ export function boardView(
     }
   `;
   const pawn = svg.querySelector<SVGGElement>(".board-pawn")!;
-  const depth = pawn.parentElement!;
-  const depthNodes = [...depth.querySelectorAll<SVGGElement>("[data-depth]")];
-  const depths = depthNodes.map((layer) => Number(layer.dataset.depth));
-  const maskShapes = [
-    ...svg.querySelectorAll<SVGUseElement>("[data-mask-depth]"),
-  ];
+  const sceneryCovers = scenery.map(({ id, y }) => ({
+    y,
+    cover: svg.querySelector<SVGUseElement>(`[data-pawn-cover="${id}"]`)!,
+    silhouetteClip: svg.querySelector<SVGUseElement>(
+      `[data-mask-depth="${id}"]`,
+    )!,
+  }));
   const silhouette = svg.querySelector<SVGUseElement>(".pawn-silhouette")!;
-  let occluder: SVGGElement | null | undefined;
+  let previousY: number | undefined;
   const poses = Object.fromEntries(
     [...pawn.querySelectorAll("image")].map((image) => [
       image.dataset.pose,
@@ -212,19 +218,16 @@ export function boardView(
       silhouette.setAttribute("href", `#${image.id}`);
     }
     pawn.setAttribute("transform", `translate(${x} ${y})`);
-    const ahead =
-      depthNodes[depths.findIndex((layerY) => layerY > y + 0.5)] ?? null;
-    if (ahead !== occluder) {
-      depth.insertBefore(pawn, ahead);
-      occluder = ahead;
-      // Clip the tinted sprite to the same outlines that cover the regular pawn.
-      scenery.forEach((object, index) =>
-        maskShapes[index].setAttribute(
-          "visibility",
-          object.y > y + 0.5 ? "visible" : "hidden",
-        ),
-      );
+    // The pawn paints over the board. Only scenery in front can mask it.
+    for (const { y: depth, cover, silhouetteClip } of sceneryCovers) {
+      const inFront = depth > y + 0.5;
+      if (previousY !== undefined && inFront === depth > previousY + 0.5)
+        continue;
+      const visibility = inFront ? "visible" : "hidden";
+      cover.setAttribute("visibility", visibility);
+      silhouetteClip.setAttribute("visibility", visibility);
     }
+    previousY = y;
     silhouette.setAttribute("transform", `translate(${x} ${y})`);
     follow({ x: x / layout.width, y: y / layout.height });
     const flip = `scale(${facing} 1)`;
