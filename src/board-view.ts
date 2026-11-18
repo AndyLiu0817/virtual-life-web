@@ -99,14 +99,19 @@ export function boardView(
             .join("")}
         </g>
       </mask>
-      <mask id="pawn-occlusion" maskUnits="userSpaceOnUse" x="0" y="0" width="${layout.width}" height="${layout.height}" mask-type="alpha">
+      <filter id="pawn-silhouette-ink" color-interpolation-filters="sRGB" x="-15%" y="-15%" width="130%" height="130%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation=".36" result="soft-alpha"/>
+        <feFlood flood-color="#d3f4fa" flood-opacity=".46" result="ink"/>
+        <feComposite in="ink" in2="soft-alpha" operator="in"/>
+      </filter>
+      <clipPath id="pawn-occlusion" clipPathUnits="userSpaceOnUse">
         ${scenery
           .map(
             ({ id }) =>
               `<use data-mask-depth="${id}" href="#scenery-outline-${id}" visibility="hidden"/>`,
           )
           .join("")}
-      </mask>
+      </clipPath>
     </defs>
     <g class="board-depth">
     ${layers
@@ -127,8 +132,8 @@ export function boardView(
         })
         .join("")}
     </g></g>
-    <g mask="url(#pawn-occlusion)" aria-hidden="true">
-      <use class="pawn-silhouette"/>
+    <g clip-path="url(#pawn-occlusion)" aria-hidden="true">
+      <use class="pawn-silhouette" filter="url(#pawn-silhouette-ink)"/>
     </g>
     ${
       debug
@@ -189,8 +194,7 @@ export function boardView(
     if (ahead !== occluder) {
       depth.insertBefore(pawn, ahead);
       occluder = ahead;
-      // The same crop shapes mask the ghost, and only objects in front can
-      // reveal it. The normal pawn remains in the sorted scene.
+      // Clip the tinted sprite to the same outlines that cover the regular pawn.
       scenery.forEach((object, index) =>
         maskShapes[index].setAttribute(
           "visibility",

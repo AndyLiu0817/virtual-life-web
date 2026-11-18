@@ -181,8 +181,6 @@
 }
 
 .pawn-silhouette {
-  filter: brightness(0) invert(1) drop-shadow(0 0 1.2px #23536c);
-  opacity: 0.48;
   pointer-events: none;
 }
 
