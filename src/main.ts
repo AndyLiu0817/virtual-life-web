@@ -1,3 +1,4 @@
+import { showJuniorBoard } from "./junior-board";
 import { assets, preloadOpening } from "./assets";
 import {
   BLOOD_TYPES,
@@ -260,6 +261,15 @@ function confirmOpening(profile: Profile) {
 }
 
 function board(save: Save, message = "") {
+  if (save.stage === "junior") {
+    showJuniorBoard(app, save, message, {
+      autoSave: (updated) => slots.write(0, updated),
+      manualSave: (updated) => selectSlot("write", updated),
+      exportSave: download,
+      home: title,
+    });
+    return;
+  }
   panel(
     "國中棋盤（下一步製作中）",
     `${character(save, "junior")}
