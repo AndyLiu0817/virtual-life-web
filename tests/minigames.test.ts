@@ -140,3 +140,27 @@ test("each arithmetic problem offers exactly one correct answer", () => {
     }
   }
 });
+
+test("arithmetic answers are spread uniformly across the four sorted positions", () => {
+  let seed = 0x8b633e64;
+  const random = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  };
+  const ranks = [0, 0, 0, 0];
+  const count = 4000;
+  for (let i = 0; i < count; i++) {
+    const { answer, options } = mathQuestion(random);
+    const sorted = [...options].sort((a, b) => a - b);
+    expect(options).toHaveLength(4);
+    expect(new Set(options).size).toBe(4);
+    expect(sorted[0]).toBeGreaterThanOrEqual(0);
+    expect(sorted[3] - sorted[0]).toBeGreaterThan(3);
+    expect(options.filter((option) => option === answer)).toHaveLength(1);
+    ranks[sorted.indexOf(answer)]++;
+  }
+  for (const rank of ranks) {
+    expect(rank / count).toBeGreaterThan(0.22);
+    expect(rank / count).toBeLessThan(0.28);
+  }
+});

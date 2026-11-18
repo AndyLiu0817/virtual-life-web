@@ -108,11 +108,34 @@ export function memoryDeck(random = Math.random) {
 export function mathQuestion(random = Math.random) {
   const integer = (max: number) => 1 + Math.floor(random() * max);
   const operation = integer(3);
-  const a = integer(operation === 3 ? 9 : 20);
-  const b = integer(operation === 2 ? a : operation === 3 ? 9 : 20);
+  // A minimum answer of 4 leaves room for three lower choices with a gap.
+  const a =
+    operation === 2 ? 4 + integer(16) : 1 + integer(operation === 3 ? 8 : 19);
+  const b =
+    operation === 2 ? integer(a - 4) : 1 + integer(operation === 3 ? 8 : 19);
   const answer = operation === 1 ? a + b : operation === 2 ? a - b : a * b;
-  const first = Math.max(0, answer - 2);
-  const options = Array.from({ length: 4 }, (_, i) => first + i);
+  const lowerCount = integer(4) - 1;
+  const upperCount = 3 - lowerCount;
+  const lower = shuffle(
+    Array.from({ length: Math.min(answer, 10) }, (_, i) => answer - i - 1),
+    random,
+  );
+  const upper = shuffle(
+    Array.from({ length: 10 }, (_, i) => answer + i + 1),
+    random,
+  );
+  // Reserve one wrong answer at least four away so the set always has a gap.
+  const gapSide = upperCount > 0 ? upper : lower;
+  const [gap] = gapSide.splice(
+    gapSide.findIndex((option) => Math.abs(option - answer) >= 4),
+    1,
+  );
+  const options = [
+    answer,
+    gap,
+    ...lower.slice(0, lowerCount - Number(gapSide === lower)),
+    ...upper.slice(0, upperCount - Number(gapSide === upper)),
+  ];
   return {
     prompt: `${a} ${["＋", "−", "×"][operation - 1]} ${b} ＝ ?`,
     answer,
