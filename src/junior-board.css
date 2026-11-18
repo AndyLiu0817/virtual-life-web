@@ -16,7 +16,6 @@
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 8px 24px #101f25a0;
-  --tile-width: var(--tile-landscape);
 }
 
 .board-map picture {
@@ -27,26 +26,45 @@
   object-fit: fill;
 }
 
-.board-map .board-piece {
+.board-track {
   position: absolute;
-  left: var(--x-landscape);
-  top: var(--y-landscape);
-  width: var(--tile-width);
-  height: auto;
-  object-fit: contain;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
-.board-tile {
-  filter: drop-shadow(0 2px 2px #160f0c66);
+.paver-shadow {
+  fill: #46372a;
+  opacity: 0.32;
 }
-.board-map .board-pawn {
-  z-index: 1;
-  width: calc(var(--tile-width) * 1.35);
-  transform: translate(-50%, -88%);
-  filter: drop-shadow(0 2px 2px #121c1d99);
-  transition:
-    top 210ms ease,
-    left 210ms ease;
+.paver-side {
+  filter: brightness(0.76);
+}
+.paver-top {
+  stroke: #fff7e0a0;
+  stroke-width: 0.8;
+}
+.board-tile[data-kind="fork"] .paver-top {
+  stroke: none;
+}
+.pawn-shadow {
+  fill: #282621;
+}
+.path-debug path {
+  fill: none;
+  stroke: #f02c7c;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+.path-debug circle {
+  fill: #f02c7c;
+}
+.path-debug text {
+  fill: white;
+  font: bold 13px sans-serif;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #271128;
+  stroke-width: 3px;
 }
 
 .board-controls {
@@ -145,11 +163,6 @@
   .board-map.backdrop {
     width: min(100%, max(240px, 33dvh), 440px);
     aspect-ratio: 9 / 16;
-    --tile-width: var(--tile-portrait);
-  }
-  .board-map .board-piece {
-    left: var(--x-portrait);
-    top: var(--y-portrait);
   }
   .board-controls {
     width: min(100%, 440px);
@@ -160,10 +173,5 @@
   }
   .board-status > div:last-child {
     grid-column: auto;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .board-map .board-pawn.walking {
-    transition: none;
   }
 }

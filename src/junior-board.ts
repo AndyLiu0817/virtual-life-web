@@ -1,9 +1,7 @@
 import { assets } from "./assets";
-import {
-  juniorBoard as board,
-  tileLabels,
-  type Orientation,
-} from "./data/junior";
+import { juniorBoard as board, tileLabels } from "./data/junior";
+import { boardView } from "./board-view";
+import type { Orientation } from "./data/board-layout";
 import {
   beforeRoll,
   diceCount,
@@ -17,12 +15,6 @@ import { STAT_LABELS, type Stat } from "./game/opening";
 import type { Save } from "./game/saves";
 import "./junior-board.css";
 
-const sprites = import.meta.glob<string>("./board-art/*.webp", {
-  eager: true,
-  query: "?url",
-  import: "default",
-});
-const sprite = (name: string) => sprites[`./board-art/${name}.webp`];
 const stepsByTile = {
   event: 3,
   game: 6,
@@ -33,16 +25,6 @@ const stepsByTile = {
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
-
-function position(tile: number) {
-  return (["landscape", "portrait"] as const)
-    .map((orientation: Orientation) => {
-      const { width, height } = board.layouts[orientation];
-      const [x, y] = board.tiles[tile][orientation];
-      return `--x-${orientation}:${(x / width) * 100}%;--y-${orientation}:${(y / height) * 100}%`;
-    })
-    .join(";");
 }
 
 interface BoardActions {
@@ -61,11 +43,9 @@ export function showJuniorBoard(
   let save = initial;
   const { portrait, landscape } = assets.junior;
   app.innerHTML = `<main class="stage junior">
-    <div class="board-map backdrop" role="group" aria-label="國中地圖"
-      style="--tile-landscape:${(board.layouts.landscape.tileWidth / board.layouts.landscape.width) * 100}%;--tile-portrait:${(board.layouts.portrait.tileWidth / board.layouts.portrait.width) * 100}%">
+    <div class="board-map backdrop" role="group" aria-label="國中地圖">
       <picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
-      ${board.tiles.map(({ kind }, index) => `<img class="board-piece board-tile" data-tile="${index}" style="${position(index)}" src="${sprite(kind)}" alt="${tileLabels[kind]}">`).join("")}
-      <img class="board-piece board-pawn" alt="${save.gender === "boy" ? "男主角棋子" : "女主角棋子"}">
+      <svg class="board-track" preserveAspectRatio="none"></svg>
     </div>
     <section class="board-controls">
       <header><h1 tabindex="-1">國中棋盤</h1><h2 id="character-name"></h2></header>
@@ -89,7 +69,37 @@ export function showJuniorBoard(
   </main>`;
   const find = <T extends HTMLElement>(selector: string) =>
     app.querySelector<T>(selector)!;
-  const pawn = find<HTMLImageElement>(".board-pawn");
+  const track = app.querySelector<SVGSVGElement>(".board-track")!;
+  const artwork = find<HTMLImageElement>(".board-map img");
+  const media = matchMedia("(orientation: portrait)");
+  const debug = new URLSearchParams(location.search).get("debug") === "path";
+  let orientation: Orientation = media.matches ? "portrait" : "landscape";
+  let view = boardView(
+    track,
+    board.layouts[orientation],
+    board.tiles,
+    save.gender,
+    debug,
+  );
+  let facing = 1;
+  let stride = false;
+  let landed = save.boardTile;
+  let pose: "stand" | "win" = "stand";
+
+  artwork.addEventListener("load", () => {
+    const next = media.matches ? "portrait" : "landscape";
+    if (next === orientation) return;
+    orientation = next;
+    view = boardView(
+      track,
+      board.layouts[orientation],
+      board.tiles,
+      save.gender,
+      debug,
+    );
+    view.place(landed, pose, facing);
+  });
+
   const dialog = find<HTMLDialogElement>("dialog");
   const roll = find<HTMLButtonElement>("#roll");
   const dice = find(".dice");
@@ -126,15 +136,28 @@ export function showJuniorBoard(
       .join("");
   }
 
-  function placePawn(pose: "stand" | "left" | "right" | "win") {
-    pawn.classList.toggle("walking", pose === "left" || pose === "right");
-    pawn.style.cssText = position(save.boardTile);
-    pawn.src = sprite(`${save.gender}-${pose}`);
-    pawn.dataset.tile = String(save.boardTile);
-    pawn.setAttribute(
-      "aria-label",
-      `${pawn.alt}，位於第 ${save.boardTile + 1} 格${tileLabels[board.tiles[save.boardTile].kind]}`,
-    );
+  function placePawn(nextPose: "stand" | "win") {
+    pose = nextPose;
+    landed = save.boardTile;
+    view.place(landed, pose, facing);
+  }
+
+  async function animateStep(from: number, to: number) {
+    stride = !stride;
+    if (!reducedMotion) {
+      await new Promise<void>((resolve) => {
+        let started: number | undefined;
+        function frame(now: number) {
+          started ??= now;
+          const progress = Math.min(1, (now - started) / 300);
+          facing = view.step(from, to, progress, facing, stride);
+          if (progress < 1) requestAnimationFrame(frame);
+          else resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+    placePawn("stand");
   }
 
   function prompt(title: string, detail = "", choices = ["確定"]) {
@@ -205,14 +228,12 @@ export function showJuniorBoard(
     total.textContent = `共 ${steps} 點`;
 
     await chooseRoute(steps);
-    let left = true;
     while (steps > 0) {
+      const from = save.boardTile;
       const move = walkStep(board, save, steps);
       save = move.save;
       steps = move.steps;
-      placePawn(left ? "left" : "right");
-      left = !left;
-      if (!reducedMotion) await delay(220);
+      await animateStep(from, save.boardTile);
       status();
       if (move.reward) {
         placePawn("win");

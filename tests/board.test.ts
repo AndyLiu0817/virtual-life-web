@@ -38,16 +38,25 @@ it("國中兩版共用 18 格及指定種類", () => {
       "fork",
     ].sort(),
   );
-  for (const tile of board.tiles) {
-    for (const orientation of ["landscape", "portrait"] as const) {
-      const [x, y] = tile[orientation];
-      const { width, height } = board.layouts[orientation];
-      expect(x).toBeGreaterThan(0);
-      expect(x).toBeLessThan(width);
-      expect(y).toBeGreaterThan(0);
-      expect(y).toBeLessThan(height);
+  for (const layout of Object.values(board.layouts)) {
+    const connected = new Set<string>();
+    const ids = new Set<number>();
+    for (const { tiles } of layout.tracks) {
+      tiles.forEach((id, index) => {
+        ids.add(id);
+        if (index === 0) return;
+        const previous = tiles[index - 1];
+        connected.add(`${previous}:${id}`);
+        connected.add(`${id}:${previous}`);
+      });
     }
-    expect(tile.next.every((id) => board.tiles[id])).toBe(true);
+    expect([...ids].sort((a, b) => a - b)).toEqual(
+      board.tiles.map((_, id) => id),
+    );
+    board.tiles.forEach(({ next }, id) => {
+      for (const target of next)
+        expect(connected.has(`${id}:${target}`)).toBe(true);
+    });
   }
 });
 

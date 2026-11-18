@@ -143,3 +143,76 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
     page.getByText("國中階段結束，升學考試第 4 步製作中"),
   ).toBeVisible();
 });
+
+test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) => {
+  await page.setViewportSize({ width: 1060, height: 650 });
+  await page.addInitScript(() => {
+    Math.random = () => 0.1; // 兩顆骰子各擲出 1。
+  });
+  await page.goto("/?debug=path");
+  await page.getByRole("button", { name: "開始新人生" }).click();
+  await page.getByLabel("名字").fill("小宇");
+  await page.getByRole("button", { name: "查看開局結果" }).click();
+  await page.getByRole("button", { name: "確認開局" }).click();
+
+  const track = page.locator(".board-track");
+  await expect(track.locator(".path-debug path")).toHaveCount(3);
+  await expect(track.locator(".path-debug text")).toHaveCount(18);
+  await expect(track.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
+
+  const trace = await page.evaluateHandle(() => {
+    const pawn = document.querySelector(".board-pawn")!;
+    const landings: string[] = [];
+    const airborne = new Set<string>();
+    new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.attributeName === "data-tile") {
+          landings.push(pawn.getAttribute("data-tile")!);
+        } else if (record.target instanceof SVGImageElement) {
+          const transform = record.target.getAttribute("transform");
+          if (transform?.startsWith("translate(0 -")) {
+            airborne.add(record.target.dataset.pose!);
+          }
+        }
+      }
+    }).observe(pawn, { subtree: true, attributes: true });
+    return { landings, airborne };
+  });
+
+  await page.getByRole("button", { name: "擲骰" }).click();
+  await expect(page.getByRole("dialog")).toContainText("遊戲：第 6 步製作中");
+  expect(await trace.evaluate(({ landings }) => landings)).toEqual(["1", "2"]);
+  expect(await trace.evaluate(({ airborne }) => [...airborne])).toEqual([
+    "left",
+    "right",
+  ]);
+
+  async function checkLanding(viewBox: string) {
+    await expect(track).toHaveAttribute("viewBox", viewBox);
+    const aligned = await track.evaluate((svg) => {
+      const label = [...svg.querySelectorAll(".path-debug text")].find(
+        (node) => node.textContent === "2",
+      )!;
+      const shadow = svg.querySelector(".pawn-shadow")!;
+      const marker = label.previousElementSibling!;
+      const contact = shadow.getBoundingClientRect();
+      const center = marker.getBoundingClientRect();
+      return (
+        Math.abs(contact.x + contact.width / 2 - center.x - center.width / 2) <
+          1 &&
+        Math.abs(
+          contact.y + contact.height / 2 - center.y - center.height / 2,
+        ) < 1
+      );
+    });
+    expect(aligned).toBe(true);
+  }
+
+  await checkLanding("0 0 780 439");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await checkLanding("0 0 439 780");
+  await expect(track.locator('[data-pose="stand"]')).toHaveAttribute(
+    "visibility",
+    "visible",
+  );
+});
