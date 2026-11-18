@@ -180,6 +180,8 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await page.clock.pauseAt(new Date(Date.now() + 1_000));
   const trace = await page.evaluateHandle(() => {
     const pawn = document.querySelector(".board-pawn")!;
+    const tiles = [...document.querySelectorAll(".board-tile")];
+    const coveredPoses: string[] = [];
     const landings: string[] = [];
     const frames = new Map<string, Set<string>>();
     new MutationObserver((records) => {
@@ -192,12 +194,20 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
         'image[visibility="visible"]',
       )!;
       const pose = image.dataset.pose!;
+      if (
+        tiles.some(
+          (tile) =>
+            tile.compareDocumentPosition(pawn) &
+            Node.DOCUMENT_POSITION_PRECEDING,
+        )
+      )
+        coveredPoses.push(pose);
       if (pose === "stand") return;
       const tile = pawn.getAttribute("data-tile")!;
       if (!frames.has(tile)) frames.set(tile, new Set());
       frames.get(tile)!.add(`${pose}:${image.getAttribute("transform")}`);
     }).observe(pawn, { subtree: true, attributes: true });
-    return { landings, frames };
+    return { landings, frames, coveredPoses };
   });
 
   await page
@@ -207,6 +217,7 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await page.clock.resume();
   await expect(page.getByRole("dialog")).toContainText("遊戲：第 6 步製作中");
   expect(await trace.evaluate(({ landings }) => landings)).toEqual(["1", "2"]);
+  expect(await trace.evaluate(({ coveredPoses }) => coveredPoses)).toEqual([]);
   const leftWalk = Array.from(
     { length: 8 },
     (_, index) => `front-${index + 1}:scale(-1 1)`,
@@ -223,11 +234,17 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
       const label = [...svg.querySelectorAll(".path-debug text")].find(
         (node) => node.textContent === "2",
       )!;
-      const shadow = svg.querySelector(".pawn-shadow")!;
+      const pawn = svg.querySelector(".board-pawn")!;
+      const base = pawn.querySelector(".pawn-base")!;
+      const aboveTiles = [...svg.querySelectorAll(".board-tile")].every(
+        (tile) =>
+          tile.compareDocumentPosition(pawn) & Node.DOCUMENT_POSITION_FOLLOWING,
+      );
       const marker = label.previousElementSibling!;
-      const contact = shadow.getBoundingClientRect();
+      const contact = base.getBoundingClientRect();
       const center = marker.getBoundingClientRect();
       return (
+        aboveTiles &&
         Math.abs(contact.x + contact.width / 2 - center.x - center.width / 2) <
           1 &&
         Math.abs(
@@ -357,15 +374,9 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
     "href",
     "#pawn-pose-stand",
   );
-  expect(
-    await library.evaluate((building) =>
-      Boolean(
-        building.compareDocumentPosition(
-          building.parentElement!.querySelector(".board-pawn")!,
-        ) & Node.DOCUMENT_POSITION_PRECEDING,
-      ),
-    ),
-  ).toBe(true);
+  await expect(
+    track.locator(`#pawn-visible [data-pawn-cover="${libraryId}"]`),
+  ).toHaveAttribute("visibility", "visible");
   await toggle.check();
 
   async function checkTilePrints() {
