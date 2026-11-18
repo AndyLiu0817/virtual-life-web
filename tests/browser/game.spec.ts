@@ -230,18 +230,19 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
 
   async function checkLanding(viewBox: string) {
     await expect(track).toHaveAttribute("viewBox", viewBox);
+    await expect(track.locator(".pawn-base, #pawn-base-glow")).toHaveCount(0);
     const aligned = await track.evaluate((svg) => {
       const label = [...svg.querySelectorAll(".path-debug text")].find(
         (node) => node.textContent === "2",
       )!;
       const pawn = svg.querySelector(".board-pawn")!;
-      const base = pawn.querySelector(".pawn-base")!;
+      const shadow = pawn.querySelector(".pawn-shadow")!;
       const aboveTiles = [...svg.querySelectorAll(".board-tile")].every(
         (tile) =>
           tile.compareDocumentPosition(pawn) & Node.DOCUMENT_POSITION_FOLLOWING,
       );
       const marker = label.previousElementSibling!;
-      const contact = base.getBoundingClientRect();
+      const contact = shadow.getBoundingClientRect();
       const center = marker.getBoundingClientRect();
       return (
         aboveTiles &&

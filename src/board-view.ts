@@ -111,11 +111,6 @@ export function boardView(
             .join("")}
         </g>
       </mask>
-      <radialGradient id="pawn-base-glow">
-        <stop stop-color="#bdffff" stop-opacity=".95"/>
-        <stop offset=".52" stop-color="#64f7ff" stop-opacity=".8"/>
-        <stop offset="1" stop-color="#37ddff" stop-opacity="0"/>
-      </radialGradient>
       <filter id="pawn-silhouette-ink" color-interpolation-filters="sRGB" x="-15%" y="-15%" width="130%" height="130%">
         <feGaussianBlur in="SourceAlpha" stdDeviation=".36" result="soft-alpha"/>
         <feFlood flood-color="#d3f4fa" flood-opacity=".46" result="ink"/>
@@ -148,7 +143,6 @@ export function boardView(
     <g mask="url(#pawn-visible)">
     <g class="board-pawn" role="img">
       <ellipse class="pawn-shadow" rx="${pawnWidth * 0.37}" ry="${pawnWidth * 0.12}" opacity=".65"/>
-      <ellipse class="pawn-base" rx="${pawnWidth * 0.52}" ry="${pawnWidth * 0.19}" fill="url(#pawn-base-glow)"/>
       ${(["stand", "win"] as const)
         .map((pose) => {
           const height =
