@@ -124,24 +124,26 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
       const outer = dialog.getByRole("button", { name: /沿外圈/ });
       await expect(
         page
-          .locator("dialog:modal, #roll:enabled:visible, #ending:visible")
+          .locator(
+            "dialog:modal, #roll:enabled:visible, .assessment-screen:visible",
+          )
           .first(),
       ).toBeVisible();
-      if (await outer.isVisible()) await outer.click();
+      const option = page
+        .locator(".assessment-dialog .assessment-option")
+        .first();
+      if (await option.isVisible()) await option.click();
+      else if (await outer.isVisible()) await outer.click();
       else if (await confirm.isVisible()) await confirm.click();
       else break;
     }
   }
-  await expect(
-    page.getByText("國中階段結束，升學考試第 4 步製作中"),
-  ).toBeVisible();
-  await expect(roll).toBeHidden();
-  await page.getByRole("button", { name: "回標題" }).click();
+  await expect(page.getByRole("heading", { name: "升高中考試" })).toBeVisible();
+  await expect(roll).toHaveCount(0);
+  await page.reload();
   await page.getByRole("button", { name: "繼續遊戲" }).click();
   await page.locator("#use-0").click();
-  await expect(
-    page.getByText("國中階段結束，升學考試第 4 步製作中"),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "升高中考試" })).toBeVisible();
 });
 
 test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) => {

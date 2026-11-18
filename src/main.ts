@@ -21,6 +21,10 @@ import {
   SLOT_NAMES,
   type Save,
 } from "./game/saves";
+import { juniorBoard } from "./data/junior";
+import { stageFinished } from "./game/board";
+import { passesExam, scoreAttempt, startAssessment } from "./game/questions";
+import { resultScene, scoreText, showAssessment } from "./exam-view";
 import "./style.css";
 
 const app = document.querySelector<HTMLElement>("#app")!;
@@ -261,12 +265,21 @@ function confirmOpening(profile: Profile) {
 }
 
 function board(save: Save, message = "") {
+  if (
+    save.examResultPending ||
+    save.stage === "earlyExit" ||
+    save.stage === "high"
+  ) {
+    return schoolResult(save, message);
+  }
   if (save.stage === "junior") {
+    if (stageFinished(juniorBoard, save)) return entranceExam(save);
     showJuniorBoard(app, save, message, {
       autoSave: (updated) => slots.write(0, updated),
       manualSave: (updated) => selectSlot("write", updated),
       exportSave: download,
       home: title,
+      entrance: entranceExam,
     });
     return;
   }
@@ -281,6 +294,100 @@ function board(save: Save, message = "") {
   action("save", () => selectSlot("write", save));
   action("export", () => download(save));
   action("home", title);
+}
+
+function persistExam(save: Save) {
+  try {
+    slots.write(0, save);
+    return "";
+  } catch {
+    return "無法自動存檔，請確認瀏覽器允許儲存網站資料。";
+  }
+}
+
+function entranceExam(save: Save) {
+  const attempt =
+    save.entranceAttempt ??
+    startAssessment("highEntrance", save.seenQuestionIds);
+  const inProgress = { ...save, entranceAttempt: attempt };
+  show('<main class="stage assessment-screen"></main>', false);
+  function persistProgress() {
+    const warning = element(".assessment-save");
+    warning.textContent = persistExam({
+      ...inProgress,
+      updatedAt: new Date().toISOString(),
+    });
+    warning.hidden = !warning.textContent;
+  }
+  showAssessment(
+    element("main"),
+    attempt,
+    save.stats.intellect,
+    persistProgress,
+    () => {
+      const correct = scoreAttempt(attempt);
+      const completed: Save = {
+        ...save,
+        education: "junior",
+        stage: passesExam(correct) ? "high" : "earlyExit",
+        updatedAt: new Date().toISOString(),
+        entranceAttempt: null,
+        examResultPending: true,
+        exams: [...save.exams, { id: "highEntrance", correct }],
+        seenQuestionIds: [
+          ...new Set([
+            ...save.seenQuestionIds,
+            ...attempt.items.map(({ id }) => id),
+          ]),
+        ],
+      };
+      schoolResult(completed, persistExam(completed));
+    },
+  );
+  persistProgress();
+}
+
+function schoolResult(save: Save, message: string) {
+  const exam = save.exams.find(({ id }) => id === "highEntrance");
+  const passed = save.stage === "high";
+  if (save.examResultPending && exam) {
+    show(
+      resultScene(
+        "升高中考試放榜",
+        `
+      <h2>${passed ? "錄取！" : "未錄取"}</h2>
+      <p>${scoreText(exam.correct)}</p>
+      <div class="actions">${button("continue-result", passed ? "前往高中篇" : "查看結局")}</div>
+    `,
+        passed,
+      ),
+    );
+    action("continue-result", () => {
+      const acknowledged = {
+        ...save,
+        examResultPending: false,
+        updatedAt: new Date().toISOString(),
+      };
+      schoolResult(acknowledged, persistExam(acknowledged));
+    });
+  } else {
+    show(
+      resultScene(
+        passed ? "高中篇準備中" : "提前出社會",
+        `
+      <p>${passed ? "恭喜國中畢業，順利升上高中！新校園正在準備，這段旅程已為你留在存檔裡。" : "制服先收進衣櫃，鬧鐘還得留著。下一站是職場，從第一份工作慢慢練等吧。"}</p>
+      <p>學歷・國中畢業</p>
+      ${exam ? `<p>${scoreText(exam.correct)}</p>` : ""}
+      <div class="actions">${button("save", "儲存到存檔格")}${button("export", "匯出存檔")}${button("home", "回標題")}</div>
+    `,
+        passed,
+      ),
+    );
+    action("save", () => selectSlot("write", save));
+    action("export", () => download(save));
+    action("home", title);
+  }
+  element("#notice").textContent = message;
 }
 
 function download(save: Save) {

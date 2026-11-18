@@ -72,3 +72,11 @@ it("自動存檔與三個手動格各自儲存並可跨實例讀取", () => {
   ]);
   expect(() => writer.write(4, save)).toThrow("找不到存檔格");
 });
+
+it("舊存檔可匯入並補上考試欄位", () => {
+  const legacy = JSON.parse(exportSave(save));
+  delete legacy.seenQuestionIds;
+  delete legacy.entranceAttempt;
+  delete legacy.examResultPending;
+  expect(importSave(JSON.stringify(legacy))).toEqual(save);
+});

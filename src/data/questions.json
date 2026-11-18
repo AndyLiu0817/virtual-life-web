@@ -1,0 +1,1442 @@
+[
+  {
+    "id": "life-01",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "在公車上看到站不穩的乘客，哪種做法能直接讓他有地方坐？",
+    "options": [
+      {
+        "text": "拉開車窗",
+        "correct": false
+      },
+      {
+        "text": "主動讓座",
+        "correct": true
+      },
+      {
+        "text": "提高音量",
+        "correct": false
+      },
+      {
+        "text": "走到車門口",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-02",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "用肥皂洗手後，下一步通常要做什麼？",
+    "options": [
+      {
+        "text": "用衣袖抹掉泡沫",
+        "correct": false
+      },
+      {
+        "text": "再擦一層油",
+        "correct": false
+      },
+      {
+        "text": "用清水沖掉泡沫",
+        "correct": true
+      },
+      {
+        "text": "把泡沫留在手上",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-03",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "哪個做法能讓冰塊在同一個房間裡融得最慢？",
+    "options": [
+      {
+        "text": "攤在金屬盤上",
+        "correct": false
+      },
+      {
+        "text": "浸在溫水裡",
+        "correct": false
+      },
+      {
+        "text": "放在電暖器旁",
+        "correct": false
+      },
+      {
+        "text": "放進隔熱保冷袋",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "life-04",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "晚上騎腳踏車，哪樣物品能主動發光讓前方的人看見你？",
+    "options": [
+      {
+        "text": "白色前燈",
+        "correct": true
+      },
+      {
+        "text": "黑色車鈴",
+        "correct": false
+      },
+      {
+        "text": "透明水壺",
+        "correct": false
+      },
+      {
+        "text": "深色手套",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-05",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "在臺灣看到食品標示「冷藏」，家裡應放在哪裡？",
+    "options": [
+      {
+        "text": "廚房常溫櫃",
+        "correct": false
+      },
+      {
+        "text": "冰箱冷藏室",
+        "correct": true
+      },
+      {
+        "text": "烤箱",
+        "correct": false
+      },
+      {
+        "text": "陽臺",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-06",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "刷牙時關掉水龍頭，直接省下的是什麼？",
+    "options": [
+      {
+        "text": "天然氣",
+        "correct": false
+      },
+      {
+        "text": "衛生紙",
+        "correct": false
+      },
+      {
+        "text": "自來水",
+        "correct": true
+      },
+      {
+        "text": "電池",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-07",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "乾燥天氣裡，哪種晾法通常能讓濕毛巾乾得較快？",
+    "options": [
+      {
+        "text": "捲緊塞進塑膠袋",
+        "correct": false
+      },
+      {
+        "text": "折成厚疊放在抽屜",
+        "correct": false
+      },
+      {
+        "text": "和濕衣物堆在桶底",
+        "correct": false
+      },
+      {
+        "text": "攤開掛在通風處",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "life-08",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "收到聲稱中獎而要求輸入網銀密碼的陌生簡訊，哪個做法最妥當？",
+    "options": [
+      {
+        "text": "避開簡訊連結並向官方管道查證",
+        "correct": true
+      },
+      {
+        "text": "先輸入密碼測試",
+        "correct": false
+      },
+      {
+        "text": "轉寄給同學填寫",
+        "correct": false
+      },
+      {
+        "text": "把簡訊中的電話當成官方電話",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-09",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "朋友對花生嚴重過敏，替他買包裝點心時應優先看哪一項？",
+    "options": [
+      {
+        "text": "包裝底色",
+        "correct": false
+      },
+      {
+        "text": "過敏原標示",
+        "correct": true
+      },
+      {
+        "text": "廣告代言人",
+        "correct": false
+      },
+      {
+        "text": "條碼長度",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-10",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "兩瓶相同果汁分別是 500 毫升 40 元與 750 毫升 54 元。以每毫升價格比較，哪瓶較便宜？",
+    "options": [
+      {
+        "text": "500 毫升那瓶",
+        "correct": false
+      },
+      {
+        "text": "兩瓶單價相同",
+        "correct": false
+      },
+      {
+        "text": "750 毫升那瓶",
+        "correct": true
+      },
+      {
+        "text": "單憑這些資料無法比較",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "life-11",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "標示為 60 瓦的電器，若以此功率連續運轉 5 小時，耗電幾度？",
+    "options": [
+      {
+        "text": "0.03 度",
+        "correct": false
+      },
+      {
+        "text": "3 度",
+        "correct": false
+      },
+      {
+        "text": "300 度",
+        "correct": false
+      },
+      {
+        "text": "0.3 度",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "life-12",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "原本設定六人份的食譜需 240 克麵粉。改做四人份並維持比例，要用幾克？",
+    "options": [
+      {
+        "text": "160 克",
+        "correct": true
+      },
+      {
+        "text": "120 克",
+        "correct": false
+      },
+      {
+        "text": "180 克",
+        "correct": false
+      },
+      {
+        "text": "360 克",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-01",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "日月潭位於哪個縣市？",
+    "options": [
+      {
+        "text": "南投縣",
+        "correct": true
+      },
+      {
+        "text": "新竹縣",
+        "correct": false
+      },
+      {
+        "text": "屏東縣",
+        "correct": false
+      },
+      {
+        "text": "基隆市",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-02",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "臺灣本島東側面向哪片大洋？",
+    "options": [
+      {
+        "text": "大西洋",
+        "correct": false
+      },
+      {
+        "text": "太平洋",
+        "correct": true
+      },
+      {
+        "text": "印度洋",
+        "correct": false
+      },
+      {
+        "text": "北極洋",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-03",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "哪個縣市位於臺灣本島最南端？",
+    "options": [
+      {
+        "text": "嘉義縣",
+        "correct": false
+      },
+      {
+        "text": "苗栗縣",
+        "correct": false
+      },
+      {
+        "text": "屏東縣",
+        "correct": true
+      },
+      {
+        "text": "宜蘭縣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-04",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "臺灣海峽介於臺灣本島和哪塊陸地之間？",
+    "options": [
+      {
+        "text": "日本本州",
+        "correct": false
+      },
+      {
+        "text": "朝鮮半島",
+        "correct": false
+      },
+      {
+        "text": "澳洲",
+        "correct": false
+      },
+      {
+        "text": "中國大陸",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "geo-05",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "早期政權在臺南建造、曾稱熱蘭遮城的古蹟，今天俗稱什麼？",
+    "options": [
+      {
+        "text": "安平古堡",
+        "correct": true
+      },
+      {
+        "text": "億載金城",
+        "correct": false
+      },
+      {
+        "text": "赤崁樓",
+        "correct": false
+      },
+      {
+        "text": "打狗英國領事館",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-06",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "金字塔群與尼羅河流域的哪個古文明關係最密切？",
+    "options": [
+      {
+        "text": "古希臘",
+        "correct": false
+      },
+      {
+        "text": "古埃及",
+        "correct": true
+      },
+      {
+        "text": "古羅馬",
+        "correct": false
+      },
+      {
+        "text": "馬雅",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-07",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "臺灣哪座山的主峰海拔最高？",
+    "options": [
+      {
+        "text": "雪山",
+        "correct": false
+      },
+      {
+        "text": "合歡山",
+        "correct": false
+      },
+      {
+        "text": "玉山",
+        "correct": true
+      },
+      {
+        "text": "北大武山",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-08",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "臺灣日治時期開始於哪一年？",
+    "options": [
+      {
+        "text": "1683 年",
+        "correct": false
+      },
+      {
+        "text": "1911 年",
+        "correct": false
+      },
+      {
+        "text": "1945 年",
+        "correct": false
+      },
+      {
+        "text": "1895 年",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "geo-09",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "下列哪個島嶼位在臺灣本島東南方、隸屬臺東縣，並以達悟族文化聞名？",
+    "options": [
+      {
+        "text": "蘭嶼",
+        "correct": true
+      },
+      {
+        "text": "小琉球",
+        "correct": false
+      },
+      {
+        "text": "金門",
+        "correct": false
+      },
+      {
+        "text": "七美",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-10",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "地圖比例尺為 1：50,000，圖上兩點的直線距離是 4 公分。實際直線距離是多少？",
+    "options": [
+      {
+        "text": "0.2 公里",
+        "correct": false
+      },
+      {
+        "text": "2 公里",
+        "correct": true
+      },
+      {
+        "text": "20 公里",
+        "correct": false
+      },
+      {
+        "text": "200 公里",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-11",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "臺灣本島多數河流短而坡陡，和哪項地形特色最直接相關？",
+    "options": [
+      {
+        "text": "本島沒有山脈",
+        "correct": false
+      },
+      {
+        "text": "海拔從西向東一致",
+        "correct": false
+      },
+      {
+        "text": "山地離海岸近",
+        "correct": true
+      },
+      {
+        "text": "河口大多位在高山",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "geo-12",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "17 世紀曾在臺灣北部建立據點的是哪個歐洲國家？",
+    "options": [
+      {
+        "text": "丹麥",
+        "correct": false
+      },
+      {
+        "text": "瑞典",
+        "correct": false
+      },
+      {
+        "text": "義大利",
+        "correct": false
+      },
+      {
+        "text": "西班牙",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "nature-01",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "水在標準大氣壓下結冰的溫度是幾度？",
+    "options": [
+      {
+        "text": "攝氏 10 度",
+        "correct": false
+      },
+      {
+        "text": "攝氏 50 度",
+        "correct": false
+      },
+      {
+        "text": "攝氏 100 度",
+        "correct": false
+      },
+      {
+        "text": "攝氏 0 度",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "nature-02",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "人體用哪個器官將血液打到全身？",
+    "options": [
+      {
+        "text": "心臟",
+        "correct": true
+      },
+      {
+        "text": "胃",
+        "correct": false
+      },
+      {
+        "text": "膽囊",
+        "correct": false
+      },
+      {
+        "text": "膀胱",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-03",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "月亮在夜空中看得見，主要是因為它反射了什麼？",
+    "options": [
+      {
+        "text": "地熱",
+        "correct": false
+      },
+      {
+        "text": "陽光",
+        "correct": true
+      },
+      {
+        "text": "星際電波",
+        "correct": false
+      },
+      {
+        "text": "地球磁場",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-04",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "哪一種動物屬於哺乳類？",
+    "options": [
+      {
+        "text": "鮪魚",
+        "correct": false
+      },
+      {
+        "text": "海龜",
+        "correct": false
+      },
+      {
+        "text": "海豚",
+        "correct": true
+      },
+      {
+        "text": "企鵝",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-05",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "下列哪樣物品通常會被普通磁鐵吸引？",
+    "options": [
+      {
+        "text": "木筷",
+        "correct": false
+      },
+      {
+        "text": "玻璃珠",
+        "correct": false
+      },
+      {
+        "text": "橡皮擦",
+        "correct": false
+      },
+      {
+        "text": "鐵釘",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "nature-06",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "地球上白天與黑夜交替主要是因為什麼？",
+    "options": [
+      {
+        "text": "地球自轉",
+        "correct": true
+      },
+      {
+        "text": "月球自轉",
+        "correct": false
+      },
+      {
+        "text": "太陽繞地球公轉",
+        "correct": false
+      },
+      {
+        "text": "地球體積縮小",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-07",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "植物行光合作用時，從空氣吸收哪種氣體作為原料？",
+    "options": [
+      {
+        "text": "氮氣",
+        "correct": false
+      },
+      {
+        "text": "二氧化碳",
+        "correct": true
+      },
+      {
+        "text": "氦氣",
+        "correct": false
+      },
+      {
+        "text": "氬氣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-08",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "冰水杯外壁的小水滴主要來自哪裡？",
+    "options": [
+      {
+        "text": "玻璃分解產生的水",
+        "correct": false
+      },
+      {
+        "text": "冰塊穿過杯壁",
+        "correct": false
+      },
+      {
+        "text": "杯外空氣中的水蒸氣",
+        "correct": true
+      },
+      {
+        "text": "桌面吸進杯子的水",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-09",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "紅色石蕊試紙接觸鹼性水溶液，會變成什麼顏色？",
+    "options": [
+      {
+        "text": "黃色",
+        "correct": false
+      },
+      {
+        "text": "綠色",
+        "correct": false
+      },
+      {
+        "text": "黑色",
+        "correct": false
+      },
+      {
+        "text": "藍色",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "nature-10",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "地震規模用來描述哪一件事？",
+    "options": [
+      {
+        "text": "地震釋放能量的大小",
+        "correct": true
+      },
+      {
+        "text": "某縣市搖晃的強弱",
+        "correct": false
+      },
+      {
+        "text": "地震後停電的戶數",
+        "correct": false
+      },
+      {
+        "text": "海嘯抵達的時間",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-11",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "忽略表面張力且物體不吸水時，哪一種固體放入純水後會浮在水面？",
+    "options": [
+      {
+        "text": "平均密度大於水的那種",
+        "correct": false
+      },
+      {
+        "text": "平均密度小於水的那種",
+        "correct": true
+      },
+      {
+        "text": "只知道體積很小的那種",
+        "correct": false
+      },
+      {
+        "text": "只知道溫度較低的那種",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "nature-12",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "在忽略空氣阻力的情況下，同一高度同時從靜止放手的重球和輕球，誰先落地？",
+    "options": [
+      {
+        "text": "重球先",
+        "correct": false
+      },
+      {
+        "text": "輕球先",
+        "correct": false
+      },
+      {
+        "text": "同時落地",
+        "correct": true
+      },
+      {
+        "text": "兩球都不會落地",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-01",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "有 28 枝筆，平均分給 7 人，每人得到幾枝？",
+    "options": [
+      {
+        "text": "3 枝",
+        "correct": false
+      },
+      {
+        "text": "4 枝",
+        "correct": true
+      },
+      {
+        "text": "5 枝",
+        "correct": false
+      },
+      {
+        "text": "7 枝",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-02",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "下午 2 點 35 分開始打球，打了 40 分鐘。幾點結束？",
+    "options": [
+      {
+        "text": "下午 3 點 5 分",
+        "correct": false
+      },
+      {
+        "text": "下午 3 點 25 分",
+        "correct": false
+      },
+      {
+        "text": "下午 3 點 15 分",
+        "correct": true
+      },
+      {
+        "text": "下午 2 點 55 分",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-03",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "哪一個分數等於 0.25？",
+    "options": [
+      {
+        "text": "1／2",
+        "correct": false
+      },
+      {
+        "text": "2／5",
+        "correct": false
+      },
+      {
+        "text": "3／4",
+        "correct": false
+      },
+      {
+        "text": "1／4",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "math-04",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "一個長 8 公分、寬 3 公分的長方形，周長是多少？",
+    "options": [
+      {
+        "text": "22 公分",
+        "correct": true
+      },
+      {
+        "text": "11 公分",
+        "correct": false
+      },
+      {
+        "text": "24 公分",
+        "correct": false
+      },
+      {
+        "text": "48 公分",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-05",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "正數 9 與負數 −4 相加，結果是多少？",
+    "options": [
+      {
+        "text": "−5",
+        "correct": false
+      },
+      {
+        "text": "5",
+        "correct": true
+      },
+      {
+        "text": "13",
+        "correct": false
+      },
+      {
+        "text": "−13",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-06",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "每瓶水 600 毫升，三瓶合計有幾公升？",
+    "options": [
+      {
+        "text": "0.18 公升",
+        "correct": false
+      },
+      {
+        "text": "6 公升",
+        "correct": false
+      },
+      {
+        "text": "1.8 公升",
+        "correct": true
+      },
+      {
+        "text": "18 公升",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-07",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "書原價 250 元，打八折後要付多少？",
+    "options": [
+      {
+        "text": "175 元",
+        "correct": false
+      },
+      {
+        "text": "220 元",
+        "correct": false
+      },
+      {
+        "text": "242 元",
+        "correct": false
+      },
+      {
+        "text": "200 元",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "math-08",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "袋中有 3 顆紅球和 2 顆藍球，球除了顏色都一樣。隨機抽一顆抽中藍球的機率是多少？",
+    "options": [
+      {
+        "text": "2／5",
+        "correct": true
+      },
+      {
+        "text": "1／5",
+        "correct": false
+      },
+      {
+        "text": "1／2",
+        "correct": false
+      },
+      {
+        "text": "3／5",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-09",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "一個三角形的兩個內角分別是 48 度和 67 度。第三個內角是多少？",
+    "options": [
+      {
+        "text": "55 度",
+        "correct": false
+      },
+      {
+        "text": "65 度",
+        "correct": true
+      },
+      {
+        "text": "75 度",
+        "correct": false
+      },
+      {
+        "text": "115 度",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-10",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "四次測驗平均 80 分，前三次是 72、85、77 分。第四次是幾分？",
+    "options": [
+      {
+        "text": "80 分",
+        "correct": false
+      },
+      {
+        "text": "84 分",
+        "correct": false
+      },
+      {
+        "text": "86 分",
+        "correct": true
+      },
+      {
+        "text": "90 分",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "math-11",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "兩個不同正整數的和為 17，乘積為 60。較大的數是多少？",
+    "options": [
+      {
+        "text": "10",
+        "correct": false
+      },
+      {
+        "text": "15",
+        "correct": false
+      },
+      {
+        "text": "13",
+        "correct": false
+      },
+      {
+        "text": "12",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "math-12",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "一個盒裡有 5 雙不同顏色的襪子，每色只有兩隻。閉著眼至少拿幾隻，才能保證有一雙同色？",
+    "options": [
+      {
+        "text": "6 隻",
+        "correct": true
+      },
+      {
+        "text": "5 隻",
+        "correct": false
+      },
+      {
+        "text": "3 隻",
+        "correct": false
+      },
+      {
+        "text": "10 隻",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-01",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "到公共圖書館辦借書證，主要是為了什麼？",
+    "options": [
+      {
+        "text": "借閱館方開放外借的書",
+        "correct": true
+      },
+      {
+        "text": "領取全民健保卡",
+        "correct": false
+      },
+      {
+        "text": "報名駕照考試",
+        "correct": false
+      },
+      {
+        "text": "申請護照",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-02",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "哪個號碼在臺灣可通報火災並請消防隊出動？",
+    "options": [
+      {
+        "text": "104",
+        "correct": false
+      },
+      {
+        "text": "119",
+        "correct": true
+      },
+      {
+        "text": "117",
+        "correct": false
+      },
+      {
+        "text": "165",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-03",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "在臺灣，多數商店以哪種貨幣標示商品的售價？",
+    "options": [
+      {
+        "text": "港幣",
+        "correct": false
+      },
+      {
+        "text": "人民幣",
+        "correct": false
+      },
+      {
+        "text": "新臺幣",
+        "correct": true
+      },
+      {
+        "text": "日圓",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-04",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "在便利商店拿到的統一發票，最直接記錄了什麼？",
+    "options": [
+      {
+        "text": "買家的戶籍地址",
+        "correct": false
+      },
+      {
+        "text": "買家的所得稅率",
+        "correct": false
+      },
+      {
+        "text": "店長的出生日期",
+        "correct": false
+      },
+      {
+        "text": "這筆消費的交易金額",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "society-05",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "民主選舉中的秘密投票，主要保障選民的哪項權利？",
+    "options": [
+      {
+        "text": "投票選擇不必讓他人知道",
+        "correct": true
+      },
+      {
+        "text": "可以替家人投票",
+        "correct": false
+      },
+      {
+        "text": "可以要求查看他人選票",
+        "correct": false
+      },
+      {
+        "text": "投完可以改投同一場選舉",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-06",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "搭乘捷運時，哪種做法能讓候車和下車的人都更順利？",
+    "options": [
+      {
+        "text": "擋在門正中間",
+        "correct": false
+      },
+      {
+        "text": "排在門兩側等乘客先下車",
+        "correct": true
+      },
+      {
+        "text": "先擠上車再讓人下車",
+        "correct": false
+      },
+      {
+        "text": "站在車門與月臺間",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-07",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "臺灣全民健康保險的主要功能是什麼？",
+    "options": [
+      {
+        "text": "分配建築用地",
+        "correct": false
+      },
+      {
+        "text": "補助股票交易",
+        "correct": false
+      },
+      {
+        "text": "分攤民眾就醫費用",
+        "correct": true
+      },
+      {
+        "text": "受理失物招領",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-08",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "想查颱風路徑和海上陸上颱風警報，哪個機關發布這項資訊？",
+    "options": [
+      {
+        "text": "中央選舉委員會",
+        "correct": false
+      },
+      {
+        "text": "國家圖書館",
+        "correct": false
+      },
+      {
+        "text": "法務部",
+        "correct": false
+      },
+      {
+        "text": "中央氣象署",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "society-09",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "在臺灣，負責審議中央政府總預算案的是哪個機關？",
+    "options": [
+      {
+        "text": "立法院",
+        "correct": true
+      },
+      {
+        "text": "司法院",
+        "correct": false
+      },
+      {
+        "text": "考試院",
+        "correct": false
+      },
+      {
+        "text": "監察院",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-10",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "考量臺灣中央政府的機關分工，總統、副總統選舉的全國選務由哪個機關主管？",
+    "options": [
+      {
+        "text": "中央銀行",
+        "correct": false
+      },
+      {
+        "text": "中央選舉委員會",
+        "correct": true
+      },
+      {
+        "text": "外交部",
+        "correct": false
+      },
+      {
+        "text": "國家發展委員會",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-11",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "在市場上，若其他條件不變，某商品的價格上升時，依需求法則，消費者願意購買的數量通常如何變化？",
+    "options": [
+      {
+        "text": "增加",
+        "correct": false
+      },
+      {
+        "text": "一定維持原數量",
+        "correct": false
+      },
+      {
+        "text": "減少",
+        "correct": true
+      },
+      {
+        "text": "一定降到零",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "society-12",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "臺灣法律賦予縣議會哪一項職權？",
+    "options": [
+      {
+        "text": "任命中央各部會首長",
+        "correct": false
+      },
+      {
+        "text": "審判刑事案件",
+        "correct": false
+      },
+      {
+        "text": "核發外交護照",
+        "correct": false
+      },
+      {
+        "text": "議決縣預算",
+        "correct": true
+      }
+    ]
+  }
+]
