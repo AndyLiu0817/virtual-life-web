@@ -1,0 +1,118 @@
+.event-dialog {
+  width: min(calc(100% - 1.5rem), 820px);
+  max-height: calc(100dvh - 1.5rem);
+  padding: 0;
+  overflow: auto;
+  color: #213b40;
+  border: 1px solid #f5e7c3;
+  border-radius: 1.25rem;
+  background: #fdf6e8;
+  box-shadow: 0 20px 70px #081d2670;
+}
+.event-dialog::backdrop {
+  background: #0b222ac9;
+}
+.event-stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  justify-items: end;
+  height: clamp(135px, 51dvh, 440px);
+  overflow: hidden;
+  background: #bfddd9;
+}
+.event-stage[data-tone="blessing"] {
+  background: radial-gradient(ellipse at 50% 70%, #fff4ca, #bfddd9 75%);
+}
+.event-stage[data-tone="hex"] {
+  background: radial-gradient(ellipse at 50% 65%, #b2c3c8, #435264 85%);
+}
+.event-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.event-portrait {
+  height: 88%;
+  max-width: 74%;
+}
+.event-npc {
+  position: absolute;
+  right: clamp(1rem, 9%, 5rem);
+  bottom: -3%;
+  height: 74%;
+  width: auto;
+  max-width: 52%;
+  object-fit: contain;
+  object-position: right bottom;
+}
+.event-stage:not([data-tone="scene"]) .event-portrait {
+  justify-self: center;
+  align-self: center;
+  border-radius: 1rem;
+}
+.event-copy {
+  padding: clamp(0.7rem, 2.2vw, 1.45rem) clamp(0.9rem, 4vw, 2rem);
+  border-top: 3px solid #d9ad63;
+  display: grid;
+  gap: 0.4rem;
+}
+.event-label {
+  font-size: 0.83rem;
+  color: #756032;
+  font-weight: 750;
+}
+.event-copy h2 {
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  line-height: 1.2;
+}
+.event-result {
+  font-weight: 750;
+  color: #285b55;
+}
+.event-copy .actions {
+  justify-content: flex-end;
+}
+.event-copy .action,
+.board-dialog .step-options .action {
+  min-height: 44px;
+}
+.board-dialog .step-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 0.4rem;
+}
+.board-dialog .step-options .action {
+  min-width: 0;
+  padding-inline: 0.25rem;
+}
+@media (orientation: portrait) {
+  .event-stage {
+    height: clamp(150px, 48dvh, 430px);
+  }
+  .event-npc {
+    right: 6%;
+    height: 68%;
+  }
+  .event-copy .action {
+    flex: 1;
+  }
+}
+@media (orientation: landscape) and (max-height: 470px) {
+  .event-dialog form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .event-stage {
+    height: auto;
+    min-height: 190px;
+  }
+  .event-copy {
+    border-top: 0;
+    border-left: 3px solid #d9ad63;
+  }
+}

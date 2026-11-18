@@ -13,12 +13,23 @@ import {
   walkStep,
 } from "./game/board";
 import { STAT_LABELS, type Stat } from "./game/opening";
+import {
+  activeDeity,
+  deities,
+  deityTurnEffect,
+  payOffering,
+  randomFork,
+  stepChoices,
+  walkingSteps,
+} from "./game/deities";
+import { drawEvent } from "./game/events";
+import { changeText, eventPresentation } from "./event-view";
 import type { Save } from "./game/saves";
 import "./junior-board.css";
+import "./event-view.css";
 
 const walkStepMs = 550;
 const stepsByTile = {
-  event: 3,
   game: 6,
   club: 5,
   quiz: 4,
@@ -73,6 +84,19 @@ export function showJuniorBoard(
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
       <h2 id="board-prompt"></h2><p class="board-detail"></p><div class="actions"></div>
     </form></dialog>
+    <dialog class="event-dialog" aria-labelledby="event-title" aria-describedby="event-text event-result">
+      <form method="dialog">
+        <div class="event-stage"></div>
+        <div class="event-copy">
+          <p class="event-label"></p><h2 id="event-title"></h2>
+          <p id="event-text"></p><p class="event-result" id="event-result"></p>
+          <div class="actions">
+            <button class="action" value="offer" type="submit" hidden>還願</button>
+            <button class="action" value="continue" type="submit" autofocus>確定</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
   </main>`;
   const find = <T extends HTMLElement>(selector: string) =>
     app.querySelector<T>(selector)!;
@@ -122,7 +146,8 @@ export function showJuniorBoard(
   });
   orientationChange.observe(find(".board-map"));
 
-  const dialog = find<HTMLDialogElement>("dialog");
+  const dialog = find<HTMLDialogElement>(".board-dialog");
+  const eventDialog = find<HTMLDialogElement>(".event-dialog");
   const roll = find<HTMLButtonElement>("#roll");
   const dice = find(".dice");
   const total = find("#dice-total");
@@ -146,15 +171,21 @@ export function showJuniorBoard(
     orientationChange.disconnect();
     actions.home();
   };
-  dialog.oncancel = (event) => event.preventDefault();
+  dialog.oncancel = eventDialog.oncancel = (event) => event.preventDefault();
 
   function status() {
+    const deity = activeDeity(save);
     const fields = [
       ["回合", `${Math.min(save.turn + 1, board.turns)} ／ ${board.turns}`],
       ["骰子", `${diceCount(save)} 顆`],
       ["水星逆行", `${save.retrogradeTurns} 回合`],
       ["否極泰來", `${save.turnaroundTurns} 回合`],
-      ["附身神祇", "—"],
+      [
+        "附身神祇",
+        deity ? `${deities[deity.id].name}・${deity.remainingTurns} 回合` : "—",
+      ],
+      ["人生經驗", save.experience],
+      ["收集卡", `${save.cards.length} 張`],
       ...Object.entries(STAT_LABELS).map(([key, label]) => [
         label,
         save.stats[key as Stat],
@@ -193,10 +224,17 @@ export function showJuniorBoard(
     placePawn("stand");
   }
 
-  function prompt(title: string, detail = "", choices = ["確定"]) {
+  function prompt(
+    title: string,
+    detail = "",
+    choices = ["確定"],
+    stepGrid = false,
+  ) {
     find("#board-prompt").textContent = title;
     find(".board-detail").textContent = detail;
-    find("dialog .actions").innerHTML = choices
+    const buttons = find(".board-dialog .actions");
+    buttons.classList.toggle("step-options", stepGrid);
+    buttons.innerHTML = choices
       .map(
         (choice, index) =>
           `<button class="action" value="${index}">${choice}</button>`,
@@ -216,6 +254,11 @@ export function showJuniorBoard(
       save.nextTile !== null
     )
       return;
+    if (activeDeity(save)?.id === "lost-envoy") {
+      // Pick on departure so an expiring deity cannot dictate the next turn.
+      if (steps > 0) save = { ...save, nextTile: randomFork(save, routes) };
+      return;
+    }
     const choice = await prompt(
       "岔路：選擇方向",
       steps ? `還有 ${steps} 步。` : "請選擇下一回合的前進方向。",
@@ -225,6 +268,38 @@ export function showJuniorBoard(
       ),
     );
     save = { ...save, nextTile: routes[choice] };
+  }
+
+  async function playEvent() {
+    const { save: updated, outcome } = drawEvent(save);
+    save = updated;
+    status();
+    const presentation = eventPresentation(outcome);
+    const stage = find(".event-stage");
+    stage.dataset.tone = presentation.tone;
+    stage.innerHTML = presentation.art;
+    find(".event-label").textContent = presentation.label;
+    find("#event-title").textContent = presentation.title;
+    find("#event-text").textContent = presentation.text;
+    find("#event-result").textContent = presentation.result;
+    const offer = find<HTMLButtonElement>('.event-dialog [value="offer"]');
+    const confirm = find<HTMLButtonElement>('.event-dialog [value="continue"]');
+    offer.hidden = outcome.kind !== "offering";
+    offer.disabled =
+      outcome.kind !== "offering" || save.cash < deities[outcome.id].price;
+    confirm.textContent = outcome.kind === "offering" ? "繼續附身" : "確定";
+    if (outcome.kind === "offering" && offer.disabled) {
+      find("#event-result").textContent += " ・ 現金不足";
+    }
+    await new Promise<void>((resolve) => {
+      eventDialog.onclose = () => resolve();
+      eventDialog.showModal();
+    });
+    if (outcome.kind === "offering" && eventDialog.returnValue === "offer") {
+      save = payOffering(save);
+    }
+    stage.replaceChildren();
+    return outcome.kind === "deity";
   }
 
   function showDice(values: number[]) {
@@ -243,22 +318,47 @@ export function showJuniorBoard(
     navigation.forEach((button) => (button.disabled = true));
     notice.textContent = "";
     total.textContent = "";
+    persist(false);
+    const effect = deityTurnEffect(save);
+    save = effect.save;
     const draw = beforeRoll(save);
     save = draw.save;
     status();
     if (draw.notice) await prompt(draw.notice);
+    const deity = activeDeity(save);
+    if (effect.change && deity) {
+      await prompt(deities[deity.id].name, changeText(effect.change));
+    }
 
     const count = diceCount(save);
-    const values = rollDice(count);
-    if (!reducedMotion) {
-      for (let frame = 0; frame < 5; frame++) {
-        showDice(values.map((value) => ((value + frame) % 6) + 1));
-        await delay(70);
+    const choices = stepChoices(save, count);
+    let steps: number;
+    if (choices.length) {
+      showDice([]);
+      const choice = await prompt(
+        "步數童・指定步數",
+        `這回合可以走 ${count}～${count * 6} 步。`,
+        choices.map((value) => `${value} 步`),
+        true,
+      );
+      steps = choices[choice];
+      total.textContent = `指定 ${steps} 步`;
+    } else {
+      const values = rollDice(count);
+      if (!reducedMotion) {
+        for (let frame = 0; frame < 5; frame++) {
+          showDice(values.map((value) => ((value + frame) % 6) + 1));
+          await delay(70);
+        }
       }
+      showDice(values);
+      const points = values.reduce((sum, value) => sum + value, 0);
+      steps = walkingSteps(save, points);
+      total.textContent =
+        deity?.id === "lost-envoy"
+          ? `共 ${points} 點・迷途使：走 ${steps} 步`
+          : `共 ${points} 點`;
     }
-    showDice(values);
-    let steps = values.reduce((sum, value) => sum + value, 0);
-    total.textContent = `共 ${steps} 點`;
 
     await chooseRoute(steps);
     while (steps > 0) {
@@ -278,12 +378,13 @@ export function showJuniorBoard(
     }
     placePawn("stand");
     const kind = board.tiles[save.boardTile].kind;
+    const deityJustArrived = kind === "event" && (await playEvent());
     if (kind in stepsByTile)
       await prompt(
         `${tileLabels[kind]}：第 ${stepsByTile[kind as keyof typeof stepsByTile]} 步製作中`,
       );
 
-    const finished = finishTurn(save);
+    const finished = finishTurn(save, deityJustArrived);
     save = finished.save;
     status();
     persist();
@@ -299,10 +400,10 @@ export function showJuniorBoard(
     navigation.forEach((button) => (button.disabled = false));
   }
 
-  function persist() {
+  function persist(showNotice = true) {
     try {
       actions.autoSave(save);
-      notice.textContent = "已自動存檔。";
+      if (showNotice) notice.textContent = "已自動存檔。";
     } catch {
       notice.textContent = "無法自動存檔，請確認瀏覽器允許儲存網站資料。";
     }

@@ -1,4 +1,5 @@
 import type { Board } from "../data/junior";
+import { nextDeity } from "./deities";
 import type { Save } from "./saves";
 
 export const diceCount = (save: Save) => (save.retrogradeTurns > 0 ? 1 : 2);
@@ -19,7 +20,7 @@ export function beforeRoll(save: Save, random = Math.random) {
   };
 }
 
-export function finishTurn(save: Save) {
+export function finishTurn(save: Save, deityJustArrived = false) {
   const retrogradeTurns = Math.max(0, save.retrogradeTurns - 1);
   const turnaroundStarted =
     save.retrogradeTurns === 1 && save.retrogradeRepeated;
@@ -27,6 +28,7 @@ export function finishTurn(save: Save) {
     save: {
       ...save,
       turn: save.turn + 1,
+      deity: deityJustArrived ? save.deity : nextDeity(save),
       updatedAt: new Date().toISOString(),
       retrogradeTurns,
       retrogradeRepeated: retrogradeTurns > 0 && save.retrogradeRepeated,
