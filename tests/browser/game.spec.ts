@@ -176,6 +176,8 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await expect(track.locator(".path-debug text")).toHaveCount(42);
   await expect(track.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
 
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 1_000));
   const trace = await page.evaluateHandle(() => {
     const pawn = document.querySelector(".board-pawn")!;
     const landings: string[] = [];
@@ -198,7 +200,11 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
     return { landings, frames };
   });
 
-  await page.getByRole("button", { name: "擲骰" }).click();
+  await page
+    .locator("#roll")
+    .evaluate((button: HTMLButtonElement) => button.click());
+  await page.clock.runFor(1_600);
+  await page.clock.resume();
   await expect(page.getByRole("dialog")).toContainText("遊戲：第 6 步製作中");
   expect(await trace.evaluate(({ landings }) => landings)).toEqual(["1", "2"]);
   const leftWalk = Array.from(
