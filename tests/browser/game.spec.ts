@@ -1,4 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function skipRhythm(page: Page) {
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "開始", exact: true })
+    .click();
+  await page.clock.fastForward(14_000);
+}
 
 test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -114,7 +122,9 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   await checkLayout();
 
   await roll.click();
-  await expect(dialog).toContainText("遊戲：第 6 步製作中");
+  await expect(dialog.getByRole("heading", { name: "節奏拍擊" })).toBeVisible();
+  await page.clock.install();
+  await skipRhythm(page);
   await expect(pawn).toHaveAttribute("data-tile", "41");
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(status).toContainText("3 ／ 15");
@@ -140,6 +150,12 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
       else if (await event.isVisible()) await event.click();
       else if (await outer.isVisible()) await outer.click();
       else if (await confirm.isVisible()) await confirm.click();
+      else if (
+        await dialog
+          .getByRole("button", { name: "開始", exact: true })
+          .isVisible()
+      )
+        await skipRhythm(page);
       else break;
     }
   }
@@ -223,7 +239,9 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
     .evaluate((button: HTMLButtonElement) => button.click());
   await page.clock.runFor(1_600);
   await page.clock.resume();
-  await expect(page.getByRole("dialog")).toContainText("遊戲：第 6 步製作中");
+  await expect(page.getByRole("dialog").locator(".mg-confirm")).toHaveText(
+    "開始",
+  );
   expect(await trace.evaluate(({ landings }) => landings)).toEqual(["1", "2"]);
   expect(await trace.evaluate(({ coveredPoses }) => coveredPoses)).toEqual([]);
   const leftWalk = Array.from(
@@ -357,6 +375,8 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
 
   const pawn = track.locator(".board-pawn");
   await page.getByRole("button", { name: "擲骰" }).click();
+  await page.clock.install();
+  await skipRhythm(page);
   await page.getByRole("dialog").getByRole("button", { name: "確定" }).click();
   await expect(page.getByRole("status")).toContainText("已自動存檔");
 

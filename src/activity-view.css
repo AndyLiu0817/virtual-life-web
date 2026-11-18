@@ -1,8 +1,7 @@
 .activity-dialog {
   width: min(calc(100% - 1.5rem), 950px);
 }
-.activity-dialog form,
-.rhythm-round {
+.activity-dialog form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
@@ -62,28 +61,8 @@
   list-style: none;
   font-weight: 700;
 }
-.rhythm-tap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  touch-action: manipulation;
-}
-.rhythm-note {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-size: 333px 188px;
-  background-position: -18px -14px;
-}
-.rhythm-tap.on-beat {
-  background: #ffd077;
-  color: #17383b;
-  outline: 3px solid #9a510d;
-}
 @media (orientation: portrait) {
-  .activity-dialog form,
-  .rhythm-round {
+  .activity-dialog form {
     grid-template-columns: 1fr;
   }
   .activity-dialog .event-stage {

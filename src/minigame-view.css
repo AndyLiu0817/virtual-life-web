@@ -1,0 +1,296 @@
+.activity-dialog.mg-dialog {
+  width: min(calc(100% - 1rem), 800px);
+  max-height: calc(100dvh - 1rem);
+  border-color: #ffdb96;
+  background: #fff7e5;
+}
+
+.mg-dialog :is(h2, p, dl, dd) {
+  margin: 0;
+}
+.mg-dialog button {
+  touch-action: manipulation;
+}
+.mg-card-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.mg-illustration,
+.mg-play {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.mg-illustration {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+}
+.mg-backdrop {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.mg-sprite {
+  display: block;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.mg-illustration > .mg-sprite {
+  width: 76px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px #25170d80;
+}
+.mg-copy {
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+  padding: clamp(0.85rem, 3vw, 1.75rem);
+  border-inline-start: 3px solid #d9ad63;
+}
+.mg-copy h2 {
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+}
+.mg-copy p {
+  line-height: 1.5;
+}
+.mg-confirm {
+  min-height: 50px;
+}
+.mg-result,
+.mg-reward {
+  font-weight: 800;
+}
+.mg-goals {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.65rem;
+  background: #f3e5c4;
+}
+.mg-goals div {
+  display: flex;
+  gap: 0.8rem;
+}
+.mg-goals dt {
+  font-weight: 800;
+}
+
+.mg-play {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: min(540px, calc(100dvh - 1.15rem));
+  background: #392315;
+  user-select: none;
+}
+.mg-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.5rem 0.85rem;
+  color: #fff5db;
+  background: #253a36f5;
+  border-bottom: 2px solid #efbf6e;
+}
+.mg-hud h2 {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+}
+.mg-hud div {
+  display: flex;
+  gap: 0.85rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.mg-clock {
+  color: #ffda8a;
+}
+.mg-field {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.mg-field [hidden] {
+  display: none;
+}
+
+.mg-deck {
+  height: min(94%, 428px);
+  max-width: 95%;
+  aspect-ratio: 0.82;
+  display: grid;
+  grid-template: repeat(4, minmax(0, 1fr)) / repeat(4, minmax(0, 1fr));
+  gap: clamp(2px, 1dvh, 8px);
+  padding: 5px;
+  border-radius: 12px;
+  background: #183d39d9;
+}
+.mg-card,
+.mg-answer,
+.mg-target {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+.mg-card {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 6px;
+  background: #fff7ec;
+}
+.mg-card .mg-sprite {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+.mg-card.matched {
+  outline: 2px solid #ace993;
+  opacity: 0.7;
+}
+
+.mg-math {
+  position: relative;
+  display: grid;
+  gap: clamp(0.25rem, 2dvh, 0.8rem);
+  width: min(85%, 400px);
+  padding: clamp(0.45rem, 3dvh, 1rem);
+  text-align: center;
+  border: 2px solid #ecce85;
+  border-radius: 1rem;
+  background: #213b35f2;
+  color: #fff3d6;
+}
+.mg-math > .mg-sprite {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  width: clamp(20px, 8dvh, 38px);
+  border-radius: 8px;
+}
+.mg-question {
+  font-size: clamp(1.55rem, 6dvh, 2.5rem);
+  font-weight: 900;
+}
+.mg-answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+.mg-answer {
+  min-height: clamp(46px, 9dvh, 70px);
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #253a36;
+  background: #f7dfb8;
+}
+.mg-answer .mg-sprite {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  z-index: -1;
+}
+.mg-feedback {
+  min-height: 1.4em;
+  font-weight: 700;
+  color: #bfe9ac;
+}
+.mg-feedback.wrong {
+  color: #ffd1b1;
+}
+
+.mg-gallery {
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  width: min(92%, 490px);
+  height: 92%;
+  border-radius: 1rem;
+  border: 1px solid #ffd88d;
+  background: #3c231553;
+}
+.mg-target {
+  align-self: center;
+  justify-self: center;
+  width: clamp(48px, 10dvh, 80px);
+  height: clamp(48px, 12dvh, 95px);
+  overflow: hidden;
+  border-radius: 49% 49% 24% 24%;
+  background: #fff9eb;
+}
+.mg-target .mg-sprite {
+  width: 100%;
+  height: 100%;
+}
+
+.mg-lane {
+  position: relative;
+  isolation: isolate;
+  width: min(76%, 230px);
+  height: 95%;
+  overflow: hidden;
+  border: 2px solid #89dce4;
+  border-radius: 1rem;
+  background: #162a3bd9;
+  cursor: pointer;
+}
+.mg-zone {
+  position: absolute;
+  top: 76%;
+  left: 8%;
+  right: 8%;
+  height: var(--note-size);
+  transform: translateY(-50%);
+  border: 3px solid #80ede8;
+  border-radius: 0.65rem;
+  background: #24767b8c;
+}
+.mg-lane {
+  --note-size: clamp(38px, 12dvh, 62px);
+}
+.mg-lane.on-beat .mg-zone {
+  border-color: #ffdd8d;
+  background: #a76629;
+}
+.mg-note {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mg-note .mg-sprite {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--note-size);
+  border-radius: 50%;
+}
+@media (orientation: portrait) {
+  .mg-card-layout {
+    grid-template-columns: 1fr;
+  }
+  .mg-illustration {
+    min-height: 0;
+    height: clamp(100px, 28dvh, 230px);
+  }
+  .mg-copy {
+    border-inline-start: 0;
+    border-top: 3px solid #d9ad63;
+  }
+}
+@media (max-height: 390px) and (orientation: landscape) {
+  .mg-deck {
+    width: max(200px, 44dvh);
+    aspect-ratio: auto;
+  }
+}
