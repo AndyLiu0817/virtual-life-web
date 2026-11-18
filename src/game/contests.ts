@@ -79,22 +79,26 @@ const ranks = [
   { minimum: 0, cash: 500, stat: 8 },
 ];
 
-export function contestRank(score: number, line: number) {
-  return (
-    ranks.findIndex(
-      ({ minimum }) =>
-        Math.round(score * 100) * 100 >= Math.round(line * 100) * minimum,
-    ) + 1
-  );
-}
-
 export interface ContestScore {
   score: number;
   elapsedMs?: number;
 }
 
 export const compareContestScores = (a: ContestScore, b: ContestScore) =>
-  b.score - a.score || (a.elapsedMs ?? 0) - (b.elapsedMs ?? 0);
+  b.score - a.score ||
+  (a.elapsedMs ?? Number.MAX_SAFE_INTEGER) -
+    (b.elapsedMs ?? Number.MAX_SAFE_INTEGER);
+
+export function contestRank(performance: ContestScore, line: number) {
+  const lineHundredths = Math.round(line * 100);
+  return (
+    ranks.findIndex(({ minimum }) => {
+      // The benchmark has no time limit, so meeting its score qualifies.
+      const score = Math.ceil((lineHundredths * minimum) / 100) / 100;
+      return compareContestScores(performance, { score }) <= 0;
+    }) + 1
+  );
+}
 
 export function settleContest(
   save: Save,
@@ -106,7 +110,7 @@ export function settleContest(
   const next = nextMatch(save, "tile");
   if (next?.stage !== match.stage || next.matchNumber !== match.matchNumber)
     return;
-  const rank = contestRank(performance.score, line);
+  const rank = contestRank(performance, line);
   const reward = ranks[rank - 1];
   const target = contestEvents[event].stat;
   const cash = boostActivityReward(save, reward.cash);

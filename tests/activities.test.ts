@@ -127,10 +127,10 @@ it("冠軍線浮動範圍及名次門檻含等號", () => {
   expect(championLine("junior", "trivia", () => 1 - Number.EPSILON)).toBe(8.4);
   expect(
     [200, 199.99, 170, 169.99, 140, 139.99].map((score) =>
-      contestRank(score, 200),
+      contestRank({ score }, 200),
     ),
   ).toEqual([1, 2, 2, 3, 3, 4]);
-  expect(contestRank(70.07, 100.1)).toBe(3);
+  expect(contestRank({ score: 70.07 }, 100.1)).toBe(3);
 });
 
 it.each([

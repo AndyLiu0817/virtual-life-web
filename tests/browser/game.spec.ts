@@ -120,7 +120,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   await expect(status).toContainText("3 ／ 15");
   for (let turn = 3; turn <= 15; turn++) {
     await roll.click();
-    while (await roll.isDisabled()) {
+    while (true) {
       // A turn can include a reward, a route choice and a landing notice.
       const confirm = dialog.getByRole("button", { name: "確定" });
       const outer = dialog.getByRole("button", { name: /沿外圈/ });
@@ -131,6 +131,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
           )
           .first(),
       ).toBeVisible();
+      if (!(await dialog.isVisible())) break;
       const option = page
         .locator(".assessment-dialog .assessment-option")
         .first();
