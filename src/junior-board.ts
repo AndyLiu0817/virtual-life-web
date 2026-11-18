@@ -24,6 +24,8 @@ import {
 } from "./game/deities";
 import { drawEvent } from "./game/events";
 import { changeText, eventPresentation } from "./event-view";
+import { showAssessment } from "./exam-view";
+import { quizReward, scoreAttempt, startAssessment } from "./game/questions";
 import type { Save } from "./game/saves";
 import "./junior-board.css";
 import "./event-view.css";
@@ -32,7 +34,6 @@ const walkStepMs = 550;
 const stepsByTile = {
   game: 6,
   club: 5,
-  quiz: 4,
   contest: 5,
 } as const;
 
@@ -45,6 +46,7 @@ interface BoardActions {
   manualSave: (save: Save) => void;
   exportSave: (save: Save) => void;
   home: () => void;
+  entrance: (save: Save) => void;
 }
 
 export function showJuniorBoard(
@@ -73,7 +75,6 @@ export function showJuniorBoard(
         <div class="dice" aria-label="骰子點數"></div>
         <span id="dice-total"></span>
       </div>
-      <p id="ending" tabindex="-1" hidden>國中階段結束，升學考試第 4 步製作中</p>
       <p id="notice" role="status"></p>
       <div class="actions">
         <button class="action" id="save" type="button">儲存到存檔格</button>
@@ -84,6 +85,7 @@ export function showJuniorBoard(
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
       <h2 id="board-prompt"></h2><p class="board-detail"></p><div class="actions"></div>
     </form></dialog>
+    <dialog class="assessment-dialog" aria-labelledby="assessment-title"></dialog>
     <dialog class="event-dialog" aria-labelledby="event-title" aria-describedby="event-text event-result">
       <form method="dialog">
         <div class="event-stage"></div>
@@ -152,7 +154,7 @@ export function showJuniorBoard(
   const dice = find(".dice");
   const total = find("#dice-total");
   const notice = find("#notice");
-  const ending = find("#ending");
+  const quizDialog = find<HTMLDialogElement>(".assessment-dialog");
   const navigation = Array.from(
     app.querySelectorAll<HTMLButtonElement>(".board-controls .actions button"),
   );
@@ -171,7 +173,10 @@ export function showJuniorBoard(
     orientationChange.disconnect();
     actions.home();
   };
-  dialog.oncancel = eventDialog.oncancel = (event) => event.preventDefault();
+  dialog.oncancel =
+    eventDialog.oncancel =
+    quizDialog.oncancel =
+      (event) => event.preventDefault();
 
   function status() {
     const deity = activeDeity(save);
@@ -306,10 +311,42 @@ export function showJuniorBoard(
     dice.innerHTML = values.map((value) => `<span>${value}</span>`).join("");
   }
 
-  function showEnding() {
-    ending.hidden = false;
-    roll.hidden = true;
-    placePawn("win");
+  async function playQuiz() {
+    const attempt = startAssessment("quiz", save.seenQuestionIds);
+    await new Promise<void>((resolve) => {
+      showAssessment(
+        quizDialog,
+        attempt,
+        save.stats.intellect,
+        undefined,
+        resolve,
+      );
+      quizDialog.showModal();
+      find(".assessment-question").focus();
+    });
+    quizDialog.close();
+    quizDialog.replaceChildren();
+    const correct = scoreAttempt(attempt);
+    const reward = quizReward(correct);
+    const intellect = Math.min(9999, save.stats.intellect + reward.intellect);
+    const gained = intellect - save.stats.intellect;
+    save = {
+      ...save,
+      stats: { ...save.stats, intellect },
+      cash: save.cash + reward.cash,
+      exams: [...save.exams, { id: "quiz", correct }],
+      seenQuestionIds: [
+        ...new Set([
+          ...save.seenQuestionIds,
+          ...attempt.items.map(({ id }) => id),
+        ]),
+      ],
+    };
+    status();
+    await prompt(
+      "小考成績",
+      `答對 ${correct} ／ 5 題・智力 ＋${gained}・現金 ＋${reward.cash} 元`,
+    );
   }
 
   async function playTurn() {
@@ -379,6 +416,7 @@ export function showJuniorBoard(
     placePawn("stand");
     const kind = board.tiles[save.boardTile].kind;
     const deityJustArrived = kind === "event" && (await playEvent());
+    if (kind === "quiz") await playQuiz();
     if (kind in stepsByTile)
       await prompt(
         `${tileLabels[kind]}：第 ${stepsByTile[kind as keyof typeof stepsByTile]} 步製作中`,
@@ -391,8 +429,9 @@ export function showJuniorBoard(
     if (finished.turnaroundStarted)
       await prompt("否極泰來！", "水星逆行已結束。接下來 3 回合為否極泰來。");
     if (stageFinished(board, save)) {
-      showEnding();
-      ending.focus();
+      orientationChange.disconnect();
+      actions.entrance(save);
+      return;
     } else {
       roll.disabled = false;
       roll.focus();
@@ -411,7 +450,6 @@ export function showJuniorBoard(
 
   status();
   placePawn("stand");
-  if (stageFinished(board, save)) showEnding();
   roll.onclick = () => void playTurn();
   find("h1").focus();
 }

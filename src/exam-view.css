@@ -1,0 +1,117 @@
+.assessment {
+  width: min(100%, 72rem);
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: #fff7e8;
+  color: #213b40;
+  box-shadow: 0 20px 70px #081d2670;
+}
+.assessment-screen,
+.assessment-result {
+  min-height: 100dvh;
+  display: grid;
+  padding: clamp(0.5rem, 3vw, 2rem);
+  background: #244648;
+}
+.assessment-dialog {
+  width: min(calc(100% - 1rem), 72rem);
+  max-height: calc(100dvh - 1rem);
+  border: 0;
+  padding: 0;
+  border-radius: 1.25rem;
+  background: #fff7e8;
+}
+.assessment-dialog::backdrop {
+  background: #0b222ac9;
+}
+.assessment-art {
+  position: relative;
+  isolation: isolate;
+  min-height: 14rem;
+  overflow: hidden;
+}
+.assessment-art .event-npc {
+  height: 74%;
+  bottom: 3%;
+}
+.assessment-copy,
+.assessment-card {
+  display: grid;
+  align-content: center;
+  gap: 0.8rem;
+  padding: clamp(0.8rem, 3vw, 2rem);
+}
+.assessment-copy h1,
+.assessment-card h1 {
+  font-size: clamp(1.45rem, 4vw, 2.5rem);
+}
+.assessment-meta {
+  color: #66532b;
+  font-weight: 700;
+}
+.assessment-question {
+  font-size: clamp(1.08rem, 2.6vw, 1.45rem);
+}
+.assessment-options {
+  display: grid;
+  gap: 0.45rem;
+}
+.assessment-option {
+  min-height: 48px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #b6d0c6;
+  border-radius: 0.65rem;
+  background: #e4f0e9;
+  color: #173c36;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.assessment-option:disabled {
+  background: #e9e4d9;
+  color: #625d54;
+  border-style: dashed;
+  cursor: default;
+}
+.assessment-help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+.assessment-help .action,
+.assessment-card .action {
+  min-height: 44px;
+}
+.assessment-result {
+  position: relative;
+  isolation: isolate;
+  align-items: end;
+}
+.assessment-result .event-background {
+  object-position: center;
+}
+.assessment-card {
+  width: min(100%, 36rem);
+  margin-inline: auto;
+  border: 1px solid #ecd49d;
+  border-radius: 1.25rem;
+  background: #fff7e8;
+  color: #213b40;
+}
+.assessment-card p:empty {
+  display: none;
+}
+@media (orientation: portrait) {
+  .assessment {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .assessment-art {
+    min-height: clamp(9rem, 33dvh, 23rem);
+  }
+}

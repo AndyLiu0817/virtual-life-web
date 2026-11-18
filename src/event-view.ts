@@ -79,6 +79,13 @@ export function changeText({ target, amount }: ValueChange) {
     : `${STAT_LABELS[target]} ${value}`;
 }
 
+export function sceneArt(scene: string, role?: string) {
+  const background = scenes[`../art/event_${scene}_final.jpg`];
+  const npc =
+    role && npcPortraits[`./event-art/npc/${npcByRole[role] ?? role}.webp`];
+  return `<img class="event-background" src="${background}" alt="">${npc ? `<img class="event-npc" src="${npc}" alt="">` : ""}`;
+}
+
 export function eventPresentation(outcome: EventOutcome) {
   if ("id" in outcome) {
     const deity = deities[outcome.id];
@@ -96,10 +103,7 @@ export function eventPresentation(outcome: EventOutcome) {
   }
 
   const { story } = outcome;
-  const background = scenes[`../art/event_${story.scene}_final.jpg`];
-  const npc =
-    npcPortraits[`./event-art/npc/${npcByRole[story.npc] ?? story.npc}.webp`];
-  const art = `<img class="event-background" src="${background}" alt=""><img class="event-npc" src="${npc}" alt="">`;
+  const art = sceneArt(story.scene, story.npc);
   if (outcome.kind === "protected") {
     return {
       tone: "scene",

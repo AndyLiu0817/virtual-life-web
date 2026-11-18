@@ -9,6 +9,8 @@ import {
   type Profile,
 } from "./opening";
 
+import { attemptSchema } from "./questions";
+
 export const SAVE_VERSION = 1;
 export const SLOT_NAMES = [
   "自動存檔",
@@ -45,6 +47,16 @@ const saveSchema = z
     education: school.nullable(),
     hiddenJobUnlock: z.boolean(),
     exams: z.array(z.object({ id: z.string(), correct: count })),
+    seenQuestionIds: z.array(z.string()).default([]),
+    entranceAttempt: attemptSchema
+      .refine(
+        ({ kind, items }) =>
+          kind === "highEntrance" &&
+          items.some(({ answer }) => answer === null),
+      )
+      .nullable()
+      .default(null),
+    examResultPending: z.boolean().default(false),
     clubHistory: z.array(
       z.object({ stage: school, clubId: z.string(), visits: count }),
     ),
