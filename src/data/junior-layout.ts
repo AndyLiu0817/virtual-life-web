@@ -1,0 +1,128 @@
+import type { BoardLayout, Cell, Orientation } from "./board-layout";
+import { juniorLoop, juniorShortcut } from "./junior-routes";
+
+function cellsById(loop: readonly Cell[], shortcut: readonly Cell[]) {
+  const cells: Cell[] = [];
+  juniorLoop.forEach((id, index) => (cells[id] = loop[index]));
+  juniorShortcut
+    .slice(1, -1)
+    .forEach((id, index) => (cells[id] = shortcut[index]));
+  return cells;
+}
+
+// Each outline walks the shared loop in order. Only the interior shortcut
+// cells need their own coordinates because the endpoints belong to the loop.
+export const juniorLayouts: Record<Orientation, BoardLayout> = {
+  landscape: {
+    width: 780,
+    height: 439,
+    pawnHeight: 55,
+    origin: [395, 277],
+    halfWidth: 40,
+    halfHeight: 18,
+    cells: cellsById(
+      [
+        [-2, -4],
+        [-2, -3],
+        [-2, -2],
+        [-2, -1],
+        [-2, 0],
+        [-3, 0],
+        [-3, 1],
+        [-4, 1],
+        [-4, 2],
+        [-4, 3],
+        [-4, 4],
+        [-3, 4],
+        [-3, 5],
+        [-2, 5],
+        [-1, 5],
+        [0, 5],
+        [1, 5],
+        [1, 4],
+        [1, 3],
+        [1, 2],
+        [2, 2],
+        [2, 1],
+        [3, 1],
+        [4, 1],
+        [5, 1],
+        [5, 0],
+        [5, -1],
+        [5, -2],
+        [5, -3],
+        [4, -3],
+        [4, -4],
+        [3, -4],
+        [3, -5],
+        [2, -5],
+        [1, -5],
+        [0, -5],
+        [-1, -5],
+        [-2, -5],
+      ],
+      [
+        [-1, 0],
+        [-1, 1],
+        [0, 1],
+        [0, 2],
+      ],
+    ),
+  },
+  portrait: {
+    width: 439,
+    height: 780,
+    pawnHeight: 51,
+    origin: [235, 437],
+    halfWidth: 36,
+    halfHeight: 31,
+    cells: cellsById(
+      [
+        [0, 3],
+        [0, 2],
+        [-1, 2],
+        [-2, 2],
+        [-2, 1],
+        [-3, 1],
+        [-4, 1],
+        [-4, 0],
+        [-4, -1],
+        [-5, -1],
+        [-5, -2],
+        [-5, -3],
+        [-5, -4],
+        [-4, -4],
+        [-3, -4],
+        [-2, -4],
+        [-2, -3],
+        [-1, -3],
+        [0, -3],
+        [0, -2],
+        [1, -2],
+        [2, -2],
+        [2, -1],
+        [3, -1],
+        [3, 0],
+        [4, 0],
+        [4, 1],
+        [5, 1],
+        [5, 2],
+        [5, 3],
+        [4, 3],
+        [4, 4],
+        [3, 4],
+        [3, 5],
+        [2, 5],
+        [1, 5],
+        [1, 4],
+        [0, 4],
+      ],
+      [
+        [-2, 0],
+        [-1, 0],
+        [-1, -1],
+        [0, -1],
+      ],
+    ),
+  },
+};

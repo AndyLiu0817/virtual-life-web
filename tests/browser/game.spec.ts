@@ -27,7 +27,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
     .poll(() =>
       backdrop.evaluate((img) => (img as HTMLImageElement).currentSrc),
     )
-    .toContain("map_junior_portrait_final");
+    .toContain("map_junior_noroad_portrait_final");
   await expect(page.getByText("5,000 元")).toBeVisible();
   await page.getByRole("button", { name: "儲存到存檔格" }).click();
   await page.locator("#use-1").click();
@@ -51,7 +51,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
     .poll(() =>
       backdrop.evaluate((img) => (img as HTMLImageElement).currentSrc),
     )
-    .toContain("map_junior_landscape_final");
+    .toContain("map_junior_noroad_landscape_final");
   await page.getByRole("button", { name: "回標題" }).click();
 
   await page.locator("#file").setInputFiles({
@@ -83,9 +83,9 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   const pawn = page.locator(".board-pawn");
   const map = page.getByRole("group", { name: "國中地圖" });
   const status = page.locator(".board-status");
-  const roll = page.getByRole("button", { name: "擲骰" });
+  const roll = page.locator("#roll");
   const dialog = page.getByRole("dialog");
-  await expect(tile).toHaveCount(18);
+  await expect(tile).toHaveCount(42);
   await expect(pawn).toHaveAttribute("data-tile", "0");
   await expect(status).toContainText("1 ／ 15");
   async function checkLayout() {
@@ -113,7 +113,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
 
   await roll.click();
   await expect(dialog).toContainText("遊戲：第 6 步製作中");
-  await expect(pawn).toHaveAttribute("data-tile", "16");
+  await expect(pawn).toHaveAttribute("data-tile", "41");
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(status).toContainText("3 ／ 15");
   for (let turn = 3; turn <= 15; turn++) {
@@ -142,4 +142,256 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   await expect(
     page.getByText("國中階段結束，升學考試第 4 步製作中"),
   ).toBeVisible();
+});
+
+test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) => {
+  await page.setViewportSize({ width: 1060, height: 650 });
+  await page.addInitScript(() => {
+    Math.random = () => 0.1; // 兩顆骰子各擲出 1。
+  });
+  await page.goto("/?debug=path");
+  await page.getByRole("button", { name: "開始新人生" }).click();
+  await page.getByLabel("名字").fill("小宇");
+  await page.getByRole("button", { name: "查看開局結果" }).click();
+  await page.getByRole("button", { name: "確認開局" }).click();
+
+  const track = page.locator(".board-track");
+  await expect(track.locator(".path-debug path").first()).toBeAttached();
+  const gridSlopes = await track
+    .locator(".path-debug path")
+    .evaluateAll((lines) =>
+      [
+        ...new Set(
+          lines.map((line) => {
+            const [x1, y1, x2, y2] = line
+              .getAttribute("d")!
+              .match(/-?[\d.]+/g)!
+              .map(Number);
+            return Math.sign((y2 - y1) / (x2 - x1));
+          }),
+        ),
+      ].sort(),
+    );
+  expect(gridSlopes).toEqual([-1, 1]);
+  await expect(track.locator(".path-debug text")).toHaveCount(42);
+  await expect(track.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
+
+  const trace = await page.evaluateHandle(() => {
+    const pawn = document.querySelector(".board-pawn")!;
+    const landings: string[] = [];
+    const airborne = new Set<string>();
+    new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.attributeName === "data-tile") {
+          landings.push(pawn.getAttribute("data-tile")!);
+        } else if (record.target instanceof SVGImageElement) {
+          const transform = record.target.getAttribute("transform");
+          if (transform?.startsWith("translate(0 -")) {
+            airborne.add(record.target.dataset.pose!);
+          }
+        }
+      }
+    }).observe(pawn, { subtree: true, attributes: true });
+    return { landings, airborne };
+  });
+
+  await page.getByRole("button", { name: "擲骰" }).click();
+  await expect(page.getByRole("dialog")).toContainText("遊戲：第 6 步製作中");
+  expect(await trace.evaluate(({ landings }) => landings)).toEqual(["1", "2"]);
+  expect(await trace.evaluate(({ airborne }) => [...airborne])).toEqual([
+    "left",
+    "right",
+  ]);
+
+  async function checkLanding(viewBox: string) {
+    await expect(track).toHaveAttribute("viewBox", viewBox);
+    const aligned = await track.evaluate((svg) => {
+      const label = [...svg.querySelectorAll(".path-debug text")].find(
+        (node) => node.textContent === "2",
+      )!;
+      const shadow = svg.querySelector(".pawn-shadow")!;
+      const marker = label.previousElementSibling!;
+      const contact = shadow.getBoundingClientRect();
+      const center = marker.getBoundingClientRect();
+      return (
+        Math.abs(contact.x + contact.width / 2 - center.x - center.width / 2) <
+          1 &&
+        Math.abs(
+          contact.y + contact.height / 2 - center.y - center.height / 2,
+        ) < 1
+      );
+    });
+    expect(aligned).toBe(true);
+  }
+
+  await checkLanding("0 0 780 439");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await checkLanding("0 0 439 780");
+  await expect(track.locator('[data-pose="stand"]')).toHaveAttribute(
+    "visibility",
+    "visible",
+  );
+});
+
+test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async ({ page }) => {
+  await page.setViewportSize({ width: 1240, height: 740 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "開始新人生" }).click();
+  await page.getByLabel("名字").fill("小宇");
+  await page.getByRole("button", { name: "查看開局結果" }).click();
+  await page.getByRole("button", { name: "確認開局" }).click();
+
+  const map = page.locator(".board-map");
+  const toggle = page.getByRole("button", { name: "看全圖" });
+  const status = page.locator(".board-status");
+
+  async function checkCamera(zoom: number) {
+    await expect
+      .poll(() =>
+        map.evaluate(async (viewport) => {
+          await new Promise(requestAnimationFrame);
+          const world = viewport.querySelector(".board-world")!;
+          const frame = viewport.getBoundingClientRect();
+          const artwork = world.getBoundingClientRect();
+          const pawn = world
+            .querySelector(".board-pawn .pawn-shadow")!
+            .getBoundingClientRect();
+          const tolerance = 0.1;
+          const covered =
+            artwork.left <= frame.left + tolerance &&
+            artwork.top <= frame.top + tolerance &&
+            artwork.right >= frame.right - tolerance &&
+            artwork.bottom >= frame.bottom - tolerance;
+          const pawnVisible =
+            pawn.left >= frame.left &&
+            pawn.top >= frame.top &&
+            pawn.right <= frame.right &&
+            pawn.bottom <= frame.bottom;
+          if (!covered || !pawnVisible)
+            throw new Error("鏡頭超出地圖或棋子離開畫面");
+          return new DOMMatrix(getComputedStyle(world).transform).a;
+        }),
+      )
+      .toBe(zoom);
+  }
+
+  await checkCamera(2.3);
+  const landscapeStatus = await status.boundingBox();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await checkCamera(1);
+  expect(await status.boundingBox()).toEqual(landscapeStatus);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(map.locator("svg")).toHaveAttribute("viewBox", "0 0 439 780");
+  await checkCamera(1);
+  const portraitStatus = await status.boundingBox();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await checkCamera(2.3);
+  expect(await status.boundingBox()).toEqual(portraitStatus);
+  await expect(map.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
+});
+
+test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨點", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1240, height: 740 });
+  await page.addInitScript(() => {
+    Math.random = () => 0.1;
+  });
+  await page.goto("/?debug=path");
+  await page.getByRole("button", { name: "開始新人生" }).click();
+  await page.getByLabel("名字").fill("小宇");
+  await page.getByRole("button", { name: "查看開局結果" }).click();
+  await page.getByRole("button", { name: "確認開局" }).click();
+
+  const track = page.locator(".board-track");
+  const anchors = track.locator(".scenery-debug");
+  const toggle = page.getByRole("checkbox", { name: "顯示前景物件錨點" });
+  await expect(anchors).toBeHidden();
+  await toggle.check();
+  await expect(anchors).toBeVisible();
+  await expect(anchors.locator(".scenery-anchor")).toHaveCount(9);
+
+  const pawn = track.locator(".board-pawn");
+  await page.getByRole("button", { name: "擲骰" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "確定" }).click();
+  await expect(page.getByRole("status")).toContainText("已自動存檔");
+
+  const library = track.locator('[data-name="圖書館"]');
+  const libraryId = await library.getAttribute("data-scenery");
+  const mask = track.locator(
+    `#pawn-occlusion [data-mask-depth="${libraryId}"]`,
+  );
+  await expect(pawn).toHaveAttribute("data-tile", "2");
+  await expect(mask).toHaveAttribute("visibility", "hidden");
+
+  await page.evaluate(() => {
+    const key = "virtual-life-web:v3:slot:0";
+    const save = JSON.parse(localStorage.getItem(key)!);
+    localStorage.setItem(
+      key,
+      JSON.stringify({ ...save, boardTile: 37, previousTile: 36 }),
+    );
+  });
+  await page.reload();
+  await page.getByRole("button", { name: "繼續遊戲" }).click();
+  await page.locator("#use-0").click();
+  await expect(pawn).toHaveAttribute("data-tile", "37");
+  await expect(mask).toHaveAttribute("visibility", "visible");
+  await expect(track.locator(".pawn-silhouette")).toHaveAttribute(
+    "href",
+    "#pawn-pose-stand",
+  );
+  expect(
+    await library.evaluate((building) =>
+      Boolean(
+        building.compareDocumentPosition(
+          building.parentElement!.querySelector(".board-pawn")!,
+        ) & Node.DOCUMENT_POSITION_PRECEDING,
+      ),
+    ),
+  ).toBe(true);
+  await toggle.check();
+
+  async function checkTilePrints() {
+    const obscured = await track.evaluate((svg) => {
+      const buildings = [
+        ...svg.querySelectorAll<SVGGElement>(".board-scenery"),
+      ].map((object) => ({
+        y: Number(object.dataset.depth),
+        shape: svg.querySelector<SVGPolygonElement>(
+          `#scenery-outline-${object.dataset.scenery}`,
+        )!,
+      }));
+      return [...svg.querySelectorAll<SVGGElement>(".board-tile")].flatMap(
+        (tile) => {
+          const icon = tile.querySelector("image")!;
+          const matrix = icon.transform.baseVal.consolidate()!.matrix;
+          const step = icon.width.baseVal.value * 0.22;
+          const samples = [-step, 0, step].flatMap((x) =>
+            [-step, 0, step].map((y) =>
+              new DOMPoint(x, y).matrixTransform(matrix),
+            ),
+          );
+          const visible = samples.filter((point) =>
+            buildings.every(
+              ({ y, shape }) =>
+                y <= Number(tile.dataset.depth) || !shape.isPointInFill(point),
+            ),
+          );
+          return visible.length < 6 ? [tile.dataset.tile] : [];
+        },
+      );
+    });
+    expect(obscured).toEqual([]);
+  }
+
+  await checkTilePrints();
+  await page.setViewportSize({ width: 430, height: 932 });
+  await expect(anchors.locator(".scenery-anchor")).toHaveCount(9);
+  await expect(anchors).toBeVisible();
+  await checkTilePrints();
+  await toggle.uncheck();
+  await expect(anchors).toBeHidden();
 });

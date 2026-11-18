@@ -61,18 +61,31 @@ const saveSchema = z
     previousTile: count.nullable().default(null),
     nextTile: count.nullable().default(null),
   })
-  .refine((save) => {
-    if (save.stage !== "junior") return true;
+  .transform((save) => {
+    if (save.stage !== "junior") return save;
     const tile = juniorBoard.tiles[save.boardTile];
+    if (!tile) {
+      return {
+        ...save,
+        boardTile: juniorBoard.start,
+        previousTile: null,
+        nextTile: null,
+      };
+    }
+
     const previous = save.previousTile;
+    const previousTile =
+      previous !== null &&
+      juniorBoard.tiles[previous]?.next.includes(save.boardTile) &&
+      tile.next.some((id) => id !== previous)
+        ? previous
+        : null;
     const next = save.nextTile;
-    return Boolean(
-      tile &&
-      (previous === null ||
-        juniorBoard.tiles[previous]?.next.includes(save.boardTile)) &&
-      (next === null || (next !== previous && tile.next.includes(next))) &&
-      tile.next.some((id) => id !== previous),
-    );
+    const nextTile =
+      next !== null && next !== previousTile && tile.next.includes(next)
+        ? next
+        : null;
+    return { ...save, previousTile, nextTile };
   })
   .refine(
     (save) =>

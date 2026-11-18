@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { juniorBoard as board } from "../src/data/junior";
+import { juniorLoop, juniorShortcut } from "../src/data/junior-routes";
 import {
   beforeRoll,
   diceCount,
@@ -14,6 +15,7 @@ import {
   exportSave,
   importSave,
   saveStorage,
+  type Save,
 } from "../src/game/saves";
 
 const opening = createSave({
@@ -25,29 +27,37 @@ const opening = createSave({
 const hit = () => 0.0499;
 const miss = () => 0.05;
 
-it("國中兩版共用 18 格及指定種類", () => {
+it("兩版共用相同路線，每條路只經過斜角網格上的相鄰格", () => {
+  expect(juniorLoop).toHaveLength(38);
+  expect(juniorShortcut).toHaveLength(6);
   expect(board.tiles.map((tile) => tile.kind).sort()).toEqual(
     [
       "start",
-      ...Array(5).fill("event"),
-      ...Array(4).fill("game"),
-      ...Array(2).fill("club"),
-      ...Array(3).fill("quiz"),
-      "contest",
+      ...Array(13).fill("event"),
+      ...Array(10).fill("game"),
+      ...Array(5).fill("club"),
+      ...Array(8).fill("quiz"),
+      ...Array(3).fill("contest"),
       "fork",
       "fork",
     ].sort(),
   );
-  for (const tile of board.tiles) {
-    for (const orientation of ["landscape", "portrait"] as const) {
-      const [x, y] = tile[orientation];
-      const { width, height } = board.layouts[orientation];
-      expect(x).toBeGreaterThan(0);
-      expect(x).toBeLessThan(width);
-      expect(y).toBeGreaterThan(0);
-      expect(y).toBeLessThan(height);
-    }
-    expect(tile.next.every((id) => board.tiles[id])).toBe(true);
+  for (const { cells } of Object.values(board.layouts)) {
+    expect(cells).toHaveLength(board.tiles.length);
+    expect(new Set(cells.map((cell) => cell.join(","))).size).toBe(
+      cells.length,
+    );
+    cells.forEach(([column, row], id) => {
+      const neighbors = cells.flatMap(([u, v], other) =>
+        Math.abs(u - column) + Math.abs(v - row) === 1 ? [other] : [],
+      );
+      const connected = board.tiles.flatMap(({ next }, other) =>
+        next.includes(id) || board.tiles[id].next.includes(other)
+          ? [other]
+          : [],
+      );
+      expect(neighbors).toEqual(connected);
+    });
   }
 });
 
@@ -122,17 +132,23 @@ it("岔路保留剩餘步數，可走外圈或雙向捷徑", () => {
     save: { boardTile: 17, nextTile: null },
     steps: 2,
   });
-  const exit = walkStep(board, inner.save, inner.steps);
-  expect(exit).toMatchObject({ save: { boardTile: 14 }, steps: 1 });
-  expect(directions(board, exit.save)).toEqual([15]);
-  const otherFork = {
+  const exit = [39, 40, 41, 14].reduce((save, expected) => {
+    expect(directions(board, save)).toEqual([expected]);
+    return walkStep(board, save, 1).save;
+  }, inner.save);
+  expect(directions(board, exit)).toEqual([15]);
+  const otherFork: Save = {
     ...opening,
     boardTile: 14,
-    previousTile: 13,
-    nextTile: 17,
+    previousTile: 22,
+    nextTile: 41,
   };
-  const back = walkStep(board, otherFork, 2);
-  expect(walkStep(board, back.save, back.steps).save.boardTile).toBe(4);
+  const back = [41, 40, 39, 17, 4].reduce((save, expected) => {
+    const stepped = walkStep(board, save, 1).save;
+    expect(stepped.boardTile).toBe(expected);
+    return stepped;
+  }, otherFork);
+  expect(directions(board, back)).toEqual([5]);
 });
 
 it("完成第 15 回合才結束", () => {
@@ -177,4 +193,30 @@ it("舊存檔補上起點，新存檔保留格子、岔路選擇、回合與狀�
   saveStorage(storage).write(0, turnaround);
   expect(saveStorage(storage).read(0)).toEqual(turnaround);
   expect(turnaround.turnaroundTurns).toBe(3);
+});
+
+it("越界位置回起點，失效的岔路連結清除，保留其餘存檔進度", () => {
+  const old = {
+    ...opening,
+    boardTile: 100,
+    previousTile: 99,
+    nextTile: 101,
+    cash: 6400,
+    turn: 9,
+  };
+  expect(importSave(JSON.stringify(old))).toEqual({
+    ...old,
+    boardTile: 0,
+    previousTile: null,
+    nextTile: null,
+  });
+  expect(
+    importSave(JSON.stringify({ ...old, boardTile: 14, nextTile: 17 })),
+  ).toMatchObject({
+    boardTile: 14,
+    previousTile: null,
+    nextTile: null,
+    cash: 6400,
+    turn: 9,
+  });
 });

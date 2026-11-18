@@ -8,45 +8,65 @@
   background: radial-gradient(ellipse at top, #31737c, #193941 75%);
 }
 
-.board-map.backdrop {
+.board-map {
   position: relative;
-  z-index: auto;
   width: min(100%, 1250px);
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 780 / 439;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 8px 24px #101f25a0;
-  --tile-width: var(--tile-landscape);
+}
+
+.board-world {
+  position: absolute;
+  inset: 0;
+  transform-origin: top left;
 }
 
 .board-map picture {
+  mask: url(#scenery-ground);
   display: block;
   height: 100%;
 }
 .board-map picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
 }
 
-.board-map .board-piece {
+.board-track {
   position: absolute;
-  left: var(--x-landscape);
-  top: var(--y-landscape);
-  width: var(--tile-width);
-  height: auto;
-  object-fit: contain;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
-.board-tile {
-  filter: drop-shadow(0 2px 2px #160f0c66);
+.paver-shadow {
+  fill: #352d23;
+  stroke: #352d23;
+  stroke-width: 2.5px;
+  opacity: 0.42;
+  filter: blur(1.8px);
 }
-.board-map .board-pawn {
-  z-index: 1;
-  width: calc(var(--tile-width) * 1.35);
-  transform: translate(-50%, -88%);
-  filter: drop-shadow(0 2px 2px #121c1d99);
-  transition:
-    top 210ms ease,
-    left 210ms ease;
+.pawn-shadow {
+  fill: #282621;
+}
+.path-debug path {
+  fill: none;
+  stroke: #f02c7c;
+  stroke-width: 0.75;
+  opacity: 0.64;
+}
+.path-debug circle {
+  fill: #f02c7c;
+}
+.path-debug text {
+  fill: white;
+  font: bold 13px sans-serif;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #271128;
+  stroke-width: 3px;
 }
 
 .board-controls {
@@ -58,9 +78,13 @@
   display: grid;
   gap: 0.6rem;
 }
+#overview[aria-pressed="true"] {
+  outline: 2px solid #23737c;
+  outline-offset: 2px;
+}
 .board-controls header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.15rem 0.55rem;
@@ -142,14 +166,9 @@
   .junior {
     grid-template-columns: minmax(0, 1fr);
   }
-  .board-map.backdrop {
+  .board-map {
     width: min(100%, max(240px, 33dvh), 440px);
-    aspect-ratio: 9 / 16;
-    --tile-width: var(--tile-portrait);
-  }
-  .board-map .board-piece {
-    left: var(--x-portrait);
-    top: var(--y-portrait);
+    aspect-ratio: 439 / 780;
   }
   .board-controls {
     width: min(100%, 440px);
@@ -162,8 +181,31 @@
     grid-column: auto;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .board-map .board-pawn.walking {
-    transition: none;
-  }
+
+.pawn-silhouette {
+  pointer-events: none;
+}
+
+.scenery-debug {
+  display: none;
+  pointer-events: none;
+}
+.show-scenery-anchors .scenery-debug {
+  display: inline;
+}
+.scenery-anchor circle {
+  fill: #fbe373;
+  stroke: #1d3338;
+  stroke-width: 1.4px;
+}
+.scenery-anchor text {
+  fill: #fff3a7;
+  font: bold 11px sans-serif;
+  text-anchor: middle;
+  stroke: #1d3338;
+  stroke-width: 2.6px;
+  paint-order: stroke;
+}
+.board-debug-option {
+  font-size: 0.82rem;
 }
