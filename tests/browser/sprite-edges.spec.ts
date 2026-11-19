@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
-test("every minigame, deity and HUD sprite has clean transparent edges", async ({
+test("every minigame, deity, HUD and school sprite has clean transparent edges", async ({
   page,
 }) => {
   const sprites = [
@@ -9,6 +9,8 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
     "art/shoot",
     "art/deities",
     "art/hud",
+    "src/board-art/high",
+    "src/board-art/university",
   ].flatMap((dir) =>
     readdirSync(dir, { recursive: true, encoding: "utf8" })
       .filter((file) => file.endsWith(".webp"))
@@ -20,6 +22,9 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
     sprites.filter((url) => /\/hud\/avatar-.*-(128|256)\.webp$/.test(url)),
   ).toHaveLength(16);
   expect(sprites.filter((url) => url.includes("/hud/deity-"))).toHaveLength(7);
+  expect(
+    sprites.filter((url) => url.startsWith("/src/board-art/")),
+  ).toHaveLength(84);
   await page.goto("/");
   const samples = await page.evaluate(async (urls) => {
     return Promise.all(

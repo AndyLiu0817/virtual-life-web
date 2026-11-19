@@ -1,4 +1,14 @@
-import { showJuniorBoard } from "./junior-board";
+import { showStageBoard } from "./junior-board";
+import { preloadSchool } from "./board-view";
+import {
+  isBoardStage,
+  schoolBoards,
+  type SchoolBoard,
+} from "./data/school-board";
+import { finishEntrance, graduate } from "./game/school";
+import { graduationDetails, introArt, endingScene } from "./school-view";
+import firstJob from "../art/cg_first_job_final.jpg";
+import graduation from "../art/cg_graduation_final.jpg";
 import { assets, preloadOpening } from "./assets";
 import {
   BLOOD_TYPES,
@@ -21,9 +31,8 @@ import {
   SLOT_NAMES,
   type Save,
 } from "./game/saves";
-import { juniorBoard } from "./data/junior";
 import { stageFinished } from "./game/board";
-import { passesExam, scoreAttempt, startAssessment } from "./game/questions";
+import { startAssessment } from "./game/questions";
 import { resultScene, scoreText, showAssessment } from "./exam-view";
 import "./style.css";
 
@@ -265,35 +274,98 @@ function confirmOpening(profile: Profile) {
 }
 
 function board(save: Save, message = "") {
-  if (
-    save.examResultPending ||
-    save.stage === "earlyExit" ||
-    save.stage === "high"
-  ) {
-    return schoolResult(save, message);
-  }
-  if (save.stage === "junior") {
-    if (stageFinished(juniorBoard, save)) return entranceExam(save);
-    showJuniorBoard(app, save, message, {
-      autoSave: (updated) => slots.write(0, updated),
-      manualSave: (updated) => selectSlot("write", updated),
-      exportSave: download,
-      home: title,
-      entrance: entranceExam,
-    });
+  if (save.examResultPending) return schoolResult(save, message);
+  if (save.stage === "earlyExit" || save.stage === "graduated")
+    return showEnding(save, message);
+  if (!isBoardStage(save.stage)) {
+    panel(
+      "國中棋盤（下一步製作中）",
+      `${character(save, "junior")}${endingActions()}`,
+      "junior",
+    );
+    element("#character-name").textContent = save.name;
+    element("#notice").textContent = message;
+    bindEndingActions(save);
     return;
   }
+
+  const school = schoolBoards[save.stage];
+  if (stageFinished(school, save)) return completeSchool(save);
+  if (school.stage === "junior") return openBoard(save, school, message);
+  return loadSchool(save, school, message);
+}
+
+function openBoard(save: Save, school: SchoolBoard, message: string) {
+  showStageBoard(app, save, school, message, {
+    autoSave: (updated) => slots.write(0, updated),
+    manualSave: (updated) => selectSlot("write", updated),
+    exportSave: download,
+    home: title,
+    complete: completeSchool,
+  });
+}
+
+async function loadSchool(save: Save, school: SchoolBoard, message: string) {
+  const stage = school.stage;
+  if (stage === "junior") return;
+  const needsIntro = !save.stageIntroSeen.includes(stage);
   panel(
-    "國中棋盤（下一步製作中）",
-    `${character(save, "junior")}
-    <div class="actions">${button("save", "儲存到存檔格")}${button("export", "匯出存檔")}${button("home", "回標題")}</div>`,
-    "junior",
+    "正在載入校園",
+    '<progress id="school-progress" aria-label="校園素材載入進度"></progress>',
   );
-  element("#character-name").textContent = save.name;
-  element("#notice").textContent = message;
-  action("save", () => selectSlot("write", save));
-  action("export", () => download(save));
-  action("home", title);
+  const progress = element<HTMLProgressElement>("#school-progress");
+  try {
+    await preloadSchool(
+      school,
+      save.gender,
+      (done, total) => {
+        progress.max = total;
+        progress.value = done;
+      },
+      needsIntro ? introArt(stage, save.gender) : undefined,
+    );
+  } catch {
+    panel(
+      "校園素材載入失敗",
+      `<div class="actions">${button("retry-school", "重試")}${button("home", "回標題")}</div>`,
+    );
+    action("retry-school", () => loadSchool(save, school, message));
+    action("home", title);
+    return;
+  }
+
+  if (!needsIntro) return openBoard(save, school, message);
+  const heading = stage === "high" ? "升上高中" : "進入大學";
+  const dialogue =
+    stage === "high"
+      ? "新制服的口袋終於裝得下兩枝筆了。聽說模擬考的題目也增加了。"
+      : "選課系統還在轉圈，你已經先研究完校門口的宵夜地圖。";
+  show(
+    endingScene(
+      heading,
+      `<img class="school-hero" src="${introArt(stage, save.gender)}" alt="">
+    <p>${dialogue}</p><div class="actions">${button("begin-stage", "開始")}</div>`,
+      school.maps[
+        matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape"
+      ],
+    ),
+  );
+  action("begin-stage", () => {
+    const updated = {
+      ...save,
+      stageIntroSeen: [...save.stageIntroSeen, stage],
+      updatedAt: new Date().toISOString(),
+    };
+    openBoard(updated, school, persistExam(updated));
+  });
+}
+
+function completeSchool(save: Save) {
+  if (save.stage === "university") {
+    const completed = graduate(save);
+    return showEnding(completed, persistExam(completed));
+  }
+  entranceExam(save);
 }
 
 function persistExam(save: Save) {
@@ -308,7 +380,10 @@ function persistExam(save: Save) {
 function entranceExam(save: Save) {
   const attempt =
     save.entranceAttempt ??
-    startAssessment("highEntrance", save.seenQuestionIds);
+    startAssessment(
+      save.stage === "high" ? "universityEntrance" : "highEntrance",
+      save.seenQuestionIds,
+    );
   const inProgress = { ...save, entranceAttempt: attempt };
   show('<main class="stage assessment-screen"></main>', false);
   function persistProgress() {
@@ -325,22 +400,7 @@ function entranceExam(save: Save) {
     save.stats.intellect,
     persistProgress,
     () => {
-      const correct = scoreAttempt(attempt);
-      const completed: Save = {
-        ...save,
-        education: "junior",
-        stage: passesExam(correct) ? "high" : "earlyExit",
-        updatedAt: new Date().toISOString(),
-        entranceAttempt: null,
-        examResultPending: true,
-        exams: [...save.exams, { id: "highEntrance", correct }],
-        seenQuestionIds: [
-          ...new Set([
-            ...save.seenQuestionIds,
-            ...attempt.items.map(({ id }) => id),
-          ]),
-        ],
-      };
+      const completed = finishEntrance(save, attempt);
       schoolResult(completed, persistExam(completed));
     },
   );
@@ -348,46 +408,95 @@ function entranceExam(save: Save) {
 }
 
 function schoolResult(save: Save, message: string) {
-  const exam = save.exams.find(({ id }) => id === "highEntrance");
-  const passed = save.stage === "high";
-  if (save.examResultPending && exam) {
-    show(
-      resultScene(
-        "升高中考試放榜",
-        `
-      <h2>${passed ? "錄取！" : "未錄取"}</h2>
-      <p>${scoreText(exam.correct)}</p>
-      <div class="actions">${button("continue-result", passed ? "前往高中篇" : "查看結局")}</div>
-    `,
-        passed,
-      ),
-    );
-    action("continue-result", () => {
-      const acknowledged = {
-        ...save,
-        examResultPending: false,
-        updatedAt: new Date().toISOString(),
-      };
-      schoolResult(acknowledged, persistExam(acknowledged));
-    });
-  } else {
-    show(
-      resultScene(
-        passed ? "高中篇準備中" : "提前出社會",
-        `
-      <p>${passed ? "恭喜國中畢業，順利升上高中！新校園正在準備，這段旅程已為你留在存檔裡。" : "制服先收進衣櫃，鬧鐘還得留著。下一站是職場，從第一份工作慢慢練等吧。"}</p>
-      <p>學歷・國中畢業</p>
+  const university = save.education === "high";
+  const exam = save.exams.find(
+    ({ id }) => id === (university ? "universityEntrance" : "highEntrance"),
+  );
+  const passed = save.stage === (university ? "university" : "high");
+  show(
+    resultScene(
+      university ? "大學聯考放榜" : "升高中考試放榜",
+      `<h2>${passed ? "錄取！" : "未錄取"}</h2>
       ${exam ? `<p>${scoreText(exam.correct)}</p>` : ""}
-      <div class="actions">${button("save", "儲存到存檔格")}${button("export", "匯出存檔")}${button("home", "回標題")}</div>
-    `,
-        passed,
-      ),
-    );
-    action("save", () => selectSlot("write", save));
-    action("export", () => download(save));
-    action("home", title);
-  }
+      <div class="actions">${button("continue-result", passed ? (university ? "前往大學篇" : "前往高中篇") : "查看結局")}</div>`,
+      passed,
+    ),
+  );
+  action("continue-result", () => {
+    const acknowledged = {
+      ...save,
+      examResultPending: false,
+      updatedAt: new Date().toISOString(),
+    };
+    board(acknowledged, persistExam(acknowledged));
+  });
   element("#notice").textContent = message;
+}
+
+function showEnding(save: Save, message: string) {
+  const graduated =
+    save.ending === "universityGraduate" || save.stage === "graduated";
+  const high = save.ending === "universityExamFail";
+  const exam = save.exams.find(
+    ({ id }) => id === (high ? "universityEntrance" : "highEntrance"),
+  );
+  const title = graduated ? "大學畢業" : high ? "聯考落榜" : "提前出社會";
+  const copy = graduated
+    ? "<p>畢業帽飛起來的那一刻，連趕報告的鬧鐘也終於可以關掉了。</p>"
+    : high
+      ? "<p>畢業證書已經到手。下一份考卷可能是午餐訂單，答錯還能加點。</p><p>學歷：高中畢業</p><p>知識型工作不能選</p><p>之後可解鎖隱藏職業</p>"
+      : "<p>制服先收進衣櫃，鬧鐘還得留著。下一站是職場，從第一份工作慢慢練等吧。</p><p>學歷・國中畢業</p>";
+  show(
+    endingScene(
+      title,
+      `${copy}
+    ${!graduated && exam ? `<p>${scoreText(exam.correct)}</p>` : ""}
+    <div class="actions">${button("advance-ending", graduated ? "查看結算" : "下一章預告")}</div>
+    ${graduated ? "" : endingActions()}`,
+      graduated ? graduation : firstJob,
+    ),
+  );
+  element("#notice").textContent = message;
+  if (!graduated) bindEndingActions(save);
+  action("advance-ending", () =>
+    graduated ? showGraduation(save) : showPreview(save),
+  );
+}
+
+function endingActions() {
+  return `<div class="actions">${button("save", "儲存到存檔格")}${button("export", "匯出存檔")}${button("home", "回標題")}</div>`;
+}
+
+function bindEndingActions(save: Save) {
+  action("save", () => selectSlot("write", save));
+  action("export", () => download(save));
+  action("home", title);
+}
+
+function showGraduation(save: Save) {
+  show(
+    endingScene(
+      "大學畢業結算",
+      `${graduationDetails(save)}
+    <div class="actions">${button("next-chapter", "下一章預告")}</div>${endingActions()}`,
+      graduation,
+      true,
+    ),
+  );
+  element("#graduate-name").textContent = save.name;
+  bindEndingActions(save);
+  action("next-chapter", () => showPreview(save));
+}
+
+function showPreview(save: Save) {
+  show(
+    endingScene(
+      "下一章預告",
+      `<p>社會篇敬請期待</p>${endingActions()}`,
+      firstJob,
+    ),
+  );
+  bindEndingActions(save);
 }
 
 function download(save: Save) {

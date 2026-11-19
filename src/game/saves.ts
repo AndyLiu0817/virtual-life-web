@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { juniorBoard } from "../data/junior";
+import { isBoardStage, schoolBoards } from "../data/school-board";
 import {
   BLOOD_TYPES,
   calculateOpening,
@@ -54,11 +54,16 @@ const saveSchema = z
     entranceAttempt: attemptSchema
       .refine(
         ({ kind, items }) =>
-          kind === "highEntrance" &&
+          (kind === "highEntrance" || kind === "universityEntrance") &&
           items.some(({ answer }) => answer === null),
       )
       .nullable()
       .default(null),
+    ending: z
+      .enum(["juniorEarlyExit", "universityExamFail", "universityGraduate"])
+      .nullable()
+      .default(null),
+    stageIntroSeen: z.array(z.enum(["high", "university"])).default([]),
     examResultPending: z.boolean().default(false),
     clubHistory: z
       .array(z.object({ stage: school, clubId: z.string(), visits: count }))
@@ -98,17 +103,33 @@ const saveSchema = z
     retrogradeTurns: count,
     turnaroundTurns: count,
     retrogradeRepeated: z.boolean().default(false),
-    boardTile: count.default(juniorBoard.start),
+    boardTile: count.default(0),
     previousTile: count.nullable().default(null),
     nextTile: count.nullable().default(null),
   })
   .transform((save) => {
-    if (save.stage !== "junior") return save;
-    const tile = juniorBoard.tiles[save.boardTile];
+    if (save.stage === "earlyExit" && save.ending === null)
+      return { ...save, ending: "juniorEarlyExit" as const };
+    if (!isBoardStage(save.stage)) return save;
+    const board = schoolBoards[save.stage];
+    const tile = board.tiles[save.boardTile];
+    if (
+      save.stage === "high" &&
+      save.turn === schoolBoards.junior.turns &&
+      !save.stageIntroSeen.includes("high") &&
+      !save.clubHistory.some(({ stage }) => stage === "high")
+    )
+      return {
+        ...save,
+        turn: 0,
+        boardTile: board.start,
+        previousTile: null,
+        nextTile: null,
+      };
     if (!tile) {
       return {
         ...save,
-        boardTile: juniorBoard.start,
+        boardTile: board.start,
         previousTile: null,
         nextTile: null,
       };
@@ -117,7 +138,7 @@ const saveSchema = z
     const previous = save.previousTile;
     const previousTile =
       previous !== null &&
-      juniorBoard.tiles[previous]?.next.includes(save.boardTile) &&
+      board.tiles[previous]?.next.includes(save.boardTile) &&
       tile.next.some((id) => id !== previous)
         ? previous
         : null;

@@ -414,8 +414,7 @@ test("mounted HUD updates avatars, grade, targets and value motion", async ({
 }) => {
   await page.goto("/");
   const results = await page.evaluate(async (save) => {
-    // The other school boards aren't routed in this MVP. Mount the same HUD
-    // independently to cover every stage without adding new game entry points.
+    // Mount the HUD on its own to check value changes across every stage.
     const moduleUrl = "/src/board-hud.ts";
     const { boardHud, boardHudMarkup } = await import(moduleUrl);
     const fixture = document.createElement("div");
@@ -454,8 +453,8 @@ test("mounted HUD updates avatars, grade, targets and value motion", async ({
   for (const [index, [stage, label, target]] of [
     ["boy-elem", "小學", "100"],
     ["girl-junior", "國中 2 年級", "200"],
-    ["boy-high", "高中", "350"],
-    ["girl-uni", "大學", "500"],
+    ["boy-high", "高中 1 年級", "350"],
+    ["girl-uni", "大學 1 年級", "500"],
   ].entries()) {
     expect(results[index].avatar).toMatch(`avatar-${stage}-256.webp`);
     expect(results[index]).toMatchObject({

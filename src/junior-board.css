@@ -74,6 +74,31 @@
   stroke-width: 0.75;
   opacity: 0.64;
 }
+.path-debug .road-outline {
+  fill: none;
+  stroke: #f6d963;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+}
+.path-debug .scenery-outline {
+  fill: none;
+  stroke: #ffac82;
+  stroke-width: 2;
+}
+
+.path-debug .paver-clearance {
+  fill: none;
+  stroke: #8dff96;
+  stroke-width: 2;
+}
+.path-debug .paver-clearance[data-on-road="false"] {
+  stroke: #f6d963;
+}
+.path-debug .paver-clearance[data-overlap="true"] {
+  fill: #e12947a6;
+  stroke: #ff3e50;
+  stroke-width: 3;
+}
 .path-debug circle {
   fill: #f02c7c;
 }
@@ -134,4 +159,14 @@
 }
 .board-debug-option {
   font-size: 0.82rem;
+}
+
+.path-debug .road-centerline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.path-debug .road-centerline {
+  stroke: #e26dce;
+  stroke-width: 2;
 }

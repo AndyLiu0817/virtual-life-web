@@ -128,9 +128,7 @@ test("橫式升學考輔助只排除錯誤選項，重整後接續並可錄取",
   await page.reload();
   await load(page);
   await page.getByRole("button", { name: "前往高中篇" }).click();
-  await expect(
-    page.getByRole("heading", { name: "高中篇準備中" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "升上高中" })).toBeVisible();
   const save = await readSave(page);
   expect(save).toMatchObject({
     stage: "high",

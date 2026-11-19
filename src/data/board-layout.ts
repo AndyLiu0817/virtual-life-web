@@ -1,5 +1,6 @@
 export type Orientation = "landscape" | "portrait";
 export type Cell = readonly [column: number, row: number];
+export type MapPoint = readonly [x: number, y: number];
 
 export interface BoardLayout {
   width: number;
@@ -10,4 +11,11 @@ export interface BoardLayout {
   halfWidth: number;
   halfHeight: number;
   cells: readonly Cell[];
+  // Reference road outlines are in source pixels. The first outline bounds
+  // the road, and subsequent outlines describe the enclosed islands.
+  road?: {
+    outlines: readonly (readonly MapPoint[])[];
+    // Ground footprints of major scenery, in the same source coordinates.
+    obstacles?: readonly (readonly MapPoint[])[];
+  };
 }

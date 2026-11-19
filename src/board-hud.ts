@@ -213,7 +213,11 @@ export function boardHud(root: HTMLElement, turns: number) {
     stageLabel.textContent =
       school === "junior"
         ? `${title} ${Math.min(3, Math.floor(save.turn / 5) + 1)} 年級`
-        : title;
+        : school === "high"
+          ? `${title} ${Math.min(3, Math.floor(save.turn / 8) + 1)} 年級`
+          : school === "university"
+            ? `${title} ${Math.min(4, Math.floor(save.turn / 10) + 1)} 年級`
+            : title;
     turn.textContent = `${Math.min(save.turn + 1, turns)} ／ ${turns}`;
     avatars.forEach((element) => {
       element.dataset.tone = tone;

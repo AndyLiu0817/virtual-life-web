@@ -123,14 +123,17 @@
   display: none;
 }
 
+.mg-play[data-game="memory"] .mg-field {
+  container-type: size;
+}
+
 .mg-deck {
-  height: min(94%, 428px);
-  max-width: 95%;
-  aspect-ratio: 0.82;
+  width: min(94cqw, 94cqh, 428px);
+  aspect-ratio: 1;
   display: grid;
   grid-template: repeat(4, minmax(0, 1fr)) / repeat(4, minmax(0, 1fr));
-  gap: clamp(2px, 1dvh, 8px);
-  padding: 5px;
+  gap: 8px;
+  padding: 8px;
   border-radius: 12px;
   background: #183d39d9;
 }
@@ -147,6 +150,7 @@
 .mg-card {
   min-width: 44px;
   min-height: 44px;
+  overflow: hidden;
   border-radius: 6px;
   background: #fff7ec;
 }
@@ -157,6 +161,7 @@
 }
 .mg-card.matched {
   outline: 2px solid #ace993;
+  outline-offset: -2px;
   opacity: 0.7;
 }
 
@@ -312,9 +317,9 @@
     border-top: 3px solid #d9ad63;
   }
 }
-@media (max-height: 390px) and (orientation: landscape) {
+
+@media (orientation: landscape) and (min-width: 1024px) {
   .mg-deck {
-    width: max(200px, 44dvh);
-    aspect-ratio: auto;
+    gap: 12px;
   }
 }

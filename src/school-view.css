@@ -1,0 +1,74 @@
+.school-ending {
+  overflow: auto;
+}
+.school-ending .event-background {
+  position: fixed;
+}
+.assessment-card:has(> .school-hero) {
+  width: min(100%, 38rem);
+}
+.assessment-card:has(> .school-hero) > p:not(#notice) {
+  min-block-size: 3em;
+}
+.school-hero {
+  display: block;
+  width: 100%;
+  height: clamp(9rem, 53dvh, 31rem);
+  object-fit: contain;
+}
+.graduation-summary {
+  width: min(100%, 56rem);
+  border: 18px solid transparent;
+  border-image: var(--graduation-frame) 70 fill / 18px;
+  background-clip: padding-box;
+}
+.graduation-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+}
+.graduation-details h2 {
+  font-size: 1.08rem;
+  overflow-wrap: anywhere;
+}
+.graduation-details ul {
+  margin: 0;
+  padding-inline-start: 1.2rem;
+}
+.graduation-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.45rem;
+}
+.graduation-stats img {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  margin: auto;
+}
+.graduation-stats dd {
+  margin: 0;
+  text-align: center;
+}
+@media (max-width: 540px) {
+  .graduation-summary {
+    gap: 0.6rem;
+    padding: 0.55rem;
+  }
+  .graduation-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+  .graduation-details section:first-child {
+    grid-column: 1 / -1;
+  }
+  .graduation-summary .actions {
+    gap: 0.4rem;
+  }
+  .graduation-summary .action {
+    padding-inline: 0.6rem;
+  }
+}

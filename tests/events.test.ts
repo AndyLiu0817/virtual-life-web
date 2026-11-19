@@ -73,7 +73,7 @@ it.each([
   ["good", 0, 0.36, "cash", 300, 800],
   ["bad", 0.9, 0.36, "cash", -200, -600],
 ] as const)(
-  "%s 事件按階段取值，變動目標為 %s",
+  "%s 事件按階段取值（選取權重 %s）",
   (kind, polarity, story, target, low, high) => {
     for (const [stage, multiplier] of [
       ["junior", 1],
@@ -84,10 +84,12 @@ it.each([
         [0, low],
         [0.9999, high],
       ]) {
+        const storyRoll =
+          stage === "junior" || target !== "cash" ? story : 0.175;
         const random =
           target === "cash"
-            ? draws(0.8, polarity, story, amountRoll)
-            : draws(0.8, polarity, story, 0.9999, amountRoll);
+            ? draws(0.8, polarity, storyRoll, amountRoll)
+            : draws(0.8, polarity, storyRoll, 0.9999, amountRoll);
         const result = drawEvent({ ...opening, stage }, random);
         expect(result.outcome).toMatchObject({
           kind,

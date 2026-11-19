@@ -586,3 +586,80 @@ for (const set of [1, 2, 3]) {
     await capture(page, `diff-debug-${set}`);
   });
 }
+
+test("記憶翻牌在四種尺寸完整顯示 16 張方形牌", async ({ page }) => {
+  const dialog = await openGame(page, 0.1875, false);
+  await freeze(page);
+  await begin(page, dialog);
+  const cards = dialog.locator(".mg-card");
+  await expect(cards).toHaveCount(16);
+  const deck = memoryDeck(() => 0.1875);
+  await tap(page, cards.nth(0));
+  await tap(page, cards.nth(deck.lastIndexOf(deck[0])));
+  await expect(dialog.locator(".mg-card.matched")).toHaveCount(2);
+
+  for (const [width, height] of [
+    [1280, 800],
+    [1280, 720],
+    [390, 844],
+    [844, 390],
+  ]) {
+    await page.setViewportSize({ width, height });
+    const field = (await dialog.locator(".mg-field").boundingBox())!;
+    const boxes = [];
+    const gap = width >= 1024 ? 12 : 8;
+    for (const card of await cards.all()) {
+      await expect(card).toBeInViewport({ ratio: 1 });
+      const bounds = (await card.boundingBox())!;
+      boxes.push(bounds);
+      expect(bounds.width).toBeGreaterThanOrEqual(44);
+      expect(bounds.width).toBeCloseTo(bounds.height, 1);
+      expect(bounds.x).toBeGreaterThanOrEqual(field.x);
+      expect(bounds.y).toBeGreaterThanOrEqual(field.y);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(
+        field.x + field.width,
+      );
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(
+        field.y + field.height,
+      );
+    }
+    for (const [i, box] of boxes.entries()) {
+      if (i % 4 !== 3)
+        expect(boxes[i + 1].x - (box.x + box.width)).toBeGreaterThanOrEqual(
+          gap,
+        );
+      if (i < 12)
+        expect(boxes[i + 4].y - (box.y + box.height)).toBeGreaterThanOrEqual(
+          gap,
+        );
+    }
+    await capture(page, `memory-${width}x${height}`);
+  }
+});
+
+for (const [name, roll, subject] of [
+  ["節奏拍擊", 0.0625, ".mg-lane"],
+  ["數字快算", 0.3125, ".mg-math"],
+  ["準心射擊", 0.4375, ".mg-gallery"],
+  ["打地鼠", 0.5625, ".mg-critter"],
+  ["找不同", 0.6875, ".mg-diff-picture"],
+  ["接水果", 0.8125, ".mg-basket"],
+  ["疊疊樂", 0.9375, ".mg-stack-moving"],
+] as const) {
+  test(`${name}的主要操作區在四種尺寸內完整可見`, async ({ page }) => {
+    const dialog = await openGame(page, roll, false);
+    await freeze(page);
+    await begin(page, dialog);
+    for (const [width, height] of [
+      [1280, 800],
+      [1280, 720],
+      [390, 844],
+      [844, 390],
+    ]) {
+      await page.setViewportSize({ width, height });
+      for (const target of await dialog.locator(subject).all()) {
+        await expect(target).toBeInViewport({ ratio: 1 });
+      }
+    }
+  });
+}

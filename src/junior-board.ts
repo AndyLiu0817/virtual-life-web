@@ -2,8 +2,9 @@ import { activityPrompt, promptForClub } from "./activity-view";
 import { playContest } from "./contest-view";
 import { clubChoice, visitClub } from "./game/clubs";
 import { nextMatch } from "./game/contests";
-import { assets } from "./assets";
-import { juniorBoard as board, tileLabels } from "./data/junior";
+import type { SchoolBoard } from "./data/school-board";
+import { handleLoveTile } from "./game/school";
+import { tileLabels } from "./data/junior";
 import { boardCamera } from "./board-camera";
 import { playDiceFlight } from "./board-dice-flight";
 import { boardView } from "./board-view";
@@ -42,20 +43,24 @@ interface BoardActions {
   manualSave: (save: Save) => void;
   exportSave: (save: Save) => void;
   home: () => void;
-  entrance: (save: Save) => void;
+  complete: (save: Save) => void;
 }
 
-export function showJuniorBoard(
+export function showStageBoard(
   app: HTMLElement,
   initial: Save,
+  board: SchoolBoard,
   message: string,
   actions: BoardActions,
 ) {
   let save = initial;
-  const debug = new URLSearchParams(location.search).get("debug") === "path";
-  const { portrait, landscape } = assets.junior;
+  const debugMode = new URLSearchParams(location.search).get("debug");
+  const showRoadArt = debugMode === "road" && !!board.roadMaps;
+  const debug = debugMode === "path" || showRoadArt;
+  const maps = showRoadArt ? board.roadMaps! : board.maps;
+  const { portrait, landscape } = maps;
   app.innerHTML = `<main class="stage junior">
-    <div class="board-map" role="group" aria-label="國中地圖">
+    <div class="board-map" role="group" aria-label="${board.label}">
       <div class="board-world"><picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
       <svg class="board-track" preserveAspectRatio="none"></svg></div>
     </div>
@@ -103,9 +108,10 @@ export function showJuniorBoard(
     track,
     board.layouts[orientation],
     orientation,
-    board.tiles,
+    board,
     save.gender,
     debug,
+    maps[orientation],
     camera.follow,
   );
   let facing = 1;
@@ -125,9 +131,10 @@ export function showJuniorBoard(
       track,
       board.layouts[orientation],
       orientation,
-      board.tiles,
+      board,
       save.gender,
       debug,
+      maps[orientation],
       camera.follow,
     );
     if (moving) {
@@ -442,6 +449,7 @@ export function showJuniorBoard(
     if (kind === "quiz") await playQuiz();
     if (kind === "club") await playClubVisit();
     if (kind === "contest") await contestTile();
+    if (kind === "love") await prompt("愛情", handleLoveTile(save));
     if (kind === "game") save = await playMinigame(activityDialog, save);
 
     const finished = finishTurn(save, deityJustArrived);
@@ -452,7 +460,7 @@ export function showJuniorBoard(
       await prompt("否極泰來！", "水星逆行已結束。接下來 3 回合為否極泰來。");
     if (stageFinished(board, save)) {
       orientationChange.disconnect();
-      actions.entrance(save);
+      actions.complete(save);
       return;
     }
     await automaticContest();
@@ -476,13 +484,13 @@ export function showJuniorBoard(
   find("h1").focus({ preventScroll: true });
 
   async function startBoard() {
-    const needsClub = clubChoice(save, "junior");
+    const needsClub = clubChoice(save, board.stage);
     if (!needsClub && !nextMatch(save, "turn")) return;
     hud.closeMenu(false);
     roll.disabled = true;
     navigation.forEach((button) => (button.disabled = true));
     if (needsClub) {
-      save = await promptForClub(activityDialog, save, "junior");
+      save = await promptForClub(activityDialog, save, board.stage);
       status();
       persist();
     }
