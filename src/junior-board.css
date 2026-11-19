@@ -74,6 +74,22 @@
   stroke-width: 0.75;
   opacity: 0.64;
 }
+.path-debug .walkable-outline {
+  fill: none;
+  stroke: #f6d963;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+}
+.path-debug .paver-clearance {
+  fill: none;
+  stroke: #8dff96;
+  stroke-width: 2;
+}
+.path-debug .paver-clearance[data-overlap="true"] {
+  fill: #e12947a6;
+  stroke: #ff3e50;
+  stroke-width: 3;
+}
 .path-debug circle {
   fill: #f02c7c;
 }

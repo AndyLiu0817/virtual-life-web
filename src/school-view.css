@@ -4,10 +4,16 @@
 .school-ending .event-background {
   position: fixed;
 }
+.assessment-card:has(> .school-hero) {
+  width: min(100%, 38rem);
+}
+.assessment-card:has(> .school-hero) > p:not(#notice) {
+  min-block-size: 3em;
+}
 .school-hero {
   display: block;
   width: 100%;
-  height: clamp(9rem, 43dvh, 26rem);
+  height: clamp(9rem, 53dvh, 31rem);
   object-fit: contain;
 }
 .graduation-summary {

@@ -132,8 +132,8 @@
   aspect-ratio: 1;
   display: grid;
   grid-template: repeat(4, minmax(0, 1fr)) / repeat(4, minmax(0, 1fr));
-  gap: clamp(2px, 1dvh, 8px);
-  padding: 5px;
+  gap: 8px;
+  padding: 8px;
   border-radius: 12px;
   background: #183d39d9;
 }
@@ -150,6 +150,7 @@
 .mg-card {
   min-width: 44px;
   min-height: 44px;
+  overflow: hidden;
   border-radius: 6px;
   background: #fff7ec;
 }
@@ -160,6 +161,7 @@
 }
 .mg-card.matched {
   outline: 2px solid #ace993;
+  outline-offset: -2px;
   opacity: 0.7;
 }
 

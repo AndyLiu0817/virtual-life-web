@@ -1,3 +1,4 @@
+import { paverClearance } from "./board-clearance";
 import { debugGrid, measureTrack, tileArtSize } from "./board-track";
 import type { BoardLayout, Orientation } from "./data/board-layout";
 import type { SchoolBoard } from "./data/school-board";
@@ -203,6 +204,13 @@ export function boardView(
       debug
         ? `<g class="path-debug" aria-hidden="true">
       ${debugGrid(layout)}
+      ${layout.walkable?.map((polygon) => `<polygon class="walkable-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
+      ${paverClearance(layout)
+        .map(
+          ({ id, polygon, overlaps }) =>
+            `<polygon class="paver-clearance" data-clearance-tile="${id}" data-overlap="${overlaps}" points="${polygon.join(" ")}"><title>${id}・${overlaps ? "與景物重疊" : "位於可走區域"}</title></polygon>`,
+        )
+        .join("")}
       ${centers.map(({ x, y }, id) => `<circle cx="${x}" cy="${y}" r="2.5"/><text x="${x}" y="${y - 5}">${id}</text>`).join("")}
     </g>
     <g class="scenery-debug" aria-hidden="true">

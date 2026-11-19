@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { schoolBoards } from "../src/data/school-board";
+import { paverClearance, routeCrossesScenery } from "../src/board-clearance";
+import { measureTrack } from "../src/board-track";
 import highEvents from "../src/data/high-events.json";
 import universityEvents from "../src/data/university-events.json";
 import { stageFinished } from "../src/game/board";
@@ -80,7 +82,9 @@ describe("學段棋盤", () => {
           for (const to of tile.next) {
             const [cx, cy] = cells[from];
             const [tx, ty] = cells[to];
-            expect(Math.abs(cx - tx) + Math.abs(cy - ty)).toBe(1);
+            expect(
+              Math.max(Math.abs(cx - tx), Math.abs(cy - ty)),
+            ).toBeLessThanOrEqual(2);
             if (!loop.has(from) || !loop.has(to))
               expect(board.tiles[to].next).toContain(from);
             if (tile.kind === "love")
@@ -248,3 +252,67 @@ it.each([
   }
   expect(nextMatch(save, "tile")).toBeUndefined();
 });
+
+it("地磚外框伸到景物或越過草地邊界時標示重疊", () => {
+  const layout = schoolBoards.high.layouts.landscape;
+  const fakeGround = [
+    [
+      [0, 0],
+      [100, 0],
+      [100, 100],
+      [0, 100],
+    ],
+    [
+      [47, 61],
+      [53, 61],
+      [53, 67],
+      [47, 67],
+    ],
+  ] as const;
+  const fixture = {
+    ...layout,
+    walkable: fakeGround,
+    origin: [50, 54],
+    halfWidth: 15,
+    halfHeight: 10,
+    cells: [
+      [0, 0],
+      [2, 0],
+      [5, 0],
+    ],
+  } as const;
+  expect(paverClearance(fixture).map((paver) => paver.overlaps)).toEqual([
+    true,
+    false,
+    true,
+  ]);
+});
+
+it.each(["high", "university"] as const)(
+  "%s 橫直版每塊地磚都避開景物",
+  (stage) => {
+    const board = schoolBoards[stage];
+    for (const [orientation, layout] of Object.entries(board.layouts)) {
+      const results = paverClearance(layout);
+      expect(results).toHaveLength(board.tiles.length);
+      expect(layout.walkable).toBeDefined();
+      const { centers } = measureTrack(layout);
+      const blockedLinks = board.tiles.flatMap(({ next }, from) =>
+        next
+          .filter((to) =>
+            routeCrossesScenery(
+              layout.walkable!,
+              [centers[from].x, centers[from].y],
+              [centers[to].x, centers[to].y],
+            ),
+          )
+          .map((to) => [from, to]),
+      );
+      expect(blockedLinks, orientation).toEqual([]);
+      expect(
+        results.filter(({ overlaps }) => overlaps).map(({ id }) => id),
+        orientation,
+      ).toEqual([]);
+    }
+  },
+);

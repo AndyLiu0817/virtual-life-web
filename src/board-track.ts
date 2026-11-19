@@ -1,4 +1,4 @@
-import type { BoardLayout, Cell } from "./data/board-layout";
+import type { BoardLayout, Cell, MapPoint } from "./data/board-layout";
 
 function project(layout: BoardLayout, [column, row]: Cell) {
   return {
@@ -12,8 +12,9 @@ const clayRadius = 0.19;
 export const tileArtSize = 256;
 
 export function measureTrack(layout: BoardLayout) {
-  const w = layout.halfWidth * 0.982;
-  const h = layout.halfHeight * 0.982;
+  const scale = (layout.tileScale ?? 1) * 0.982;
+  const w = layout.halfWidth * scale;
+  const h = layout.halfHeight * scale;
   const depth = w * 0.2;
   const roundX = w * clayRadius;
   const roundY = h * clayRadius;
@@ -35,7 +36,17 @@ export function measureTrack(layout: BoardLayout) {
   const centers = layout.cells.map((cell) => project(layout, cell));
   const tileTop = ({ x, y }: (typeof centers)[number]) =>
     `matrix(${w / tileArtSize} ${h / tileArtSize} ${-w / tileArtSize} ${h / tileArtSize} ${x} ${y})`;
-  return { centers, body, footprint, depth, tileTop };
+  // Bounding polygon includes the extruded side wall. The rounded paver
+  // and its image are entirely inside this polygon.
+  const bounds = ({ x, y }: (typeof centers)[number]): MapPoint[] => [
+    [x - w, y],
+    [x, y - h],
+    [x + w, y],
+    [x + w, y + depth],
+    [x, y + h + depth],
+    [x - w, y + depth],
+  ];
+  return { centers, body, footprint, depth, tileTop, bounds };
 }
 
 export function debugGrid(layout: BoardLayout) {

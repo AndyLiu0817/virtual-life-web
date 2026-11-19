@@ -183,6 +183,12 @@ for (const viewport of [landscape, portrait]) {
           await expect(page.locator(".path-debug text")).toHaveCount(
             schoolBoards[stage].tiles.length,
           );
+          await expect(
+            page.locator("[data-clearance-tile][data-overlap=false]"),
+          ).toHaveCount(schoolBoards[stage].tiles.length);
+          await expect(
+            page.locator("[data-clearance-tile][data-overlap=true]"),
+          ).toHaveCount(0);
           await capture(page, `${stage}-debug-${direction}`);
         });
     }
@@ -408,4 +414,75 @@ if (reviewPath) {
       await capture(page, `${stage}-follow-silhouette`);
     });
   }
+}
+
+for (const viewport of [landscape, { width: 1280, height: 720 }, portrait]) {
+  test(`兩學段換裝卡片在 ${viewport.width}×${viewport.height} 等大`, async ({
+    browser,
+  }) => {
+    const layouts = [];
+    for (const stage of ["high", "university"] as const) {
+      const page = await browser.newPage({ viewport });
+      try {
+        const save = schoolSave(stage);
+        await seed(page, {
+          ...save,
+          stageIntroSeen: save.stageIntroSeen.filter((seen) => seen !== stage),
+        });
+        const card = page.locator(".assessment-card");
+        const heading = page.getByRole("heading", {
+          name: stage === "high" ? "升上高中" : "進入大學",
+        });
+        const hero = card.locator(".school-hero");
+        const start = card.getByRole("button", { name: "開始", exact: true });
+        await expect(heading).toBeVisible();
+        await expect(start).toBeInViewport({ ratio: 1 });
+        await expect(hero).toHaveCSS("object-fit", "contain");
+        const bounds = (await card.boundingBox())!;
+        const heroHeight = (await hero.boundingBox())!.height;
+        expect(heroHeight).toBeGreaterThan(bounds.height / 2);
+        layouts.push({
+          width: bounds.width,
+          height: bounds.height,
+          heroHeight,
+          headingFont: await heading.evaluate(
+            (node) => getComputedStyle(node).fontSize,
+          ),
+          startHeight: (await start.boundingBox())!.height,
+        });
+        if (viewport.height !== 720)
+          await capture(
+            page,
+            `${stage}-intro-${viewport === portrait ? "portrait" : "landscape"}`,
+          );
+      } finally {
+        await page.close();
+      }
+    }
+    expect(layouts[0]).toEqual(layouts[1]);
+  });
+}
+
+for (const [viewport, gender] of [
+  [landscape, "boy"],
+  [portrait, "girl"],
+] as const) {
+  test(`大學 ${gender} 儀表板顯示新版頭像`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await seed(page, { ...schoolSave("university"), gender });
+    const avatar = page.locator(
+      viewport === portrait
+        ? ".hud-avatar-mobile .hud-hero"
+        : ".hud-avatar-desktop .hud-hero",
+    );
+    await expect(avatar).toHaveAttribute(
+      "src",
+      new RegExp(`avatar-${gender}-uni-256`),
+    );
+    await expect(avatar).toBeVisible();
+    await capture(
+      page,
+      `university-avatar-${viewport === portrait ? "portrait" : "landscape"}`,
+    );
+  });
 }

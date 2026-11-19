@@ -593,6 +593,10 @@ test("記憶翻牌在四種尺寸完整顯示 16 張方形牌", async ({ page })
   await begin(page, dialog);
   const cards = dialog.locator(".mg-card");
   await expect(cards).toHaveCount(16);
+  const deck = memoryDeck(() => 0.1875);
+  await tap(page, cards.nth(0));
+  await tap(page, cards.nth(deck.lastIndexOf(deck[0])));
+  await expect(dialog.locator(".mg-card.matched")).toHaveCount(2);
 
   for (const [width, height] of [
     [1280, 800],
@@ -602,9 +606,11 @@ test("記憶翻牌在四種尺寸完整顯示 16 張方形牌", async ({ page })
   ]) {
     await page.setViewportSize({ width, height });
     const field = (await dialog.locator(".mg-field").boundingBox())!;
+    const boxes = [];
     for (const card of await cards.all()) {
       await expect(card).toBeInViewport({ ratio: 1 });
       const bounds = (await card.boundingBox())!;
+      boxes.push(bounds);
       expect(bounds.width).toBeGreaterThanOrEqual(44);
       expect(bounds.width).toBeCloseTo(bounds.height, 1);
       expect(bounds.x).toBeGreaterThanOrEqual(field.x);
@@ -615,6 +621,12 @@ test("記憶翻牌在四種尺寸完整顯示 16 張方形牌", async ({ page })
       expect(bounds.y + bounds.height).toBeLessThanOrEqual(
         field.y + field.height,
       );
+    }
+    for (const [i, box] of boxes.entries()) {
+      if (i % 4 !== 3)
+        expect(boxes[i + 1].x - (box.x + box.width)).toBeGreaterThanOrEqual(8);
+      if (i < 12)
+        expect(boxes[i + 4].y - (box.y + box.height)).toBeGreaterThanOrEqual(8);
     }
     await capture(page, `memory-${width}x${height}`);
   }
