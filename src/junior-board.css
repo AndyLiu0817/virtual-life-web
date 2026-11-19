@@ -80,6 +80,12 @@
   stroke-width: 1.5;
   stroke-dasharray: 5 3;
 }
+.path-debug .scenery-outline {
+  fill: none;
+  stroke: #ffac82;
+  stroke-width: 2;
+}
+
 .path-debug .paver-clearance {
   fill: none;
   stroke: #8dff96;

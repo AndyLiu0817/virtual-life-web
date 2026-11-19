@@ -15,6 +15,7 @@ export interface BoardLayout {
   // bounds the road and subsequent outlines are the enclosed islands.
   road?: {
     outlines: readonly (readonly MapPoint[])[];
-    centerlines: readonly (readonly MapPoint[])[];
+    // Ground footprints of major scenery, in the same source coordinates.
+    obstacles?: readonly (readonly MapPoint[])[];
   };
 }

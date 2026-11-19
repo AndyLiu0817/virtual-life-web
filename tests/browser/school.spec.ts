@@ -372,10 +372,10 @@ if (reviewPath) {
       test(`${stage} ${gender} ${direction}走路幀`, async ({ page }) => {
         const { layouts, tiles } = schoolBoards[stage];
         const { cells } = layouts.landscape;
-        const start = cells.findIndex(([x, y], index) => {
+        const start = cells.findIndex(([, y], index) => {
           if (index < 5 || tiles[index].kind === "fork") return false;
-          const [tx, ty] = cells[tiles[index].next[0]];
-          return direction === "front" ? tx + ty > x + y : tx + ty < x + y;
+          const [, ty] = cells[tiles[index].next[0]];
+          return direction === "front" ? ty > y : ty <= y;
         });
         await page.setViewportSize(landscape);
         await seed(
@@ -497,13 +497,16 @@ for (const [stage, filename] of [
       "src",
       new RegExp(`map_${filename}_landscape_final`),
     );
-    await expect(page.locator(".road-centerline")).toHaveCount(3);
+    await expect(page.locator(".road-centerline")).toHaveCount(1);
     await expect(page.locator(".board-tile .paver-top")).toHaveCount(
       schoolBoards[stage].tiles.length,
     );
     await expect(page.locator("[data-clearance-tile]")).toHaveCount(
       schoolBoards[stage].tiles.length,
     );
+    await expect(
+      page.locator("[data-clearance-tile][data-overlap=true]"),
+    ).toHaveCount(0);
     await capture(page, `${stage}-painted-road-landscape`);
   });
 }

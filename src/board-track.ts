@@ -44,13 +44,10 @@ export function measureTrack(layout: BoardLayout) {
 }
 
 export function debugGrid(layout: BoardLayout) {
-  if (layout.road)
-    return layout.road.centerlines
-      .map(
-        (path) =>
-          `<polyline class="road-centerline" points="${path.join(" ")}"/>`,
-      )
-      .join("");
+  if (layout.road) {
+    const route = [...layout.cells, layout.cells[0]];
+    return `<polyline class="road-centerline" points="${route.join(" ")}"/>`;
+  }
   const columns = layout.cells.map(([column]) => column);
   const rows = layout.cells.map(([, row]) => row);
   const left = Math.min(...columns) - 0.5;

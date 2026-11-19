@@ -206,10 +206,11 @@ export function boardView(
         ? `<g class="path-debug" aria-hidden="true">
       ${debugGrid(layout)}
       ${layout.road?.outlines.map((polygon) => `<polygon class="road-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
+      ${layout.road?.obstacles?.map((polygon) => `<polygon class="scenery-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
       ${paverClearance(layout)
         .map(
-          ({ id, polygon, overlaps }) =>
-            `<polygon class="paver-clearance" data-clearance-tile="${id}" data-overlap="${overlaps}" points="${polygon.join(" ")}"><title>${id}・${overlaps ? "超出跑道區域" : "位於跑道內"}</title></polygon>`,
+          ({ id, polygon, onRoad, hitsScenery, overlaps }) =>
+            `<polygon class="paver-clearance" data-clearance-tile="${id}" data-overlap="${overlaps}" points="${polygon.join(" ")}"><title>${id}・${!onRoad ? "中心超出跑道" : hitsScenery ? "方磚壓到景物" : "中心位於跑道內"}</title></polygon>`,
         )
         .join("")}
       ${centers.map(({ x, y }, id) => `<circle cx="${x}" cy="${y}" r="2.5"/><text x="${x}" y="${y - 5}">${id}</text>`).join("")}

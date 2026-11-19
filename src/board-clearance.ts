@@ -41,26 +41,44 @@ function outlinesIntersect(a: Polygon, b: Polygon) {
 
 export function paverClearance(layout: BoardLayout) {
   if (!layout.road) return [];
-  const [ground, ...obstacles] = layout.road.outlines;
-  const { centers } = measureTrack(layout);
+  const [ground, ...islands] = layout.road.outlines;
+  const obstacles = layout.road.obstacles ?? [];
+  const { centers, depth } = measureTrack(layout);
   const w = layout.halfWidth * 0.982;
   const h = layout.halfHeight * 0.982;
+  const r = 0.19;
   return centers.map(({ x, y }, id) => {
     const polygon: Polygon = [
-      [x - w, y],
-      [x, y - h],
-      [x + w, y],
-      [x, y + h],
+      [x - w * (1 - r / 2), y],
+      [x - w * (1 - r), y - h * r],
+      [x - w * r, y - h * (1 - r)],
+      [x, y - h * (1 - r / 2)],
+      [x + w * r, y - h * (1 - r)],
+      [x + w * (1 - r), y - h * r],
+      [x + w * (1 - r / 2), y],
+      [x + w * (1 - r / 2), y + depth],
+      [x + w * (1 - r), y + h * r + depth],
+      [x + w * r, y + h * (1 - r) + depth],
+      [x, y + h * (1 - r / 2) + depth],
+      [x - w * r, y + h * (1 - r) + depth],
+      [x - w * (1 - r), y + h * r + depth],
+      [x - w * (1 - r / 2), y + depth],
     ];
-    const overlaps =
-      polygon.some((point) => !contains(ground, point)) ||
-      outlinesIntersect(polygon, ground) ||
-      obstacles.some(
-        (obstacle) =>
-          contains(obstacle, polygon[0]) ||
-          contains(polygon, obstacle[0]) ||
-          outlinesIntersect(polygon, obstacle),
-      );
-    return { id, polygon, overlaps };
+    const onRoad =
+      contains(ground, [x, y]) &&
+      !islands.some((island) => contains(island, [x, y]));
+    const hitsScenery = obstacles.some(
+      (obstacle) =>
+        contains(obstacle, polygon[0]) ||
+        contains(polygon, obstacle[0]) ||
+        outlinesIntersect(polygon, obstacle),
+    );
+    return {
+      id,
+      polygon,
+      onRoad,
+      hitsScenery,
+      overlaps: !onRoad || hitsScenery,
+    };
   });
 }

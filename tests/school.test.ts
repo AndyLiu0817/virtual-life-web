@@ -38,58 +38,52 @@ describe("學段棋盤", () => {
     [
       "high",
       25,
-      { start: 1, event: 8, game: 5, club: 3, quiz: 3, contest: 1, fork: 2 },
+      { start: 1, event: 10, game: 7, club: 4, quiz: 4, contest: 1 },
     ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 6,
-        game: 4,
-        club: 2,
-        quiz: 3,
+        event: 8,
+        game: 5,
+        club: 3,
+        quiz: 4,
         contest: 1,
-        love: 5,
-        fork: 2,
+        love: 6,
       },
     ],
-  ] as const)(
-    "%s 兩種方向共用主環、雙向捷徑及格子 ID",
-    (stage, turns, expected) => {
-      const board = schoolBoards[stage];
-      const frequencies: Record<string, number> = {};
-      for (const { kind } of board.tiles)
-        frequencies[kind] = (frequencies[kind] || 0) + 1;
-      expect(frequencies).toEqual(expected);
-      const total = Object.values(expected).reduce((a, b) => a + b, 0);
-      expect(board.tiles).toHaveLength(total);
-      expect(board.turns).toBe(turns);
-      const save = enterSchool(player, stage);
-      expect(stageFinished(board, { ...save, turn: turns - 1 })).toBe(false);
-      expect(stageFinished(board, { ...save, turn: turns })).toBe(true);
-      const loop = new Set<number>();
-      let id = board.start;
-      do {
-        expect(loop.has(id)).toBe(false);
-        loop.add(id);
-        id = board.tiles[id].next[0];
-      } while (id !== board.start);
-      for (const { cells } of Object.values(board.layouts)) {
-        expect(cells).toHaveLength(total);
-        expect(new Set(cells.map(String)).size).toBe(total);
-        for (const [from, tile] of board.tiles.entries()) {
-          for (const to of tile.next) {
-            if (!loop.has(from) || !loop.has(to))
-              expect(board.tiles[to].next).toContain(from);
-            if (tile.kind === "love")
-              expect(board.tiles[to].kind).not.toBe("love");
-          }
-          if (tile.kind === "love") expect(loop.has(from)).toBe(true);
+  ] as const)("%s 兩種方向共用完整外環及格子 ID", (stage, turns, expected) => {
+    const board = schoolBoards[stage];
+    const frequencies: Record<string, number> = {};
+    for (const { kind } of board.tiles)
+      frequencies[kind] = (frequencies[kind] || 0) + 1;
+    expect(frequencies).toEqual(expected);
+    const total = Object.values(expected).reduce((a, b) => a + b, 0);
+    expect(board.tiles).toHaveLength(total);
+    expect(board.turns).toBe(turns);
+    const save = enterSchool(player, stage);
+    expect(stageFinished(board, { ...save, turn: turns - 1 })).toBe(false);
+    expect(stageFinished(board, { ...save, turn: turns })).toBe(true);
+    const loop = new Set<number>();
+    let id = board.start;
+    do {
+      expect(loop.has(id)).toBe(false);
+      loop.add(id);
+      id = board.tiles[id].next[0];
+    } while (id !== board.start);
+    expect(loop.size).toBe(total);
+    for (const { cells } of Object.values(board.layouts)) {
+      expect(cells).toHaveLength(total);
+      expect(new Set(cells.map(String)).size).toBe(total);
+      for (const tile of board.tiles) {
+        for (const to of tile.next) {
+          if (tile.kind === "love")
+            expect(board.tiles[to].kind).not.toBe("love");
         }
       }
-    },
-  );
+    }
+  });
 });
 
 it("聯考十題四難題，智力輔助與作答進度可匯入", () => {
@@ -248,7 +242,7 @@ it.each([
   expect(nextMatch(save, "tile")).toBeUndefined();
 });
 
-it("地磚踏入跑道內島或越過跑道外框時標示重疊", () => {
+it("跑道容許方磚越過邊緣，但中心須在路上且方磚不能壓到景物", () => {
   const layout = schoolBoards.high.layouts.landscape;
   const fakeGround = [
     [
@@ -267,22 +261,28 @@ it("地磚踏入跑道內島或越過跑道外框時標示重疊", () => {
   const fixture = {
     ...layout,
     road: {
-      outlines: fakeGround,
-      centerlines: [],
+      outlines: [fakeGround[0]],
+      obstacles: [fakeGround[1]],
     },
     origin: [50, 54],
     halfWidth: 15,
     halfHeight: 10,
     cells: [
       [50, 54],
-      [80, 70],
+      [95, 70],
       [110, 54],
     ],
   } as const;
-  expect(paverClearance(fixture).map((paver) => paver.overlaps)).toEqual([
-    true,
-    false,
-    true,
+  expect(
+    paverClearance(fixture).map(({ onRoad, hitsScenery, overlaps }) => ({
+      onRoad,
+      hitsScenery,
+      overlaps,
+    })),
+  ).toEqual([
+    { onRoad: true, hitsScenery: true, overlaps: true },
+    { onRoad: true, hitsScenery: false, overlaps: false },
+    { onRoad: false, hitsScenery: false, overlaps: true },
   ]);
 });
 
@@ -302,7 +302,21 @@ it.each(["high", "university"] as const)(
         4,
       );
       const { centers } = measureTrack(layout);
-      expect(paverClearance(layout)).toHaveLength(board.tiles.length);
+      const clearance = paverClearance(layout);
+      expect(clearance).toHaveLength(board.tiles.length);
+      expect(
+        clearance.filter(({ overlaps }) => overlaps),
+        orientation,
+      ).toEqual([]);
+      for (const [id, tile] of board.tiles.entries()) {
+        const a = centers[id];
+        const b = centers[tile.next[0]];
+        const stride =
+          Math.abs(a.x - b.x) / (2 * layout.halfWidth) +
+          Math.abs(a.y - b.y) / (2 * layout.halfHeight);
+        expect(stride, `${orientation} ${id}`).toBeGreaterThanOrEqual(0.982);
+        expect(stride, `${orientation} ${id}`).toBeLessThanOrEqual(1.05);
+      }
       for (const [id, a] of centers.entries()) {
         for (const [offset, b] of centers.slice(id + 1).entries()) {
           expect(
