@@ -242,7 +242,7 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await page
     .locator("#roll")
     .evaluate((button: HTMLButtonElement) => button.click());
-  await page.clock.runFor(1_600);
+  await page.clock.runFor(2_800);
   await page.clock.resume();
   await expect(page.getByRole("dialog").locator(".mg-confirm")).toHaveText(
     "開始",
@@ -337,9 +337,9 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
             artwork.right <= frame.right + tolerance &&
             artwork.bottom <= frame.bottom + tolerance;
           const scale = new DOMMatrix(getComputedStyle(world).transform).a;
-          if (!(covered || (scale === 1 && fitted)) || !pawnVisible)
-            throw new Error("鏡頭超出地圖或棋子離開畫面");
-          return scale;
+          return (covered || (scale === 1 && fitted)) && pawnVisible
+            ? scale
+            : null;
         }),
       )
       .toBe(zoom);

@@ -175,6 +175,7 @@ for (const layout of [
         path: `${process.env.HUD_SCREENSHOTS}/${layout.name}.png`,
       });
     }
+    const worldBeforeDrawer = await page.locator(".board-world").boundingBox();
     await avatar.click();
     await expect(page.getByRole("region", { name: "棋盤選單" })).toBeVisible();
     await expect(page.locator(".hud-badges-drawer")).toContainText("人生經驗");
@@ -185,6 +186,10 @@ for (const layout of [
         await expect(page.locator(".hud-attached")).toHaveText(deity);
     }
     await assertLayout();
+    expect(await page.locator(".board-map").boundingBox()).toEqual(viewport);
+    expect(await page.locator(".board-world").boundingBox()).toEqual(
+      worldBeforeDrawer,
+    );
     if (
       process.env.HUD_SCREENSHOTS &&
       (portrait ? layout.over : tone === "good")
@@ -230,8 +235,74 @@ test("all 42 tiles fit in the landscape board at both requested sizes", async ({
     expect(bounds.x).toBe(0);
     expect(bounds.width).toBe(size.width);
     expect(bounds.y + bounds.height).toBe(size.height);
+    const roll = (await page.locator("#roll").boundingBox())!;
+    expect(roll.width).toBeGreaterThanOrEqual(88);
+    expect(size.width - roll.x - roll.width).toBeLessThanOrEqual(16);
+    expect(size.height - roll.y - roll.height).toBeLessThanOrEqual(16);
+    const covered = await map.locator(".board-tile, .board-pawn").evaluateAll(
+      (pieces, die) =>
+        pieces
+          .filter((piece) => {
+            const bounds = piece.getBoundingClientRect();
+            return (
+              bounds.left < die.x + die.width &&
+              bounds.right > die.x &&
+              bounds.top < die.y + die.height &&
+              bounds.bottom > die.y
+            );
+          })
+          .map((piece) => piece.getAttribute("data-tile")),
+      roll,
+    );
+    expect(covered).toEqual([]);
   }
 });
+
+for (const size of [
+  { width: 1280, height: 800 },
+  { width: 390, height: 844 },
+]) {
+  test(`dice settles before the pawn starts moving at ${size.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    await loadBoard(page);
+    const roll = page.locator("#roll");
+    const flight = page.locator(".board-dice-flight");
+    const pawn = page.locator(".board-pawn");
+    await roll.click();
+    await expect(flight).toHaveAttribute("data-phase", "rolling");
+    await expect(roll).toBeDisabled();
+    await expect(pawn.locator('[data-pose="stand"]')).toHaveAttribute(
+      "visibility",
+      "visible",
+    );
+    if (process.env.HUD_SCREENSHOTS && size.width === 1280) {
+      await page.evaluate(async () => {
+        const flight = document.querySelector(".board-dice-flight")!;
+        for (const motion of flight.getAnimations({ subtree: true })) {
+          motion.pause();
+          motion.currentTime = 360;
+        }
+      });
+      await page.screenshot({
+        path: `${process.env.HUD_SCREENSHOTS}/dice-rolling.png`,
+      });
+    }
+    await expect(flight).toHaveAttribute("data-phase", "settled");
+    await expect(flight.locator('.flight-die[data-face="2"]')).toHaveCount(2);
+    await expect(pawn.locator('[data-pose="stand"]')).toHaveAttribute(
+      "visibility",
+      "visible",
+    );
+    await expect(roll).toBeDisabled();
+    await expect(flight).toHaveCount(0);
+    await expect(pawn.locator('[data-pose="stand"]')).toHaveAttribute(
+      "visibility",
+      "hidden",
+    );
+  });
+}
 
 test("dice disables through pawn movement and the landing popup", async ({
   page,

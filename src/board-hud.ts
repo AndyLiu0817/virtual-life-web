@@ -45,6 +45,7 @@ export const boardHudMarkup = (
         <h1 tabindex="-1"></h1>
         <h2 id="character-name"></h2>
         <span class="hud-stage"></span>
+        <span class="hud-date"></span>
       </div>
     </header>
     <dl class="hud-stats" aria-label="四維">
@@ -134,6 +135,9 @@ export function boardHud(root: HTMLElement, turns: number) {
       close.focus({ preventScroll: true });
     };
   });
+  root.parentElement
+    ?.querySelector(".board-map")
+    ?.addEventListener("click", () => closeMenu());
   close.onclick = () => closeMenu();
   root.onkeydown = (event) => {
     if (event.key === "Escape" && !menu.hidden) {
@@ -160,6 +164,14 @@ export function boardHud(root: HTMLElement, turns: number) {
   );
   const cash = status.querySelector<HTMLElement>(".hud-cash")!;
   const turn = status.querySelector<HTMLElement>(".hud-turn dd")!;
+  const turnGroup = turn.parentElement!;
+  const summary = status.querySelector<HTMLElement>(".hud-summary")!;
+  const person = status.querySelector<HTMLElement>(".hud-person")!;
+  const portrait = matchMedia("(orientation: portrait)");
+  function placeTurn() {
+    (portrait.matches ? summary : person).append(turnGroup);
+  }
+  placeTurn();
   const badges = root.querySelectorAll<HTMLElement>(".hud-badges");
   const attached = status.querySelector<HTMLElement>(".hud-attached")!;
   const attachedHead = attached.querySelector<HTMLImageElement>("img")!;
@@ -167,6 +179,7 @@ export function boardHud(root: HTMLElement, turns: number) {
     ".hud-attached-detail",
   )!;
   const avatars = root.querySelectorAll<HTMLElement>(".hud-avatar");
+  const date = status.querySelector<HTMLElement>(".hud-date")!;
   const stageLabel = root.querySelector<HTMLElement>(".hud-stage")!;
   const name = root.querySelector<HTMLElement>("#character-name")!;
   const heading = root.querySelector<HTMLElement>(".hud-identity h1")!;
@@ -198,6 +211,7 @@ export function boardHud(root: HTMLElement, turns: number) {
         : "bad"
       : "normal";
     name.textContent = save.name;
+    date.textContent = `生日 ${save.birthday.month}/${save.birthday.day}`;
     heading.textContent = `${title}棋盤`;
     // The junior grade is decorative. Each of its three labels spans five turns.
     stageLabel.textContent =
@@ -289,6 +303,7 @@ export function boardHud(root: HTMLElement, turns: number) {
     update,
     closeMenu,
     reorient() {
+      placeTurn();
       if (opener && !opener.getClientRects().length) closeMenu();
     },
   };

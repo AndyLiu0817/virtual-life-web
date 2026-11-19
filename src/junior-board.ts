@@ -5,6 +5,7 @@ import { nextMatch } from "./game/contests";
 import { assets } from "./assets";
 import { juniorBoard as board, tileLabels } from "./data/junior";
 import { boardCamera } from "./board-camera";
+import { playDiceFlight } from "./board-dice-flight";
 import { boardView } from "./board-view";
 import { boardHud, boardHudMarkup } from "./board-hud";
 import type { Orientation } from "./data/board-layout";
@@ -36,10 +37,6 @@ import "./junior-board.css";
 import "./event-view.css";
 
 const walkStepMs = 550;
-function delay(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
-
 interface BoardActions {
   autoSave: (save: Save) => void;
   manualSave: (save: Save) => void;
@@ -411,10 +408,8 @@ export function showJuniorBoard(
     } else {
       const values = rollDice(count);
       if (!reducedMotion) {
-        for (let frame = 0; frame < 5; frame++) {
-          showDice(values.map((value) => ((value + frame) % 6) + 1));
-          await delay(70);
-        }
+        showDice([]);
+        await playDiceFlight(find(".junior"), find(".board-map"), roll, values);
       }
       showDice(values);
       const points = values.reduce((sum, value) => sum + value, 0);
