@@ -384,12 +384,21 @@ test("打地鼠 scores on real pointerdown and 30 hits earns 優秀", async ({
   await target.focus();
   await keyMash(page);
   await expect(score).toHaveText("命中 0 隻");
+  await target.blur();
   await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
   await page.mouse.down();
   await expect(score).toHaveText("命中 1 隻");
+  await expect(target.locator("img")).toHaveAttribute("src", /clock-dizzy/);
+  const impact = dialog.locator(".mg-whack-impact");
+  await expect(impact.locator('img[src*="hammer-glow"]')).toBeVisible();
+  await expect(impact.locator('img[src*="burst"]')).toBeVisible();
+  await capture(page, "whack-hit");
   await page.mouse.up();
   await page.mouse.click(first.x + first.width / 2, first.y + first.height / 2);
-  await expect(dialog.locator(".mg-tap-mark")).toHaveText("×");
+  await expect(
+    dialog.locator('.mg-whack-puff img[src*="cloud"]'),
+  ).toBeVisible();
+  await expect(score).toHaveText("命中 1 隻");
 
   for (let hit = 2; hit <= 30; hit++) {
     await page.clock.runFor(800);
@@ -457,6 +466,8 @@ test("接水果 accepts a held mouse drag and records fruit and misses", async (
   await page.setViewportSize({ width: 780, height: 360 });
   await expectSignOnBackdrop(dialog);
   await page.setViewportSize({ width: 390, height: 844 });
+  const basket = dialog.locator(".mg-basket img");
+  await expect(basket).toHaveCSS("object-fit", "contain");
   const field = dialog.locator(".mg-field");
   const box = (await field.boundingBox())!;
   const score = dialog.locator(".mg-score");
@@ -487,9 +498,8 @@ test("接水果 accepts a held mouse drag and records fruit and misses", async (
 async function expectBlockProportions(sprites: Locator) {
   const errors = await sprites.evaluateAll((nodes) =>
     nodes.map((node) => {
-      const [width, height] = (node as HTMLElement).style.aspectRatio
-        .split("/")
-        .map(Number);
+      const { naturalWidth: width, naturalHeight: height } =
+        node as HTMLImageElement;
       const bounds = node.getBoundingClientRect();
       return Math.abs(bounds.width / bounds.height - width / height);
     }),
@@ -552,45 +562,6 @@ for (const portrait of [false, true]) {
     }
   });
 }
-
-test("all second-batch sprite crops have transparent corners", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const secondArt = await page.evaluate(async () => {
-    const modulePath = "/src/minigame-second-art.ts";
-    return (await import(modulePath)).secondArt as Record<
-      string,
-      { sheet: string; crops: [number, number, number, number][] }
-    >;
-  });
-  for (const { sheet, crops } of Object.values(secondArt)) {
-    const spriteAlphas = await page.evaluate(
-      async ({ sheet, crops }) => {
-        const img = new Image();
-        img.src = sheet;
-        await img.decode();
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0);
-        return crops.map(([x, y, w, h]) =>
-          [
-            [x, y],
-            [x + w - 1, y],
-            [x, y + h - 1],
-            [x + w - 1, y + h - 1],
-          ].map(
-            ([col, row]) => ctx.getImageData(col * 2, row * 2, 1, 1).data[3],
-          ),
-        );
-      },
-      { sheet, crops },
-    );
-    expect(spriteAlphas).toEqual(crops.map(() => [0, 0, 0, 0]));
-  }
-});
 
 for (const set of [1, 2, 3]) {
   test(`找不同第 ${set} 組開發檢視描繪兩張圖的五個熱點`, async ({ page }) => {

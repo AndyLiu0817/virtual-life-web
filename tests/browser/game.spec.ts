@@ -451,3 +451,124 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
   await toggle.uncheck();
   await expect(anchors).toBeHidden();
 });
+
+for (const portrait of [false, true]) {
+  const orientation = portrait ? "portrait" : "landscape";
+  test(`all 國中 tile faces are visible and decoded in ${orientation} on turn 3`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize(
+      portrait ? { width: 430, height: 932 } : { width: 1240, height: 740 },
+    );
+    await page.addInitScript(() => {
+      Math.random = () => 0.2;
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: "開始新人生" }).click();
+    await page.getByLabel("名字").fill("小宇");
+    await page.getByRole("button", { name: "查看開局結果" }).click();
+    await page.getByRole("button", { name: "確認開局" }).click();
+    await page.getByRole("button", { name: /研習社/ }).click();
+    const roll = page.locator("#roll");
+    const dialog = page.getByRole("dialog");
+    await roll.click();
+    await dialog.getByRole("button", { name: /走捷徑/ }).click();
+    await roll.click();
+    await page.clock.install();
+    await skipMinigame(page);
+    await dialog.getByRole("button", { name: "確定" }).click();
+    await expect(page.locator(".board-status")).toContainText("3 ／ 15");
+    await expect(page.locator(".board-pawn")).toHaveAttribute(
+      "data-tile",
+      "41",
+    );
+    await page.getByRole("button", { name: "看全圖" }).click();
+    const tiles = page.locator(".board-tile");
+    await expect(tiles).toHaveCount(42);
+    for (const tile of await tiles.all()) {
+      const art = tile.locator(".paver-top");
+      await expect(art).toHaveCount(1);
+      await expect(art).toBeVisible();
+      await expect(art).toBeInViewport();
+      const kind = await tile.getAttribute("data-kind");
+      await expect(art).toHaveAttribute(
+        "href",
+        new RegExp(`/${kind}-clay(?:[-.])`),
+      );
+    }
+    const faces = tiles.locator(".paver-top");
+    const decoded = await faces.evaluateAll((elements) =>
+      Promise.all(
+        elements.map(async (element) => {
+          const image = new Image();
+          image.src = (element as SVGImageElement).href.baseVal;
+          await image.decode();
+          return image.naturalWidth > 0 && image.naturalHeight > 0;
+        }),
+      ),
+    );
+    expect(decoded).toEqual(Array(42).fill(true));
+    const map = page.locator(".board-map");
+    const withArt = await map.screenshot({ scale: "css" });
+    const withoutArt = await map.screenshot({
+      scale: "css",
+      style: ".paver-top { visibility: hidden !important; }",
+    });
+    const bounds = (await map.boundingBox())!;
+    const missing = await faces.evaluateAll(
+      async (elements, { withArt, withoutArt, bounds }) => {
+        async function pixels(source: string) {
+          const image = new Image();
+          image.src = `data:image/png;base64,${source}`;
+          await image.decode();
+          const canvas = document.createElement("canvas");
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(image, 0, 0);
+          return ctx;
+        }
+        const [before, after] = await Promise.all([
+          pixels(withArt),
+          pixels(withoutArt),
+        ]);
+        return elements.flatMap((element) => {
+          const rect = element.getBoundingClientRect();
+          const x = Math.round(rect.left + rect.width / 2 - bounds.x);
+          const y = Math.round(rect.top + rect.height / 2 - bounds.y);
+          const size = Math.max(3, Math.floor(rect.height * 0.35));
+          const a = before.getImageData(
+            x - size,
+            y - size,
+            size * 2,
+            size * 2,
+          ).data;
+          const b = after.getImageData(
+            x - size,
+            y - size,
+            size * 2,
+            size * 2,
+          ).data;
+          const changed = a.filter(
+            (value, i) => Math.abs(value - b[i]) > 12,
+          ).length;
+          return changed > (size * size) / 2
+            ? []
+            : [element.parentElement?.getAttribute("data-tile")];
+        });
+      },
+      {
+        withArt: withArt.toString("base64"),
+        withoutArt: withoutArt.toString("base64"),
+        bounds,
+      },
+    );
+    expect(missing).toEqual([]);
+    if (process.env.ANDY_SCREENSHOTS) {
+      await page.screenshot({
+        path: `${process.env.ANDY_SCREENSHOTS}/board-${orientation}.png`,
+      });
+    }
+  });
+}

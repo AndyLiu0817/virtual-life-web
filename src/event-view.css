@@ -37,8 +37,13 @@
   object-fit: cover;
 }
 .event-portrait {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  transform: translateX(-50%);
   height: 88%;
   max-width: 74%;
+  object-fit: contain;
 }
 .event-npc {
   position: absolute;
@@ -49,11 +54,6 @@
   max-width: 52%;
   object-fit: contain;
   object-position: right bottom;
-}
-.event-stage:not([data-tone="scene"]) .event-portrait {
-  justify-self: center;
-  align-self: center;
-  border-radius: 1rem;
 }
 .event-copy {
   padding: clamp(0.7rem, 2.2vw, 1.45rem) clamp(0.9rem, 4vw, 2rem);

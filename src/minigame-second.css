@@ -99,9 +99,6 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
-.mg-tap-mark.hit {
-  background: #245f2f;
-}
 
 .mg-play[data-game="diff"] {
   height: min(350px, calc(37.5vw + 46px), calc(100dvh - 1.15rem));
@@ -262,4 +259,66 @@
   z-index: -1;
   inset: 0;
   pointer-events: none;
+}
+
+.mg-whack-impact,
+.mg-whack-puff {
+  position: absolute;
+  z-index: 2;
+  width: clamp(38px, 11cqh, 70px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.mg-whack-impact img,
+.mg-whack-puff img {
+  width: 100%;
+}
+.mg-whack-impact img + img {
+  position: absolute;
+  bottom: 35%;
+  left: 35%;
+  width: 155%;
+  transform-origin: 76% 85%;
+  animation: mg-hammer-swing 230ms ease-out both;
+}
+.mg-critter.struck .mg-sprite {
+  animation: mg-critter-sink 250ms ease-in both;
+}
+.mg-whack-puff {
+  animation: mg-cloud-puff 260ms ease-out both;
+}
+@keyframes mg-hammer-swing {
+  from {
+    transform: rotate(30deg);
+  }
+  35%,
+  to {
+    transform: rotate(-21deg);
+  }
+}
+@keyframes mg-critter-sink {
+  0%,
+  48% {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(45%);
+    opacity: 0;
+  }
+}
+@keyframes mg-cloud-puff {
+  from {
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  to {
+    transform: translate(-50%, -62%) scale(1.1);
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mg-critter.struck .mg-sprite,
+  .mg-whack-impact img + img,
+  .mg-whack-puff {
+    animation: none;
+  }
 }

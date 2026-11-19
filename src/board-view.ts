@@ -1,5 +1,5 @@
 import { assets } from "./assets";
-import { clayRadius, debugGrid, measureTrack } from "./board-track";
+import { debugGrid, measureTrack, tileArtSize } from "./board-track";
 import type { BoardLayout, Orientation } from "./data/board-layout";
 import { juniorScenery } from "./data/junior-scenery";
 import { tileLabels, type TileKind } from "./data/junior";
@@ -60,6 +60,7 @@ export function boardView(
       <use href="#scene-art" clip-path="url(#scenery-clip-${id})"/>
     </g>`,
   }));
+  // Rounded corners are baked into the faces, avoiding a per-image SVG clip.
   for (const [id, center] of centers.entries()) {
     const { kind } = tiles[id];
     layers.push({
@@ -70,7 +71,7 @@ export function boardView(
           <use href="#clay-body" fill="${claySides[kind]}"/>
           <use href="#clay-body" fill="url(#clay-side-light)"/>
         </g>
-        <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="-.5" y="-.5" width="1" height="1" preserveAspectRatio="none" transform="${tileTop(center)}" clip-path="url(#clay-top)"/>
+        <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="${-tileArtSize / 2}" y="${-tileArtSize / 2}" width="${tileArtSize}" height="${tileArtSize}" preserveAspectRatio="none" transform="${tileTop(center)}"/>
       </g>`,
     });
   }
@@ -79,11 +80,6 @@ export function boardView(
     <defs>
       <path id="clay-body" d="${body}"/>
       <path id="clay-footprint" d="${footprint}"/>
-      <clipPath id="clay-top" clipPathUnits="objectBoundingBox">
-        <path d="M ${clayRadius} 0 H ${1 - clayRadius} Q 1 0 1 ${clayRadius}
-          V ${1 - clayRadius} Q 1 1 ${1 - clayRadius} 1 H ${clayRadius}
-          Q 0 1 0 ${1 - clayRadius} V ${clayRadius} Q 0 0 ${clayRadius} 0 Z"/>
-      </clipPath>
       <linearGradient id="clay-side-light" x2="100%" y2="56%">
         <stop stop-color="#fff2d2" stop-opacity=".12"/>
         <stop offset=".49" stop-color="#fff2d2" stop-opacity=".04"/>
