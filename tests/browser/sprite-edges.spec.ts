@@ -15,10 +15,11 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
       .map((file) => `/${dir}/${file}`),
   );
   expect(sprites.filter((url) => url.includes("/deities/"))).toHaveLength(7);
-  expect(sprites.filter((url) => url.includes("/hud/"))).toHaveLength(65);
+  expect(sprites.filter((url) => url.includes("/hud/"))).toHaveLength(72);
   expect(
     sprites.filter((url) => /\/hud\/avatar-.*-(128|256)\.webp$/.test(url)),
   ).toHaveLength(16);
+  expect(sprites.filter((url) => url.includes("/hud/deity-"))).toHaveLength(7);
   await page.goto("/");
   const samples = await page.evaluate(async (urls) => {
     return Promise.all(
@@ -43,14 +44,46 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
         let translucent = 0;
         let whiteFringe = 0;
         let creamFringe = 0;
+        let paleOpaqueRim = 0;
+        const hud = url.includes("/hud/");
+        const rimOffsets = [-2, -1, 0, 1, 2].flatMap((dy) =>
+          [-2, -1, 0, 1, 2]
+            .filter((dx) => dx * dx + dy * dy <= 4)
+            .map((dx) => [dx, dy] as const),
+        );
         // Sample every partially transparent edge pixel. Skip essentially
         // invisible pixels where canvas unpremultiplication rounds RGB.
         for (let i = 0; i < data.length; i += 4) {
           const alpha = data[i + 3];
           if (alpha === 255) opaque++;
+          const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+          // Inspect the first two pixels of the visible contour, including
+          // solid pixels and the inner edges of holes such as avatar rings.
+          if (
+            hud &&
+            alpha >= 128 &&
+            (Math.min(r, g, b) >= 224 || (r >= 235 && g >= 218 && b >= 190))
+          ) {
+            const pixel = i / 4;
+            const x = pixel % width;
+            const y = Math.floor(pixel / width);
+            if (
+              rimOffsets.some(([dx, dy]) => {
+                const nx = x + dx;
+                const ny = y + dy;
+                return (
+                  nx < 0 ||
+                  ny < 0 ||
+                  nx >= width ||
+                  ny >= height ||
+                  data[(ny * width + nx) * 4 + 3] < 16
+                );
+              })
+            )
+              paleOpaqueRim++;
+          }
           if (alpha < 16 || alpha === 255) continue;
           translucent++;
-          const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
           if (Math.min(r, g, b) >= 235) whiteFringe++;
           if (r >= 240 && g >= 222 && b >= 200) creamFringe++;
         }
@@ -61,6 +94,7 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
           translucent,
           whiteFringe,
           creamFringe,
+          paleOpaqueRim,
         };
       }),
     );
@@ -70,7 +104,9 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
     expect(sample.opaque, sample.url).toBeGreaterThan(0);
     expect(sample.translucent, sample.url).toBeGreaterThan(0);
     expect(sample.whiteFringe, sample.url).toBe(0);
-    if (sample.url.includes("/hud/"))
+    if (sample.url.includes("/hud/")) {
       expect(sample.creamFringe, sample.url).toBe(0);
+      expect(sample.paleOpaqueRim, sample.url).toBe(0);
+    }
   }
 });

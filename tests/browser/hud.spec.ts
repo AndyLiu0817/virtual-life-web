@@ -101,13 +101,13 @@ for (const layout of [
       expect(ringBounds).toEqual(box);
     }
     for (const [selector, minimum] of [
-      ["#character-name", portrait ? 32 : 44],
-      [".hud-stage, .hud-date", portrait ? 24 : 32],
-      [".hud-turn dd, .hud-cash dd", portrait ? 24 : 35],
-      [".hud-stat .hud-value", portrait ? 22 : 35],
-      [".hud-menu-trigger", 26],
+      ["#character-name", portrait ? 16 : 38],
+      [".hud-stage, .hud-date", portrait ? 12 : 27],
+      [".hud-turn dd, .hud-cash dd", portrait ? 13 : 29],
+      [".hud-stat .hud-value", portrait ? 12 : 29],
+      [".hud-menu-trigger", portrait ? 26 : 22],
       ...(layout.deity
-        ? [[".hud-attached-detail", portrait ? 24 : 29] as const]
+        ? [[".hud-attached-detail", portrait ? 13 : 25] as const]
         : []),
     ] as const) {
       for (const element of await page.locator(selector).all()) {
@@ -132,15 +132,19 @@ for (const layout of [
           };
         });
         expect(text.fontSize, selector).toBeGreaterThanOrEqual(minimum);
+        if (!portrait)
+          expect(text.fontSize, selector).toBeLessThanOrEqual(minimum + 1);
         expect(text.fits, selector).toBe(true);
+        if (portrait && selector !== ".hud-menu-trigger")
+          expect(text.fontSize, selector).toBeLessThanOrEqual(16);
       }
     }
     for (const stat of await page.locator(".hud-stat").all()) {
       const icon = (await stat.locator(".hud-stat-icon").boundingBox())!;
       const value = (await stat.locator("dd").boundingBox())!;
       const bar = (await stat.locator(".hud-meter").boundingBox())!;
-      expect(icon.height).toBe(portrait ? 48 : 78);
-      expect(bar.height).toBe(portrait ? 10 : 16);
+      expect(icon.height).toBe(portrait ? 26 : 66);
+      expect(bar.height).toBe(portrait ? 6 : 14);
       expect(icon.y + icon.height).toBeLessThanOrEqual(value.y);
       expect(value.y + value.height).toBeLessThanOrEqual(bar.y);
     }
@@ -213,6 +217,20 @@ for (const layout of [
       }
     };
     await assertLayout();
+    if (portrait) {
+      const top = (await page.locator(".board-status").boundingBox())!;
+      const board = (await page.locator(".board-map").boundingBox())!;
+      expect(top.height).toBeLessThanOrEqual(130);
+      expect(board.height).toBeGreaterThanOrEqual(500);
+      const cash = (await page.locator(".hud-cash").boundingBox())!;
+      const turn = (await page.locator(".hud-turn").boundingBox())!;
+      if (layout.deity) {
+        const deity = (await page.locator(".hud-attached").boundingBox())!;
+        expect(deity.y).toBeCloseTo(cash.y, -1);
+        expect(cash.x + cash.width).toBeLessThanOrEqual(deity.x);
+        expect(deity.x + deity.width).toBeLessThanOrEqual(turn.x);
+      }
+    }
     const scene = (await page.locator(".board-world").boundingBox())!;
     const viewport = (await page.locator(".board-map").boundingBox())!;
     expect(scene.x).toBeLessThanOrEqual(viewport.x + 0.5);

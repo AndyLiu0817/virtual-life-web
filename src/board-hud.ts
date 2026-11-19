@@ -8,15 +8,11 @@ import "./board-hud.css";
 const sprites = import.meta.glob<string>(
   [
     "../art/hud/avatar-*.webp",
+    "../art/hud/deity-*.webp",
     "../art/hud/{intellect,morality,charm,fitness,kit-dice,dice-glow-1,dice-disabled-1,close-normal-1}.webp",
   ],
   { eager: true, import: "default", query: "?url" },
 );
-const deityArt = import.meta.glob<string>("../art/deities/*.webp", {
-  eager: true,
-  import: "default",
-  query: "?url",
-});
 const sprite = (name: string) => sprites[`../art/hud/${name}.webp`];
 const schools = {
   elementary: { title: "小學", art: "elem", target: 100 },
@@ -269,7 +265,7 @@ export function boardHud(root: HTMLElement, turns: number) {
       ({ stage }) => stage === save.stage,
     )?.clubId;
     const club = clubId && isClubId(clubId) ? clubs[clubId].name : "";
-    const head = deity ? deityArt[`../art/deities/${deity.id}.webp`] : "";
+    const head = deity ? sprite(`deity-${deity.id}`) : "";
     const deityLabel = deity
       ? `${deities[deity.id].name}・${deity.remainingTurns} 回合`
       : "";
