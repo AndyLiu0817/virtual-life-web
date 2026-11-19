@@ -9,6 +9,7 @@ import type { Save } from "./game/saves";
 import { minigameBackground, sprite } from "./minigame-art";
 import { minigameRounds } from "./minigame-rounds";
 import "./minigame-view.css";
+import "./minigame-second.css";
 
 function confirmation(dialog: HTMLDialogElement) {
   const button = dialog.querySelector<HTMLButtonElement>(".mg-confirm")!;
@@ -23,7 +24,7 @@ function confirmation(dialog: HTMLDialogElement) {
 
 function card(dialog: HTMLDialogElement, game: Minigame, content: string) {
   dialog.innerHTML = `<section class="mg-card-layout">
-    <div class="mg-illustration">${minigameBackground(game)}${sprite(game)}</div>
+    <div class="mg-illustration" data-game="${game}">${minigameBackground(game)}${sprite(game)}</div>
     <div class="mg-copy">${content}</div>
   </section>`;
 }
@@ -46,7 +47,7 @@ export async function playMinigameRound(
   dialog.showModal();
   await confirmation(dialog);
   dialog.innerHTML = `<section class="mg-play" data-game="${game}">
-    ${minigameBackground(game)}
+    ${game === "diff" || game === "whack" || game === "catch" ? "" : minigameBackground(game)}
     <header class="mg-hud">
       <h2 id="activity-title" tabindex="-1">${title}</h2>
       <div><span class="mg-score"></span><span class="mg-clock"></span></div>
@@ -79,11 +80,11 @@ export async function playMinigame(dialog: HTMLDialogElement, save: Save) {
   const target = (threshold: number) =>
     game === "memory"
       ? `${threshold} 秒內配完 8 對`
-      : `${threshold}${unit}以上`;
+      : `${threshold}${unit}以上${game === "catch" ? "・漏接最多 5 個" : ""}`;
   const score =
     game === "memory"
       ? `${result.score} ／ 8 對・${((result.elapsedMs ?? 0) / 1000).toFixed(3)} 秒`
-      : `${result.score}${unit}`;
+      : `${result.score}${unit}${game === "catch" ? `・漏接 ${result.misses} 個` : ""}`;
   card(
     dialog,
     game,

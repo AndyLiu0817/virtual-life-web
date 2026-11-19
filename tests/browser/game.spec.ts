@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function skipRhythm(page: Page) {
+async function skipMinigame(page: Page) {
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "開始", exact: true })
     .click();
-  await page.clock.fastForward(14_000);
+  await page.clock.fastForward(61_000);
 }
 
 test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({ page }) => {
@@ -122,9 +122,9 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   await checkLayout();
 
   await roll.click();
-  await expect(dialog.getByRole("heading", { name: "節奏拍擊" })).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "記憶翻牌" })).toBeVisible();
   await page.clock.install();
-  await skipRhythm(page);
+  await skipMinigame(page);
   await expect(pawn).toHaveAttribute("data-tile", "41");
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(status).toContainText("3 ／ 15");
@@ -155,7 +155,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
           .getByRole("button", { name: "開始", exact: true })
           .isVisible()
       )
-        await skipRhythm(page);
+        await skipMinigame(page);
       else break;
     }
   }
@@ -376,7 +376,7 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
   const pawn = track.locator(".board-pawn");
   await page.getByRole("button", { name: "擲骰" }).click();
   await page.clock.install();
-  await skipRhythm(page);
+  await skipMinigame(page);
   await page.getByRole("dialog").getByRole("button", { name: "確定" }).click();
   await expect(page.getByRole("status")).toContainText("已自動存檔");
 

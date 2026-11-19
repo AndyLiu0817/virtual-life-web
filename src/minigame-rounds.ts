@@ -1,18 +1,12 @@
-import {
-  mathQuestion,
-  memoryDeck,
-  minigames,
-  type RoundScore,
-} from "./game/minigames";
+import { timedRound, type Round } from "./minigame-timing";
+import { secondRounds } from "./minigame-second-rounds";
+import { mathQuestion, memoryDeck, minigames } from "./game/minigames";
 import {
   shootingFeedback,
   shootingSprite,
   shootingTargets,
   sprite,
 } from "./minigame-art";
-
-type Elements = { field: HTMLElement; score: HTMLElement; clock: HTMLElement };
-type Round = (elements: Elements) => Promise<RoundScore>;
 
 function pointerClick(
   element: HTMLElement,
@@ -21,35 +15,6 @@ function pointerClick(
   element.onclick = (event) => {
     if (event.detail > 0) action(event);
   };
-}
-
-function timedRound(
-  clock: HTMLElement,
-  seconds: number,
-  start: number,
-  update: (elapsed: number, finish: () => void) => void,
-) {
-  return new Promise<number>((resolve) => {
-    const duration = seconds * 1000;
-    let interval: number;
-    let remaining = -1;
-    const finish = () => {
-      clearInterval(interval);
-      resolve(Math.min(duration, Math.round(performance.now() - start)));
-    };
-    const tick = () => {
-      const elapsed = performance.now() - start;
-      const next = Math.max(0, Math.ceil((duration - elapsed) / 1000));
-      if (next !== remaining) {
-        clock.textContent = `${next} 秒`;
-        remaining = next;
-      }
-      if (elapsed >= duration) finish();
-      else update(elapsed, finish);
-    };
-    interval = window.setInterval(tick, 50);
-    tick();
-  });
 }
 
 const memory: Round = async ({ field, score, clock }) => {
@@ -353,4 +318,4 @@ const rhythm: Round = async ({ field, score, clock }) => {
   return { score: accuracy };
 };
 
-export const minigameRounds = { rhythm, memory, math, shoot };
+export const minigameRounds = { rhythm, memory, math, shoot, ...secondRounds };

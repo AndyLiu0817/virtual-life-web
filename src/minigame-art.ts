@@ -13,11 +13,14 @@ import burst from "../art/shoot/burst.webp";
 import miss from "../art/shoot/miss.webp";
 import type { Minigame } from "./game/minigames";
 
+import { differencePictures, secondArt } from "./minigame-second-art";
+
 type Crop = [x: number, y: number, width: number, height: number];
 const art: Record<
-  Exclude<Minigame, "shoot">,
+  Exclude<Minigame, "shoot" | "diff">,
   { bg: string; sheet: string; crops: Crop[] }
 > = {
+  ...secondArt,
   rhythm: {
     bg: rhythmBg,
     sheet: rhythmSheet,
@@ -49,12 +52,22 @@ const art: Record<
 };
 
 export function minigameBackground(game: Minigame) {
-  return `<img class="mg-backdrop" src="${game === "shoot" ? shootBg : art[game].bg}" alt="" draggable="false">`;
+  const bg =
+    game === "shoot"
+      ? shootBg
+      : game === "diff"
+        ? differencePictures[0][0]
+        : art[game].bg;
+  const img = `<img class="mg-backdrop" src="${bg}" alt="" draggable="false">`;
+  return game === "stack"
+    ? `<picture><source media="(orientation: portrait)" srcset="${secondArt.stack.portrait}">${img}</picture>`
+    : img;
 }
 
 // Coordinates use the same 480 × 270 scale for every 16:9 source sheet.
 export function sprite(game: Minigame, index = 0) {
   if (game === "shoot") return shootingSprite(shootingTargets[index]);
+  if (game === "diff") return "";
   const { sheet, crops } = art[game];
   const [x, y, width, height] = crops[index];
   return `<span class="mg-sprite" aria-hidden="true" style="aspect-ratio:${width}/${height};background-image:url('${sheet}');background-size:${(480 / width) * 100}% ${(270 / height) * 100}%;background-position:${(x / (480 - width)) * 100}% ${(y / (270 - height)) * 100}%"></span>`;
