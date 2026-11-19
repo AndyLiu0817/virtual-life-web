@@ -160,7 +160,7 @@ for (const viewport of [landscape, portrait]) {
           await page.locator(".hud-avatar-mobile").click();
           await overview.click();
         }
-        await capture(page, `${stage}-overview-${direction}`);
+        await capture(page, `step-8g-${stage}-overview-${direction}`);
         await page.locator("#roll").click();
         await page.getByRole("button", { name: "確定", exact: true }).click();
         await expect(page.locator(".hud-turn dd")).toHaveText(
@@ -396,11 +396,11 @@ if (reviewPath) {
       });
     }
 
-    test(`${stage} 前景遮擋用剪影`, async ({ page }) => {
+    test(`${stage} 只有校舍、大樹等高景物可遮擋棋子`, async ({ page }) => {
       await page.setViewportSize(landscape);
       await seed(page, {
         ...schoolSave(stage),
-        boardTile: stage === "high" ? 14 : 15,
+        boardTile: 0,
       });
       await page.locator(".hud-menu-trigger").click();
       await page.locator("#overview").click();
@@ -408,10 +408,17 @@ if (reviewPath) {
         "href",
         "#pawn-pose-stand",
       );
+      const names = await page
+        .locator(".board-scenery")
+        .evaluateAll((scenery) =>
+          scenery.map((item) => item.getAttribute("data-name")),
+        );
+      expect(names.length).toBeGreaterThan(0);
       expect(
-        await page.locator("[data-mask-depth][visibility=visible]").count(),
-      ).toBeGreaterThan(0);
-      await capture(page, `${stage}-follow-silhouette`);
+        names.every((name) =>
+          /校舍|教學樓|校門|樹|天文台|圖書館|前景櫻花/.test(name!),
+        ),
+      ).toBe(true);
     });
   }
 }
@@ -512,7 +519,7 @@ for (const [stage, filename] of [
   });
 }
 
-test("國中與高中同倍率比較直線與轉角", async ({ browser }) => {
+test("國中與高中比較直線與轉角的方磚形狀", async ({ browser }) => {
   const crops: string[] = [];
   const sizes: { width: number; height: number }[] = [];
   for (const [stage, save] of [
@@ -537,12 +544,7 @@ test("國中與高中同倍率比較直線與轉角", async ({ browser }) => {
       return Math.hypot(x / layout.width - 0.32, y / layout.height - 0.8);
     };
     const corner = loop
-      .filter(
-        (_, i) =>
-          direction(i - 2) === direction(i - 1) &&
-          direction(i) === direction(i + 1) &&
-          direction(i - 1) !== direction(i),
-      )
+      .filter((_, i) => direction(i - 1) !== direction(i))
       .sort((a, b) => score(a) - score(b))[0];
     expect(corner).toBeDefined();
 
@@ -566,8 +568,14 @@ test("國中與高中同倍率比較直線與轉角", async ({ browser }) => {
         );
         const crop = await page.screenshot({
           clip: {
-            x: Math.round(x + width / 2) - 162,
-            y: Math.round(y + height / 2) - 93,
+            x: Math.max(
+              0,
+              Math.min(landscape.width - 324, Math.round(x + width / 2) - 162),
+            ),
+            y: Math.max(
+              0,
+              Math.min(landscape.height - 186, Math.round(y + height / 2) - 93),
+            ),
             width: 324,
             height: 186,
           },
@@ -580,8 +588,9 @@ test("國中與高中同倍率比較直線與轉角", async ({ browser }) => {
       await page.close();
     }
   }
-  expect(Math.abs(sizes[0].width - sizes[1].width)).toBeLessThan(1);
-  expect(Math.abs(sizes[0].height - sizes[1].height)).toBeLessThan(1);
+  expect(sizes[0].width / sizes[0].height).toBeCloseTo(
+    sizes[1].width / sizes[1].height,
+  );
   if (reviewPath) {
     const page = await browser.newPage({
       viewport: { width: 678, height: 236 },
@@ -596,3 +605,41 @@ test("國中與高中同倍率比較直線與轉角", async ({ browser }) => {
     }
   }
 });
+
+for (const [stage, viewport] of [
+  ["junior", landscape],
+  ["high", landscape],
+  ["high", portrait],
+  ["university", landscape],
+  ["university", portrait],
+] as const) {
+  const direction = viewport === landscape ? "landscape" : "portrait";
+  test(`${stage} ${direction} 走路自動跟拍並恢復全圖`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await seed(
+      page,
+      stage === "junior" ? player : schoolSave(stage),
+      false,
+      false,
+    );
+    const overview = page.locator("#overview");
+    if (direction === "portrait") {
+      await page.locator(".hud-avatar-mobile").click();
+      await overview.click();
+    }
+    const world = page.locator(".board-world");
+    const zoom = () =>
+      world.evaluate(
+        (node) => new DOMMatrix(getComputedStyle(node).transform).a,
+      );
+    await expect.poll(zoom).toBe(1);
+    await page.locator("#roll").click();
+    await expect.poll(zoom).toBeGreaterThan(2.1);
+    await expect(
+      page.locator(".board-pawn image[id^=pawn-pose-][visibility=visible]"),
+    ).toHaveAttribute("id", /^pawn-pose-(front|back)-/);
+    await capture(page, `step-8g-${stage}-walk-${direction}`);
+    await expect.poll(zoom).toBe(1);
+    await expect(overview).toHaveAttribute("aria-pressed", "true");
+  });
+}

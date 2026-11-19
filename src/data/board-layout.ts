@@ -11,6 +11,8 @@ export interface BoardLayout {
   halfWidth: number;
   halfHeight: number;
   cells: readonly Cell[];
+  // Outer edge of empty ground followed by enclosed scenery islands.
+  clearGround?: readonly (readonly MapPoint[])[];
   // Reference road outlines are in source pixels. The first outline bounds
   // the road, and subsequent outlines describe the enclosed islands.
   road?: {

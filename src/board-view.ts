@@ -206,7 +206,7 @@ export function boardView(
         ? `<g class="path-debug" aria-hidden="true">
       ${debugGrid(layout)}
       ${layout.road?.outlines.map((polygon) => `<polygon class="road-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
-      ${layout.road?.obstacles?.map((polygon) => `<polygon class="scenery-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
+      ${(layout.clearGround ?? layout.road?.obstacles)?.map((polygon) => `<polygon class="scenery-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
       ${paverClearance(layout)
         .map(
           ({ id, polygon, onRoad, hitsScenery }) =>

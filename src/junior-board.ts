@@ -59,7 +59,7 @@ export function showStageBoard(
   const debug = debugMode === "path" || showRoadArt;
   const maps = showRoadArt ? board.roadMaps! : board.maps;
   const { portrait, landscape } = maps;
-  app.innerHTML = `<main class="stage junior">
+  app.innerHTML = `<main class="stage junior" data-board-stage="${board.stage}">
     <div class="board-map" role="group" aria-label="${board.label}">
       <div class="board-world"><picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
       <svg class="board-track" preserveAspectRatio="none"></svg></div>
@@ -86,6 +86,7 @@ export function showStageBoard(
   </main>`;
   const find = <T extends HTMLElement>(selector: string) =>
     app.querySelector<T>(selector)!;
+  const viewport = find(".board-map");
   const track = app.querySelector<SVGSVGElement>(".board-track")!;
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const camera = boardCamera(find(".board-world"), reducedMotion);
@@ -99,11 +100,14 @@ export function showStageBoard(
   let orientation: Orientation = media.matches ? "portrait" : "landscape";
   const overview = find<HTMLButtonElement>("#overview");
   let overviewPreference: boolean | undefined;
+  let walking = false;
   function syncOverview(immediate = false) {
-    const active = overviewPreference ?? orientation === "landscape";
+    const active =
+      !walking && (overviewPreference ?? orientation === "landscape");
     overview.setAttribute("aria-pressed", String(active));
     camera.setOverview(active, immediate);
   }
+  viewport.style.setProperty("--scene", `url("${maps[orientation]}")`);
   let view = boardView(
     track,
     board.layouts[orientation],
@@ -126,6 +130,7 @@ export function showStageBoard(
       return;
     }
     orientation = next;
+    viewport.style.setProperty("--scene", `url("${maps[orientation]}")`);
     hud.reorient();
     view = boardView(
       track,
@@ -144,7 +149,7 @@ export function showStageBoard(
     }
     syncOverview(true);
   });
-  orientationChange.observe(find(".board-map"));
+  orientationChange.observe(viewport);
 
   const dialog = find<HTMLDialogElement>(".board-dialog");
   const eventDialog = find<HTMLDialogElement>(
@@ -428,6 +433,8 @@ export function showStageBoard(
     }
 
     await chooseRoute(steps);
+    walking = steps > 0;
+    syncOverview();
     while (steps > 0) {
       const from = save.boardTile;
       const move = walkStep(board, save, steps);
@@ -444,6 +451,8 @@ export function showStageBoard(
       await chooseRoute(steps);
     }
     placePawn("stand");
+    walking = false;
+    syncOverview();
     const kind = board.tiles[save.boardTile].kind;
     const deityJustArrived = kind === "event" && (await playEvent());
     if (kind === "quiz") await playQuiz();

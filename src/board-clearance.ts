@@ -43,6 +43,7 @@ export function paverClearance(layout: BoardLayout) {
   if (!layout.road) return [];
   const [ground, ...islands] = layout.road.outlines;
   const obstacles = layout.road.obstacles ?? [];
+  const [clearGround, ...sceneryIslands] = layout.clearGround ?? [];
   const { centers, depth } = measureTrack(layout);
   const w = layout.halfWidth * 0.982;
   const h = layout.halfHeight * 0.982;
@@ -67,12 +68,16 @@ export function paverClearance(layout: BoardLayout) {
     const onRoad =
       contains(ground, [x, y]) &&
       !islands.some((island) => contains(island, [x, y]));
-    const hitsScenery = obstacles.some(
-      (obstacle) =>
-        contains(obstacle, polygon[0]) ||
-        contains(polygon, obstacle[0]) ||
-        outlinesIntersect(polygon, obstacle),
-    );
+    const hitsScenery =
+      (clearGround !== undefined &&
+        (!contains(clearGround, polygon[0]) ||
+          outlinesIntersect(polygon, clearGround))) ||
+      [...obstacles, ...sceneryIslands].some(
+        (obstacle) =>
+          contains(obstacle, polygon[0]) ||
+          contains(polygon, obstacle[0]) ||
+          outlinesIntersect(polygon, obstacle),
+      );
     return {
       id,
       polygon,
