@@ -5,11 +5,19 @@ import memorySheet from "../art/mg_memory_sheet_final.jpg";
 import mathBg from "../art/mg_math_bg_final.jpg";
 import mathSheet from "../art/mg_math_sheet_final.jpg";
 import shootBg from "../art/mg_shoot_bg_final.jpg";
-import shootSheet from "../art/mg_shoot_sheet_final.jpg";
+import bullseye from "../art/shoot/bullseye.webp";
+import sun from "../art/shoot/sun.webp";
+import star from "../art/shoot/star.webp";
+import coin from "../art/shoot/coin.webp";
+import burst from "../art/shoot/burst.webp";
+import miss from "../art/shoot/miss.webp";
 import type { Minigame } from "./game/minigames";
 
 type Crop = [x: number, y: number, width: number, height: number];
-const art: Record<Minigame, { bg: string; sheet: string; crops: Crop[] }> = {
+const art: Record<
+  Exclude<Minigame, "shoot">,
+  { bg: string; sheet: string; crops: Crop[] }
+> = {
   rhythm: {
     bg: rhythmBg,
     sheet: rhythmSheet,
@@ -38,27 +46,25 @@ const art: Record<Minigame, { bg: string; sheet: string; crops: Crop[] }> = {
       [24, 115, 74, 48],
     ],
   },
-  shoot: {
-    bg: shootBg,
-    sheet: shootSheet,
-    crops: [
-      [40, 17, 63, 80],
-      [126, 17, 64, 80],
-      [211, 18, 65, 79],
-      [295, 17, 64, 80],
-    ],
-  },
 };
 
 export function minigameBackground(game: Minigame) {
-  return `<img class="mg-backdrop" src="${art[game].bg}" alt="" draggable="false">`;
+  return `<img class="mg-backdrop" src="${game === "shoot" ? shootBg : art[game].bg}" alt="" draggable="false">`;
 }
 
 // Coordinates use the same 480 × 270 scale for every 16:9 source sheet.
 export function sprite(game: Minigame, index = 0) {
+  if (game === "shoot") return shootingSprite(shootingTargets[index]);
   const { sheet, crops } = art[game];
   const [x, y, width, height] = crops[index];
   return `<span class="mg-sprite" aria-hidden="true" style="aspect-ratio:${width}/${height};background-image:url('${sheet}');background-size:${(480 / width) * 100}% ${(270 / height) * 100}%;background-position:${(x / (480 - width)) * 100}% ${(y / (270 - height)) * 100}%"></span>`;
+}
+
+export const shootingTargets = [bullseye, sun, star, coin];
+export const shootingFeedback = { hit: burst, miss };
+
+export function shootingSprite(src: string) {
+  return `<img class="mg-shoot-sprite" src="${src}" alt="" draggable="false">`;
 }
 
 export const rhythmArt = `<img class="event-background" src="${rhythmBg}" alt="">`;

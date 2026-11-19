@@ -170,23 +170,139 @@ test("數字快算四選一，45 秒後結算答對題數", async ({ page }) => 
   await confirmResult(page, dialog, "math", 12, "優秀");
 });
 
+async function captureShot(page: Page, subject: Locator, name: string) {
+  const directory = process.env.MINIGAME_SCREENSHOTS;
+  if (!directory) return;
+  await subject
+    .locator("img:visible")
+    .evaluate((image: HTMLImageElement) => image.decode());
+  const box = (await subject.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  const width = 250;
+  const height = 164;
+  await page.screenshot({
+    path: `${directory}/${name}.jpg`,
+    quality: 94,
+    clip: {
+      x: Math.max(
+        0,
+        Math.min(viewport.width - width, box.x + (box.width - width) / 2),
+      ),
+      y: Math.max(
+        0,
+        Math.min(viewport.height - height, box.y + (box.height - height) / 2),
+      ),
+      width,
+      height,
+    },
+  });
+}
+
+async function expectTransparentCorners(image: Locator) {
+  const alphas = await image.evaluate(async (img: HTMLImageElement) => {
+    await img.decode();
+    const { naturalWidth: width, naturalHeight: height } = img;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+    return [
+      [0, 0],
+      [width - 1, 0],
+      [0, height - 1],
+      [width - 1, height - 1],
+    ].map(([x, y]) => ctx.getImageData(x, y, 1, 1).data[3]);
+  });
+  expect(alphas).toEqual([0, 0, 0, 0]);
+}
+
+for (const portrait of [false, true]) {
+  test.describe(portrait ? "手機直向" : "桌面橫向", () => {
+    test.use({ hasTouch: portrait, deviceScaleFactor: 2 });
+
+    test("準心射擊接受指標輸入，鍵盤連按不計分", async ({ page }) => {
+      const dialog = await openGame(page, 0.88, portrait);
+      await begin(page, dialog, portrait);
+      const target = dialog.getByRole("button", { name: "命中靶子" });
+      const hud = dialog.locator(".mg-hud");
+      await target.focus();
+      for (let i = 0; i < 3; i++) {
+        await page.keyboard.press("Enter");
+        await page.keyboard.press("Space");
+      }
+      await expect(hud).toContainText("命中 0 個");
+      if (portrait) {
+        const box = (await target.boundingBox())!;
+        expect(box.width).toBeGreaterThanOrEqual(72);
+        expect(box.height).toBeGreaterThanOrEqual(72);
+      }
+      await tap(page, target, portrait);
+      await expect(hud).toContainText("命中 1 個");
+    });
+  });
+}
+
 test("準心射擊靶子會換位，每個靶只計一次，30 秒後結算", async ({ page }) => {
   const dialog = await openGame(page, 0.88, false);
   await freeze(page);
   await begin(page, dialog);
   const target = dialog.getByRole("button", { name: "命中靶子" });
-  const first = await target.boundingBox();
-  await page.clock.runFor(1_000);
+  const feedback = dialog.locator(".mg-shot-feedback");
+  const hud = dialog.locator(".mg-hud");
+  const first = (await target.boundingBox())!;
+  await expectTransparentCorners(target.locator("img"));
+  await page.clock.runFor(1075);
+  await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
+  await page.mouse.down();
+  await expect(hud).toContainText("命中 1 個");
+  await expect(feedback).toHaveAttribute("data-shot", "hit");
+  await expectTransparentCorners(feedback.locator("img:visible"));
+  await page.clock.runFor(175);
+  await page.mouse.up();
   expect(await target.boundingBox()).not.toEqual(first);
-  await capture(page, "shoot-landscape");
-  for (let i = 0; i < 23; i++) {
+  await page.mouse.click(first.x + first.width / 2, first.y + first.height / 2);
+  await expect(hud).toContainText("命中 1 個");
+  await expect(feedback).toHaveAttribute("data-shot", "miss");
+  await expectTransparentCorners(feedback.locator("img:visible"));
+
+  for (let i = 1; i < 23; i++) {
+    if (i < 4) await expectTransparentCorners(target.locator("img"));
     await tap(page, target);
     await expect(target).toHaveCount(0);
-    if (i < 22) await page.clock.runFor(920);
+    if (i < 22) await page.clock.runFor(1250);
   }
-  await page.clock.fastForward(9_000);
+  await page.clock.fastForward(3000);
   await confirmResult(page, dialog, "shoot", 23, "優秀");
 });
+
+if (process.env.MINIGAME_SCREENSHOTS) {
+  for (const portrait of [false, true]) {
+    test.describe(portrait ? "直向畫面" : "橫向畫面", () => {
+      test.use({ deviceScaleFactor: 2 });
+
+      test("準心射擊畫面", async ({ page }) => {
+        const dialog = await openGame(page, 0.88, portrait);
+        await freeze(page);
+        await begin(page, dialog, portrait);
+        await page.clock.runFor(5000);
+        const target = dialog.getByRole("button", { name: "命中靶子" });
+        await captureShot(
+          page,
+          target,
+          portrait ? "target-portrait" : "target-landscape",
+        );
+        await tap(page, target, portrait);
+        if (!portrait)
+          await captureShot(
+            page,
+            dialog.locator(".mg-shot-feedback"),
+            "hit-feedback",
+          );
+      });
+    });
+  }
+}
 
 test("衝刺擂台共用落下音符的節奏回合並以準確率排名", async ({ page }) => {
   const dialog = await openGame(page, 0.08, false, true);
