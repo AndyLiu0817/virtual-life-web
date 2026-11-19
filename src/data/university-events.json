@@ -1,0 +1,326 @@
+{
+  "good": [
+    {
+      "id": "university-good-01",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "選課備援方案",
+      "text": "選課網頁當機前一秒你按到送出。開學才發現候補到的是全校最熱門的午睡科學。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-02",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "期末簡報奇蹟",
+      "text": "教室投影機只接受你的轉接頭。你臨時變成三組報告的指定技術人員。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-03",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "閉館前一分鐘",
+      "text": "你在閉館前找到了參考書，順便找到夾在裡面的空白書籤。正好拿來記期末題目。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-04",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "院系咖啡師",
+      "text": "打工第一天，你拉出一個像校徽的奶泡。客人付了錢還跟它合照。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-good-05",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "宿舍導航",
+      "text": "你幫新生找到洗衣間。回程順路看到失物公告，自己的學生證終於找到了。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-06",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "迎新主持備案",
+      "text": "主持人跑去拿道具，你代念社團名單。大家以為那是即興詩，居然還要求安可。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-07",
+      "scene": "festival",
+      "npc": "senior-girl",
+      "title": "夜市叫賣術",
+      "text": "你接班時一句「期末提神」讓攤位瞬間排隊。老闆把這句抄上招牌。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-good-08",
+      "scene": "field",
+      "npc": "classmate-b",
+      "title": "球場校內信箱",
+      "text": "球友撿到你掉的隨身碟，裡面那份報告終於趕上截止時間。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-09",
+      "scene": "auditorium",
+      "npc": "host",
+      "title": "期末戲劇助演",
+      "text": "同學借你當背景路人，你默默演出背景路過三次的不同情緒，老師問你是哪一系。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-10",
+      "scene": "gate_dusk",
+      "npc": "passerby",
+      "title": "退款逆襲",
+      "text": "你本來要找零，店家卻翻出一筆昨天多收的錢。校門外的交通費突然有了著落。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-good-11",
+      "scene": "clinic",
+      "npc": "nurse",
+      "title": "打工人體工學",
+      "text": "校護教你調整背帶，筆電背起來終於像筆電，不像一段城牆。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-12",
+      "scene": "nurse",
+      "npc": "nurse",
+      "title": "宿舍急救包",
+      "text": "你替室友借來冰袋，他回送一包冰涼的果凍。兩個人的冰庫各空了一格。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-13",
+      "scene": "riverside",
+      "npc": "emcee",
+      "title": "河畔讀書會",
+      "text": "大家說各講五分鐘，只有你真的帶了計時器。報告今天奇蹟般準時收工。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-good-14",
+      "scene": "arcade_rain",
+      "npc": "clerk",
+      "title": "打工下班",
+      "text": "投幣機器吃了兩枚硬幣，值班店員按了退款，還送你一局測試。你還順手刷新了紀錄。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-good-15",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "考場座位",
+      "text": "隨機分到的座位沒有冷氣直吹，答題前終於不用和試卷搶體溫。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-16",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "分組有救",
+      "text": "你的報告被存成「最後啦真的最後」。組員竟然一次就找對了檔案。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-17",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "圖書館限量插座",
+      "text": "插座旁原本只有一個位置，有人離開前還幫你把電線理好。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-18",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "咖啡配方",
+      "text": "你臨時把溢出的奶泡加成特大杯。客人願意補差價，只求別再把杯子墊高。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-good-19",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "宿舍烘衣",
+      "text": "你剛把衣服摺好，宿舍群組才發通知機器故障。你的襪子成了最後一批乘客。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-good-20",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "迎新經費",
+      "text": "大家以為海報要重印，你找到原本的電子檔，省下來的預算剛好夠買膠帶。",
+      "reward": "stat"
+    }
+  ],
+  "bad": [
+    {
+      "id": "university-bad-01",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "早八危機",
+      "text": "只搶到早八的課，你想抵達教室前買早餐，最後先抵達的是睡意。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-02",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "遠距投影",
+      "text": "你按下投影遙控器，隔壁教室的投影幕居然升了起來。自己的報告還是留在筆電上。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-03",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "圖書館預約",
+      "text": "你預約了討論室，到了才發現是明年同一天。組員說至少規劃得早。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-04",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "打工圍裙",
+      "text": "下班忘了脫圍裙，順手替隔壁桌收了兩個杯子。直到回宿舍才發現口袋裡還有菜單。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-bad-05",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "宿舍洗衣雜技",
+      "text": "洗衣球彈出機器一路滾到樓梯。全樓層都見識了你追泡泡的樣子。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-06",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "迎新交接",
+      "text": "學長把道具清單念成晚餐清單。你照著買回兩包蔥，舞台上剛好缺兩把劍。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-07",
+      "scene": "festival",
+      "npc": "senior-girl",
+      "title": "夜市空腹採購",
+      "text": "你原本只想逛一下，最後提了兩袋炸物。錢包只逛了一圈就說要回家。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-bad-08",
+      "scene": "field",
+      "npc": "classmate-b",
+      "title": "校隊借球",
+      "text": "你把球袋帶去期末討論，球隊拿到的袋子裡則有三份印好的講義。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-09",
+      "scene": "auditorium",
+      "npc": "host",
+      "title": "期末掌聲",
+      "text": "你把簡報的結尾音效設成掌聲，按錯後第一頁就謝幕了。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-10",
+      "scene": "gate_dusk",
+      "npc": "passerby",
+      "title": "選課教室異動",
+      "text": "你跑到舊教室才看到通知。買給自己的早餐倒還準時抵達。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-bad-11",
+      "scene": "clinic",
+      "npc": "nurse",
+      "title": "打工健檢",
+      "text": "你剛喝完超大杯咖啡就去量脈搏。數字跳得像下課鐘。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-12",
+      "scene": "nurse",
+      "npc": "nurse",
+      "title": "宿舍感應門",
+      "text": "你舉著悠遊卡試了七次，學弟提醒那是一道必須用手推的門。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-13",
+      "scene": "riverside",
+      "npc": "emcee",
+      "title": "腳踏車急煞",
+      "text": "河堤上你為了讓鴨子過路，背包裡的飯糰提前下車。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-bad-14",
+      "scene": "arcade_rain",
+      "npc": "clerk",
+      "title": "遊戲機績點",
+      "text": "你說要去店裡打工，媽媽問是不是打機。第一天結帳發現自己的零錢也投了不少。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-bad-15",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "考前重點",
+      "text": "同學在群組傳了二十張考前重點，你看完才發現是隔壁系的。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-16",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "報告人數",
+      "text": "你印了四份以為正好夠用。老師說第五張是要留給自己看。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-17",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "圖書館三樓",
+      "text": "你查了書號直奔三樓，才知道自己應該先查是哪一棟圖書館。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-18",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "飲料貼紙",
+      "text": "你把客人姓名貼在杯底。十杯飲料只能一杯一杯舉起來對答案。",
+      "reward": "cash"
+    },
+    {
+      "id": "university-bad-19",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "洗衣機值班",
+      "text": "你把室友的洗衣時間加進自己的行事曆。早上七點三台鬧鐘一起為別人的襪子響。",
+      "reward": "stat"
+    },
+    {
+      "id": "university-bad-20",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "社團募款",
+      "text": "迎新抽獎沒有抽到獎品，主持人說能抽到整理場地的資格也算一種緣分。",
+      "reward": "stat"
+    }
+  ]
+}

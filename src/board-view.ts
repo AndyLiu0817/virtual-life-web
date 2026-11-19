@@ -1,11 +1,10 @@
-import { assets } from "./assets";
 import { debugGrid, measureTrack, tileArtSize } from "./board-track";
 import type { BoardLayout, Orientation } from "./data/board-layout";
-import { juniorScenery } from "./data/junior-scenery";
+import type { SchoolBoard } from "./data/school-board";
 import { tileLabels, type TileKind } from "./data/junior";
 
 const sprites = import.meta.glob<string>(
-  "./board-art/{*-clay,boy-{stand,win},girl-{stand,win},walk-junior/*}.webp",
+  "./board-art/{*-clay,boy-{stand,win},girl-{stand,win},walk-junior/*,high/*,high/walk/*,university/*,university/walk/*}.webp",
   {
     eager: true,
     query: "?url",
@@ -18,7 +17,6 @@ const walkFrames = 8;
 const walkSets = ["front", "back"] as const;
 type WalkSet = (typeof walkSets)[number];
 type Pose = "stand" | "win" | `${WalkSet}-${number}`;
-// Love art is part of the tilesheet, while the junior rules use seven kinds.
 const claySides = {
   start: "#af8727",
   event: "#3293a1",
@@ -28,13 +26,48 @@ const claySides = {
   contest: "#af5e2e",
   love: "#af5857",
   fork: "#a59e97",
-} satisfies Record<TileKind | "love", string>;
+} satisfies Record<TileKind, string>;
+
+export async function preloadSchool(
+  board: SchoolBoard,
+  gender: "boy" | "girl",
+  progress: (done: number, total: number) => void,
+  intro?: string,
+) {
+  const keys = [
+    `${board.pawnFolder}${gender}-stand`,
+    `${board.pawnFolder}${gender}-win`,
+    ...walkSets.flatMap((set) =>
+      Array.from(
+        { length: walkFrames },
+        (_, i) => `${board.walkFolder}${gender}-${set}-${i + 1}`,
+      ),
+    ),
+  ];
+  const urls = [
+    ...Object.values(board.maps),
+    ...keys.map(sprite),
+    ...(intro ? [intro] : []),
+  ];
+  let done = 0;
+  progress(done, urls.length);
+  const results = await Promise.allSettled(
+    urls.map(async (url) => {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      progress(++done, urls.length);
+    }),
+  );
+  if (results.some(({ status }) => status === "rejected"))
+    throw new Error("部分素材載入失敗。");
+}
 
 export function boardView(
   svg: SVGSVGElement,
   layout: BoardLayout,
   orientation: Orientation,
-  tiles: readonly { kind: TileKind }[],
+  board: SchoolBoard,
   gender: "boy" | "girl",
   debug: boolean,
   follow: (point: { x: number; y: number }) => void,
@@ -50,7 +83,8 @@ export function boardView(
   const walkHeight = layout.pawnHeight * 1.08;
   const walkWidth = (walkHeight * 104) / 192;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
-  const scenery = juniorScenery[orientation].map((object, id) => {
+  const { tiles } = board;
+  const scenery = board.scenery[orientation].map((object, id) => {
     const [x, y] = object.anchor;
     return { ...object, id, x, y };
   });
@@ -86,7 +120,7 @@ export function boardView(
         <stop offset=".52" stop-color="#352122" stop-opacity=".07"/>
         <stop offset="1" stop-color="#352122" stop-opacity=".15"/>
       </linearGradient>
-      <image id="scene-art" href="${assets.junior[orientation]}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
+      <image id="scene-art" href="${board.maps[orientation]}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
       ${scenery
         .map(
           ({
@@ -142,19 +176,22 @@ export function boardView(
       ${(["stand", "win"] as const)
         .map((pose) => {
           const height =
-            pose === "win" && gender === "boy"
+            board.stage === "junior" && pose === "win" && gender === "boy"
               ? (layout.pawnHeight * 167) / 197
               : layout.pawnHeight;
           const sole = gender === "girl" ? 188 : pose === "win" ? 167 : 192;
-          const y = -(layout.pawnHeight * sole) / 197;
-          return `<image id="pawn-pose-${pose}" data-pose="${pose}" href="${sprite(`${gender}-${pose}`)}" x="${-pawnWidth / 2}" y="${y}" width="${pawnWidth}" height="${height}" visibility="hidden"/>`;
+          const y =
+            board.stage === "junior"
+              ? -(layout.pawnHeight * sole) / 197
+              : -height;
+          return `<image id="pawn-pose-${pose}" data-pose="${pose}" href="${sprite(`${board.pawnFolder}${gender}-${pose}`)}" x="${-pawnWidth / 2}" y="${y}" width="${pawnWidth}" height="${height}" visibility="hidden"/>`;
         })
         .join("")}
       ${walkSets
         .flatMap((set) =>
           Array.from({ length: walkFrames }, (_, index) => {
             const pose = `${set}-${index + 1}`;
-            return `<image id="pawn-pose-${pose}" data-pose="${pose}" href="${sprite(`walk-junior/${gender}-${pose}`)}" x="${-walkWidth / 2}" y="${-walkHeight}" width="${walkWidth}" height="${walkHeight}" visibility="hidden"/>`;
+            return `<image id="pawn-pose-${pose}" data-pose="${pose}" href="${sprite(`${board.walkFolder}${gender}-${pose}`)}" x="${-walkWidth / 2}" y="${-walkHeight}" width="${walkWidth}" height="${walkHeight}" visibility="hidden"/>`;
           }),
         )
         .join("")}

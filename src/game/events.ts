@@ -1,3 +1,5 @@
+import highEvents from "../data/high-events.json";
+import universityEvents from "../data/university-events.json";
 import juniorEvents from "../data/junior-events.json";
 import {
   activeDeity,
@@ -22,7 +24,11 @@ interface Story {
   reward: "cash" | "stat";
 }
 
-const stories = juniorEvents as Record<"good" | "bad", Story[]>;
+const stories = {
+  junior: juniorEvents,
+  high: highEvents,
+  university: universityEvents,
+} as Record<"junior" | "high" | "university", Record<"good" | "bad", Story[]>>;
 
 export type EventOutcome =
   | { kind: "deity" | "offering"; id: DeityId }
@@ -54,7 +60,11 @@ export function drawEvent(
     return { save, outcome: { kind: "offering", id: deity.id } };
 
   const kind = random() < goodChance(save) ? "good" : "bad";
-  const story = pick(stories[kind], random);
+  const stage =
+    save.stage === "high" || save.stage === "university"
+      ? save.stage
+      : "junior";
+  const story = pick(stories[stage][kind], random);
   if (roll < (deity ? 0.29 : 0.21)) {
     return {
       save: { ...save, cards: [...save.cards, story.id] },

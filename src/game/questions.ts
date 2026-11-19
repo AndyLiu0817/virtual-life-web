@@ -108,6 +108,7 @@ export function drawQuestions(
     if (!take(fresh, difficulty)) missing.push(difficulty);
   }
   for (const difficulty of missing) {
+    if (kind === "universityEntrance" && take(available, difficulty)) continue;
     if (!take(fresh)) take(available, difficulty) || take(available);
   }
   return shuffle(selected, random);

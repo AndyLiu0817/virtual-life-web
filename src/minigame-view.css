@@ -123,10 +123,13 @@
   display: none;
 }
 
+.mg-play[data-game="memory"] .mg-field {
+  container-type: size;
+}
+
 .mg-deck {
-  height: min(94%, 428px);
-  max-width: 95%;
-  aspect-ratio: 0.82;
+  width: min(94cqw, 94cqh, 428px);
+  aspect-ratio: 1;
   display: grid;
   grid-template: repeat(4, minmax(0, 1fr)) / repeat(4, minmax(0, 1fr));
   gap: clamp(2px, 1dvh, 8px);
@@ -310,11 +313,5 @@
   .mg-copy {
     border-inline-start: 0;
     border-top: 3px solid #d9ad63;
-  }
-}
-@media (max-height: 390px) and (orientation: landscape) {
-  .mg-deck {
-    width: max(200px, 44dvh);
-    aspect-ratio: auto;
   }
 }

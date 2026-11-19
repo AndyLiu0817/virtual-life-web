@@ -10,6 +10,7 @@ export const tileLabels = {
   quiz: "小考",
   contest: "大賽",
   fork: "岔路",
+  love: "愛情",
 };
 
 export type TileKind = keyof typeof tileLabels;

@@ -1,0 +1,326 @@
+{
+  "good": [
+    {
+      "id": "high-good-01",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "模考吉祥筆",
+      "text": "你的自動鉛筆借出去轉了一圈，最後帶著全班簽名回來。連筆芯都還在。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-02",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "黑板名場面",
+      "text": "你把解題步驟寫得像球賽轉播。同學第一次對括號倒吸一口氣。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-03",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "圖書館定位成功",
+      "text": "你順手把一本倒放的參考書轉正，原本到處找的那本就在它後面。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-04",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "補習集點",
+      "text": "補習班旁的飲料店說你的集點卡滿了。你本來以為那張是英文單字卡。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-good-05",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "尋物高手",
+      "text": "你找到三個人都在找的掃把。原來它今天被借去當校慶魔法道具。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-06",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "晚自習隔音師",
+      "text": "你把椅腳的保護套裝回去。全班終於可以偷偷換坐姿而不必謝幕。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-07",
+      "scene": "festival",
+      "npc": "senior-girl",
+      "title": "校慶天氣預報",
+      "text": "你預測哪一攤先賣光，主辦人立刻請你代班。這是預報第一次有時薪。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-good-08",
+      "scene": "field",
+      "npc": "classmate-b",
+      "title": "球場直覺",
+      "text": "你接住飛出場外的球，順便接住隔壁班遞來的五張加油卡。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-09",
+      "scene": "auditorium",
+      "npc": "host",
+      "title": "主持救場",
+      "text": "健忘的主持人請你報下一個節目。你用播報校車的口氣念完，全場鼓掌。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-10",
+      "scene": "gate_dusk",
+      "npc": "passerby",
+      "title": "制服口袋寶藏",
+      "text": "校門口翻出昨天忘記領的找零。口袋好像比你更會存錢。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-good-11",
+      "scene": "clinic",
+      "npc": "nurse",
+      "title": "量身高",
+      "text": "校護讓你順便伸展。量身高時你多站直了半公分，背包看起來都變輕了。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-12",
+      "scene": "nurse",
+      "npc": "nurse",
+      "title": "晚自習補水",
+      "text": "校護教你怎麼提醒同學喝水。隔天全班只剩你沒忘記帶水壺。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-13",
+      "scene": "riverside",
+      "npc": "emcee",
+      "title": "補習路線更新",
+      "text": "沿河走比搭車快，省下的車錢讓你又多繞了一圈。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-good-14",
+      "scene": "arcade_rain",
+      "npc": "clerk",
+      "title": "雨天折扣",
+      "text": "店員說雨大就算學生折扣。你一抬頭，連隔壁的雨傘都轉過來排隊。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-good-15",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "模擬考意外拿手",
+      "text": "最難那題剛好考千年曆。昨晚替家人修月曆突然成了複習。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-16",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "數學見證人",
+      "text": "你替同桌檢查計算，他指出你漏了負號。兩人的答案終於相親成功。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-17",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "借書卡回收",
+      "text": "你把整疊借書卡送回櫃檯。館員請你優先借到那本全班都在等的小說。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-18",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "晚自習小費",
+      "text": "你替福利社把晚自習訂單分班裝袋。老闆結帳時還特地算上第零班，那份是你的。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-good-19",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "樓梯接力",
+      "text": "校慶道具少一個人搬，你上下跑兩趟就搬完。班長把你的名字寫進工作人員字幕。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-good-20",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "社辦詩人",
+      "text": "你把校慶攤名改成「走過路過先吃過」。大家念完真的轉身回來。",
+      "reward": "stat"
+    }
+  ],
+  "bad": [
+    {
+      "id": "high-bad-01",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "答案卷搬家",
+      "text": "模考題目跳了一題，答案跟著搬家。監考老師說名字那格幸好還住原址。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-02",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "筆記展覽",
+      "text": "你把重點全塗成螢光黃，整面像校慶的燈籠。期中考大概不會考燈籠。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-03",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "書籤航線",
+      "text": "你把兩本講義的書籤換錯了。地理複習到一半，地圖上突然開始解二次方程。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-04",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "補習後的特調",
+      "text": "你點了少冰，被問要幾分糖，慌張答了九十分。結帳比成績單先到。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-bad-05",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "樓梯試音",
+      "text": "鞋底踩到一張貼紙，你每走一步就吱一聲。晚自習那層樓都知道你遲到了。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-06",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "校慶箱子",
+      "text": "社團借來的紙箱寫著「請勿倒放」。你發現字是倒著寫的時候，紙花已經撒完了。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-07",
+      "scene": "festival",
+      "npc": "senior-girl",
+      "title": "重複進場",
+      "text": "你買了兩張校慶餐券，以為一張是入場券。午餐確實進場了兩次。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-bad-08",
+      "scene": "field",
+      "npc": "classmate-b",
+      "title": "界外水壺",
+      "text": "你飛身救球，結果救的是場邊的水壺。球很冷靜地滾出了界。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-09",
+      "scene": "auditorium",
+      "npc": "host",
+      "title": "麥克風零距離",
+      "text": "你一開口，音響先播出一聲超大的吞口水。老師說後排聽得很清楚。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-10",
+      "scene": "gate_dusk",
+      "npc": "passerby",
+      "title": "跑錯門",
+      "text": "你在校門口等補習班接駁車，直到司機指著另一邊。那裡正好看得到車尾燈。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-bad-11",
+      "scene": "clinic",
+      "npc": "nurse",
+      "title": "健康數學",
+      "text": "你把體溫和班級座號寫反。校護請你確認自己到底是不是三十七號。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-12",
+      "scene": "nurse",
+      "npc": "nurse",
+      "title": "忘帶便當袋",
+      "text": "午餐湯滲進書包。下午的講義聞起來很像營養午餐。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-13",
+      "scene": "riverside",
+      "npc": "emcee",
+      "title": "風把答案吹走了",
+      "text": "河邊複習時考卷飛出去，你追到橋頭才想起那張是答案卷。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-bad-14",
+      "scene": "arcade_rain",
+      "npc": "clerk",
+      "title": "投幣口誤會",
+      "text": "你把補習班代幣投進遊戲機。店員退給你時說它至少很有求學意願。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-bad-15",
+      "scene": "exam",
+      "npc": "proctor",
+      "title": "模考聽力",
+      "text": "教室外在排練校慶，你的腦中只剩副歌。解答卡上幸好沒有填歌名。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-16",
+      "scene": "classroom",
+      "npc": "teacher",
+      "title": "黑板擦遺失案",
+      "text": "你幫老師找板擦找到下課。回到座位發現它一直在自己手上。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-17",
+      "scene": "library",
+      "npc": "classmate-a",
+      "title": "補習斷句",
+      "text": "你把借來的複習講義讀到封底，才知道那是去年答案解析。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-18",
+      "scene": "cafe",
+      "npc": "clerk",
+      "title": "福利社盲點",
+      "text": "你沒看清楚優惠寫第二件原價，提著兩個麵包出了門。第二件還是自己吃。",
+      "reward": "cash"
+    },
+    {
+      "id": "high-bad-19",
+      "scene": "hallway",
+      "npc": "janitor",
+      "title": "無影桌椅",
+      "text": "搬桌子時把值日紀錄的紙壓在下面，全組只好一起把桌子搬回去。",
+      "reward": "stat"
+    },
+    {
+      "id": "high-bad-20",
+      "scene": "clubroom",
+      "npc": "senior-boy",
+      "title": "晚自習練習曲",
+      "text": "隔壁社辦練了四十分鐘的起頭，你也讀了四十分鐘的第一行。",
+      "reward": "stat"
+    }
+  ]
+}
