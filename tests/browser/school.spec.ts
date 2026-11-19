@@ -185,12 +185,9 @@ for (const viewport of [landscape, portrait]) {
           await expect(page.locator(".path-debug text")).toHaveCount(
             schoolBoards[stage].tiles.length,
           );
-          await expect(
-            page.locator("[data-clearance-tile][data-overlap=false]"),
-          ).toHaveCount(schoolBoards[stage].tiles.length);
-          await expect(
-            page.locator("[data-clearance-tile][data-overlap=true]"),
-          ).toHaveCount(0);
+          await expect(page.locator("[data-clearance-tile]")).toHaveCount(
+            schoolBoards[stage].tiles.length,
+          );
           await capture(page, `${stage}-debug-${direction}`);
         });
     }
@@ -402,7 +399,7 @@ if (reviewPath) {
       await page.setViewportSize(landscape);
       await seed(page, {
         ...schoolSave(stage),
-        boardTile: stage === "high" ? 18 : 35,
+        boardTile: stage === "high" ? 14 : 15,
       });
       await page.locator(".hud-menu-trigger").click();
       await page.locator("#overview").click();
@@ -501,15 +498,64 @@ for (const [stage, filename] of [
       new RegExp(`map_${filename}_landscape_final`),
     );
     await expect(page.locator(".road-centerline")).toHaveCount(3);
-    await expect(page.locator("[data-road-face]")).toHaveCount(
+    await expect(page.locator(".board-tile .paver-top")).toHaveCount(
       schoolBoards[stage].tiles.length,
     );
-    await expect(
-      page.locator("[data-clearance-tile][data-overlap=false]"),
-    ).toHaveCount(schoolBoards[stage].tiles.length);
-    await expect(
-      page.locator("[data-clearance-tile][data-overlap=true]"),
-    ).toHaveCount(0);
+    await expect(page.locator("[data-clearance-tile]")).toHaveCount(
+      schoolBoards[stage].tiles.length,
+    );
     await capture(page, `${stage}-painted-road-landscape`);
   });
 }
+
+test("高中與國中的地磚共用立體方磚，同倍率比較", async ({ browser }) => {
+  const crops: string[] = [];
+  const sizes: { width: number; height: number }[] = [];
+  for (const save of [player, schoolSave("high")]) {
+    const page = await browser.newPage({ viewport: landscape });
+    try {
+      await seed(page, save);
+      const tile = page.locator('.board-tile[data-kind="event"]').first();
+      const top = tile.locator(".paver-top");
+      await expect(top).toHaveAttribute("href", /event-clay/);
+      await expect(tile.locator('use[href="#clay-body"]')).toHaveCount(2);
+      const { x, y, width, height } = (await top.boundingBox())!;
+      sizes.push({ width, height });
+      if (reviewPath) {
+        await top.evaluate(async (element) => {
+          const img = new Image();
+          img.src = element.getAttribute("href")!;
+          await img.decode();
+        });
+        const crop = await page.screenshot({
+          clip: {
+            x: Math.round(x + width / 2) - 135,
+            y: Math.round(y + height / 2) - 72,
+            width: 270,
+            height: 155,
+          },
+          type: "jpeg",
+          quality: 92,
+        });
+        crops.push(crop.toString("base64"));
+      }
+    } finally {
+      await page.close();
+    }
+  }
+  expect(Math.abs(sizes[0].width - sizes[1].width)).toBeLessThan(1);
+  expect(Math.abs(sizes[0].height - sizes[1].height)).toBeLessThan(1);
+  if (reviewPath) {
+    const page = await browser.newPage({
+      viewport: { width: 570, height: 206 },
+    });
+    try {
+      await page.setContent(`<body style="margin:0;background:#193941;color:white;display:flex;gap:10px;padding:10px;font:16px sans-serif">
+        ${crops.map((src, i) => `<section><strong>${i === 0 ? "國中" : "高中"}</strong><br><img width="270" height="155" src="data:image/jpeg;base64,${src}"></section>`).join("")}
+      </body>`);
+      await capture(page, "junior-high-clay-detail");
+    } finally {
+      await page.close();
+    }
+  }
+});

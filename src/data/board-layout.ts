@@ -16,6 +16,5 @@ export interface BoardLayout {
   road?: {
     outlines: readonly (readonly MapPoint[])[];
     centerlines: readonly (readonly MapPoint[])[];
-    faces: readonly (readonly MapPoint[])[];
   };
 }

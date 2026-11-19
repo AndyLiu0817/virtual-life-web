@@ -161,13 +161,3 @@
   stroke: #e26dce;
   stroke-width: 2;
 }
-
-.road-paver-face {
-  stroke: #34524d;
-  stroke-opacity: 0.76;
-  stroke-width: 2.6;
-  stroke-linejoin: round;
-}
-.road-paver-icon {
-  filter: drop-shadow(0 2px 2px #263d405e);
-}

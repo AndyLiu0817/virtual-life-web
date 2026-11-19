@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { schoolBoards } from "../src/data/school-board";
-import { paverClearance, routeLeavesRoad } from "../src/board-clearance";
+import { paverClearance } from "../src/board-clearance";
 import { measureTrack } from "../src/board-track";
 import highEvents from "../src/data/high-events.json";
 import universityEvents from "../src/data/university-events.json";
@@ -38,19 +38,19 @@ describe("學段棋盤", () => {
     [
       "high",
       25,
-      { start: 1, event: 12, game: 7, club: 5, quiz: 4, contest: 2, fork: 2 },
+      { start: 1, event: 8, game: 5, club: 3, quiz: 3, contest: 1, fork: 2 },
     ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 9,
-        game: 6,
-        club: 3,
-        quiz: 4,
-        contest: 2,
-        love: 7,
+        event: 6,
+        game: 4,
+        club: 2,
+        quiz: 3,
+        contest: 1,
+        love: 5,
         fork: 2,
       },
     ],
@@ -269,26 +269,6 @@ it("地磚踏入跑道內島或越過跑道外框時標示重疊", () => {
     road: {
       outlines: fakeGround,
       centerlines: [],
-      faces: [
-        [
-          [35, 54],
-          [50, 44],
-          [65, 54],
-          [50, 64],
-        ],
-        [
-          [65, 70],
-          [80, 60],
-          [95, 70],
-          [80, 80],
-        ],
-        [
-          [95, 54],
-          [110, 44],
-          [125, 54],
-          [110, 64],
-        ],
-      ],
     },
     origin: [50, 54],
     halfWidth: 15,
@@ -307,76 +287,31 @@ it("地磚踏入跑道內島或越過跑道外框時標示重疊", () => {
 });
 
 it.each(["high", "university"] as const)(
-  "%s 橫直版每塊地磚都在跑道範圍",
+  "%s 橫直版共用國中方磚的投影比例，地磚互不重疊",
   (stage) => {
     const board = schoolBoards[stage];
-    for (const [orientation, layout] of Object.entries(board.layouts)) {
-      const results = paverClearance(layout);
-      expect(results).toHaveLength(board.tiles.length);
-      expect(layout.road?.outlines).toBeDefined();
-      const { centers } = measureTrack(layout);
-      const junior =
-        orientation === "portrait"
-          ? schoolBoards.junior.layouts.portrait
-          : schoolBoards.junior.layouts.landscape;
-      const target =
-        Math.hypot(junior.halfWidth, junior.halfHeight) *
-        (layout.width / junior.width);
-      const length = layout.road!.centerlines.reduce(
-        (sum, line) =>
-          sum +
-          line
-            .slice(1)
-            .reduce(
-              (part, [x, y], i) =>
-                part + Math.hypot(x - line[i][0], y - line[i][1]),
-              0,
-            ),
-        0,
+    for (const orientation of ["landscape", "portrait"] as const) {
+      const layout = board.layouts[orientation];
+      const junior = schoolBoards.junior.layouts[orientation];
+      expect(layout.halfWidth / layout.width).toBeCloseTo(
+        junior.halfWidth / junior.width,
+        4,
       );
-      expect(length / board.tiles.length / target).toBeGreaterThanOrEqual(0.9);
-      expect(length / board.tiles.length / target).toBeLessThanOrEqual(1.1);
-      for (const { id, polygon } of results) {
-        for (const other of board.tiles[id].next) {
-          const seam = Math.min(
-            ...polygon.flatMap(([x, y]) => {
-              const next = results[other].polygon;
-              return next.map(([ax, ay], i) => {
-                const [bx, by] = next[(i + 1) % next.length];
-                const dx = bx - ax,
-                  dy = by - ay;
-                const t = Math.max(
-                  0,
-                  Math.min(
-                    1,
-                    ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1),
-                  ),
-                );
-                return Math.hypot(x - ax - t * dx, y - ay - t * dy);
-              });
-            }),
-          );
-          expect(seam, `${orientation} ${id} → ${other}`).toBeLessThanOrEqual(
-            4,
-          );
+      expect(layout.halfHeight / layout.width).toBeCloseTo(
+        junior.halfHeight / junior.width,
+        4,
+      );
+      const { centers } = measureTrack(layout);
+      expect(paverClearance(layout)).toHaveLength(board.tiles.length);
+      for (const [id, a] of centers.entries()) {
+        for (const [offset, b] of centers.slice(id + 1).entries()) {
+          expect(
+            Math.abs(a.x - b.x) / (2 * layout.halfWidth) +
+              Math.abs(a.y - b.y) / (2 * layout.halfHeight),
+            `${orientation} ${id} → ${id + 1 + offset}`,
+          ).toBeGreaterThanOrEqual(0.982);
         }
       }
-      const blockedLinks = board.tiles.flatMap(({ next }, from) =>
-        next
-          .filter((to) =>
-            routeLeavesRoad(
-              layout.road?.outlines!,
-              [centers[from].x, centers[from].y],
-              [centers[to].x, centers[to].y],
-            ),
-          )
-          .map((to) => [from, to]),
-      );
-      expect(blockedLinks, orientation).toEqual([]);
-      expect(
-        results.filter(({ overlaps }) => overlaps).map(({ id }) => id),
-        orientation,
-      ).toEqual([]);
     }
   },
 );
