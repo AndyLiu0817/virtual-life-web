@@ -1,0 +1,120 @@
+.board-dice-flight {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.flight-die {
+  --side: clamp(39px, 6.5vmin, 55px);
+  position: absolute;
+  width: var(--side);
+  height: var(--side);
+  translate: -50% -50%;
+}
+.flight-path,
+.flight-tumble,
+.flight-cube,
+.flight-face {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.flight-path {
+  animation: flight-bounce var(--roll-ms) linear both;
+}
+.flight-tumble {
+  animation: flight-tumble var(--roll-ms) ease-out both;
+}
+[data-phase="settled"] .flight-path,
+[data-phase="settled"] .flight-tumble {
+  animation: none;
+}
+.flight-cube {
+  transform: var(--front);
+}
+.flight-face {
+  display: grid;
+  grid: repeat(3, 1fr) / repeat(3, 1fr);
+  place-items: center;
+  padding: 10%;
+  border-radius: 18%;
+  background: linear-gradient(145deg, #fff6e7, #e5cfb3 65%, #ba9b79);
+  box-shadow:
+    inset 1px 2px 3px #fffaf0,
+    inset -1px -2px 4px #91674877;
+  backface-visibility: hidden;
+  transform: var(--face-turn) translateZ(calc(var(--side) * 0.48));
+}
+.flight-face i {
+  width: 54%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 57% 63%, #514238, #241b17 70%);
+  box-shadow: 0 1px #fff9e4a0;
+}
+.flight-shadow {
+  position: absolute;
+  inset: 70% 0 -10%;
+  border-radius: 50%;
+  background: #231611b0;
+  filter: blur(5px);
+  animation: flight-shadow var(--roll-ms) linear both;
+}
+@keyframes flight-bounce {
+  0% {
+    transform: translate(var(--from-x), var(--from-y)) scale(0.55);
+  }
+  22% {
+    transform: translate(
+        calc(var(--from-x) * 0.6),
+        calc(var(--from-y) * 0.6 - 110px)
+      )
+      scale(1.16);
+  }
+  49% {
+    transform: translate(calc(var(--from-x) * 0.19), calc(var(--from-y) * 0.19))
+      scale(1);
+  }
+  63% {
+    transform: translate(calc(var(--from-x) * 0.09), -42px);
+  }
+  76% {
+    transform: translate(calc(var(--from-x) * 0.04), 0);
+  }
+  85% {
+    transform: translate(calc(var(--from-x) * 0.02), -12px);
+  }
+  94%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes flight-tumble {
+  0% {
+    transform: rotateX(-32deg) rotateY(24deg) rotateZ(-24deg);
+  }
+  56% {
+    transform: rotateX(520deg) rotateY(224deg) rotateZ(86deg);
+  }
+  80% {
+    transform: rotateX(680deg) rotateY(331deg) rotateZ(18deg);
+  }
+  100% {
+    transform: rotateX(720deg) rotateY(360deg) rotateZ(0);
+  }
+}
+@keyframes flight-shadow {
+  0%,
+  32% {
+    opacity: 0;
+  }
+  52%,
+  76%,
+  100% {
+    opacity: 0.9;
+  }
+  63%,
+  85% {
+    opacity: 0.35;
+  }
+}

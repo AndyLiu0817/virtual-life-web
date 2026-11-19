@@ -10,13 +10,24 @@ export function boardCamera(world: HTMLElement, reducedMotion: boolean) {
 
   function target() {
     if (fullMap) return { x: 0, y: 0, zoom: 1 };
-    const clamp = (value: number) =>
-      Math.max(1 - followZoom, Math.min(0, value));
+    const viewport = world.parentElement!;
+    const width = world.offsetWidth;
+    const height = world.offsetHeight;
+    if (!width || !height) return { x: 0, y: 0, zoom: 1 };
+
+    // The scene is fitted and centered at rest. When following the pawn,
+    // position the zoomed scene against the actual edges of the viewport.
+    const horizontal = viewport.clientWidth / width;
+    const vertical = viewport.clientHeight / height;
+    const zoom = Math.max(followZoom, horizontal, vertical);
+    const x = world.offsetLeft / width;
+    const y = world.offsetTop / height;
+    const clamp = (value: number, start: number, extent: number) =>
+      Math.max(extent - start - zoom, Math.min(-start, value));
     return {
-      x: clamp(0.5 - pawn.x * followZoom),
-      // Keep a little more room above the feet for the upright sprite.
-      y: clamp(0.57 - pawn.y * followZoom),
-      zoom: followZoom,
+      x: clamp(horizontal / 2 - x - pawn.x * zoom, x, horizontal),
+      y: clamp(0.57 * vertical - y - pawn.y * zoom, y, vertical),
+      zoom,
     };
   }
 
@@ -66,9 +77,9 @@ export function boardCamera(world: HTMLElement, reducedMotion: boolean) {
       pawn = point;
       if (!fullMap) update();
     },
-    setOverview(active: boolean) {
+    setOverview(active: boolean, immediate = false) {
       fullMap = active;
-      update();
+      update(immediate);
     },
     snap() {
       update(true);
