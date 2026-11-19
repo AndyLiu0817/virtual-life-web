@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { measureTrack } from "../../src/board-track";
 import { schoolBoards, type BoardStage } from "../../src/data/school-board";
 import { chooseClub } from "../../src/game/clubs";
 import { questionBank } from "../../src/game/questions";
@@ -371,10 +372,10 @@ if (reviewPath) {
     ] as const) {
       test(`${stage} ${gender} ${direction}走路幀`, async ({ page }) => {
         const { layouts, tiles } = schoolBoards[stage];
-        const { cells } = layouts.landscape;
-        const start = cells.findIndex(([, y], index) => {
+        const { centers } = measureTrack(layouts.landscape);
+        const start = centers.findIndex(({ y }, index) => {
           if (index < 5 || tiles[index].kind === "fork") return false;
-          const [, ty] = cells[tiles[index].next[0]];
+          const { y: ty } = centers[tiles[index].next[0]];
           return direction === "front" ? ty > y : ty <= y;
         });
         await page.setViewportSize(landscape);
@@ -511,31 +512,64 @@ for (const [stage, filename] of [
   });
 }
 
-test("高中與國中的地磚共用立體方磚，同倍率比較", async ({ browser }) => {
+test("國中與高中同倍率比較直線與轉角", async ({ browser }) => {
   const crops: string[] = [];
   const sizes: { width: number; height: number }[] = [];
-  for (const save of [player, schoolSave("high")]) {
+  for (const [stage, save] of [
+    ["junior", player],
+    ["high", schoolSave("high")],
+  ] as const) {
+    const { layouts, tiles, start } = schoolBoards[stage];
+    const layout = layouts.landscape;
+    const { centers } = measureTrack(layout);
+    const loop = [start];
+    for (let id = tiles[start].next[0]; id !== start; id = tiles[id].next[0])
+      loop.push(id);
+    const cellAt = (i: number) =>
+      layout.cells[loop[(i + loop.length) % loop.length]];
+    const direction = (i: number) => {
+      const [x, y] = cellAt(i);
+      const [nextX, nextY] = cellAt(i + 1);
+      return [nextX - x, nextY - y].join();
+    };
+    const score = (id: number) => {
+      const { x, y } = centers[id];
+      return Math.hypot(x / layout.width - 0.32, y / layout.height - 0.8);
+    };
+    const corner = loop
+      .filter(
+        (_, i) =>
+          direction(i - 2) === direction(i - 1) &&
+          direction(i) === direction(i + 1) &&
+          direction(i - 1) !== direction(i),
+      )
+      .sort((a, b) => score(a) - score(b))[0];
+    expect(corner).toBeDefined();
+
     const page = await browser.newPage({ viewport: landscape });
     try {
       await seed(page, save);
-      const tile = page.locator('.board-tile[data-kind="event"]').first();
+      const tile = page.locator(`.board-tile[data-tile="${corner}"]`);
       const top = tile.locator(".paver-top");
-      await expect(top).toHaveAttribute("href", /event-clay/);
       await expect(tile.locator('use[href="#clay-body"]')).toHaveCount(2);
       const { x, y, width, height } = (await top.boundingBox())!;
       sizes.push({ width, height });
       if (reviewPath) {
-        await top.evaluate(async (element) => {
-          const img = new Image();
-          img.src = element.getAttribute("href")!;
-          await img.decode();
-        });
+        await page.locator(".paver-top").evaluateAll(async (elements) =>
+          Promise.all(
+            elements.map((element) => {
+              const image = new Image();
+              image.src = element.getAttribute("href")!;
+              return image.decode();
+            }),
+          ),
+        );
         const crop = await page.screenshot({
           clip: {
-            x: Math.round(x + width / 2) - 135,
-            y: Math.round(y + height / 2) - 72,
-            width: 270,
-            height: 155,
+            x: Math.round(x + width / 2) - 162,
+            y: Math.round(y + height / 2) - 93,
+            width: 324,
+            height: 186,
           },
           type: "jpeg",
           quality: 92,
@@ -550,11 +584,11 @@ test("高中與國中的地磚共用立體方磚，同倍率比較", async ({ br
   expect(Math.abs(sizes[0].height - sizes[1].height)).toBeLessThan(1);
   if (reviewPath) {
     const page = await browser.newPage({
-      viewport: { width: 570, height: 206 },
+      viewport: { width: 678, height: 236 },
     });
     try {
       await page.setContent(`<body style="margin:0;background:#193941;color:white;display:flex;gap:10px;padding:10px;font:16px sans-serif">
-        ${crops.map((src, i) => `<section><strong>${i === 0 ? "國中" : "高中"}</strong><br><img width="270" height="155" src="data:image/jpeg;base64,${src}"></section>`).join("")}
+        ${crops.map((src, i) => `<section><strong>${i === 0 ? "國中" : "高中"}</strong><br><img width="324" height="186" src="data:image/jpeg;base64,${src}"></section>`).join("")}
       </body>`);
       await capture(page, "junior-high-clay-detail");
     } finally {

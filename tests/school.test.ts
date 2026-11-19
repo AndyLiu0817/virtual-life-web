@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { schoolBoards } from "../src/data/school-board";
 import { paverClearance } from "../src/board-clearance";
-import { measureTrack } from "../src/board-track";
 import highEvents from "../src/data/high-events.json";
 import universityEvents from "../src/data/university-events.json";
 import { stageFinished } from "../src/game/board";
@@ -38,19 +37,19 @@ describe("學段棋盤", () => {
     [
       "high",
       25,
-      { start: 1, event: 10, game: 7, club: 4, quiz: 4, contest: 1 },
+      { start: 1, event: 13, game: 9, club: 6, quiz: 5, contest: 2 },
     ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 8,
-        game: 5,
-        club: 3,
-        quiz: 4,
-        contest: 1,
-        love: 6,
+        event: 11,
+        game: 7,
+        club: 4,
+        quiz: 5,
+        contest: 2,
+        love: 8,
       },
     ],
   ] as const)("%s 兩種方向共用完整外環及格子 ID", (stage, turns, expected) => {
@@ -242,7 +241,7 @@ it.each([
   expect(nextMatch(save, "tile")).toBeUndefined();
 });
 
-it("跑道容許方磚越過邊緣，但中心須在路上且方磚不能壓到景物", () => {
+it("跑道位置與景物重疊是獨立的檢查", () => {
   const layout = schoolBoards.high.layouts.landscape;
   const fakeGround = [
     [
@@ -268,26 +267,25 @@ it("跑道容許方磚越過邊緣，但中心須在路上且方磚不能壓到�
     halfWidth: 15,
     halfHeight: 10,
     cells: [
-      [50, 54],
-      [95, 70],
-      [110, 54],
+      [0, 0],
+      [2, -1],
+      [2, -2],
     ],
   } as const;
   expect(
-    paverClearance(fixture).map(({ onRoad, hitsScenery, overlaps }) => ({
+    paverClearance(fixture).map(({ onRoad, hitsScenery }) => ({
       onRoad,
       hitsScenery,
-      overlaps,
     })),
   ).toEqual([
-    { onRoad: true, hitsScenery: true, overlaps: true },
-    { onRoad: true, hitsScenery: false, overlaps: false },
-    { onRoad: false, hitsScenery: false, overlaps: true },
+    { onRoad: true, hitsScenery: true },
+    { onRoad: true, hitsScenery: false },
+    { onRoad: false, hitsScenery: false },
   ]);
 });
 
 it.each(["high", "university"] as const)(
-  "%s 橫直版共用國中方磚的投影比例，地磚互不重疊",
+  "%s 橫直版在國中格線上逐格共邊，並避開景物",
   (stage) => {
     const board = schoolBoards[stage];
     for (const orientation of ["landscape", "portrait"] as const) {
@@ -301,31 +299,30 @@ it.each(["high", "university"] as const)(
         junior.halfHeight / junior.width,
         4,
       );
-      const { centers } = measureTrack(layout);
       const clearance = paverClearance(layout);
       expect(clearance).toHaveLength(board.tiles.length);
       expect(
-        clearance.filter(({ overlaps }) => overlaps),
+        clearance.filter(({ hitsScenery }) => hitsScenery).map(({ id }) => id),
         orientation,
       ).toEqual([]);
-      for (const [id, tile] of board.tiles.entries()) {
-        const a = centers[id];
-        const b = centers[tile.next[0]];
-        const stride =
-          Math.abs(a.x - b.x) / (2 * layout.halfWidth) +
-          Math.abs(a.y - b.y) / (2 * layout.halfHeight);
-        expect(stride, `${orientation} ${id}`).toBeGreaterThanOrEqual(0.982);
-        expect(stride, `${orientation} ${id}`).toBeLessThanOrEqual(1.05);
-      }
-      for (const [id, a] of centers.entries()) {
-        for (const [offset, b] of centers.slice(id + 1).entries()) {
-          expect(
-            Math.abs(a.x - b.x) / (2 * layout.halfWidth) +
-              Math.abs(a.y - b.y) / (2 * layout.halfHeight),
-            `${orientation} ${id} → ${id + 1 + offset}`,
-          ).toBeGreaterThanOrEqual(0.982);
-        }
-      }
+      const directions = board.tiles.map(({ next }, id) => {
+        const [column, row] = layout.cells[id];
+        const [nextColumn, nextRow] = layout.cells[next[0]];
+        expect(Number.isInteger(column) && Number.isInteger(row)).toBe(true);
+        const dx = nextColumn - column;
+        const dy = nextRow - row;
+        expect(Math.abs(dx) + Math.abs(dy), `${orientation} ${id}`).toBe(1);
+        return [dx, dy];
+      });
+      const turns = directions.filter(([dx, dy], i) => {
+        const [previousX, previousY] = directions.at(i - 1)!;
+        return dx * previousX + dy * previousY === 0;
+      });
+      expect(turns.length).toBeGreaterThanOrEqual(4);
+      expect(turns.length).toBeLessThan(directions.length / 2);
+      expect(clearance.filter(({ onRoad }) => onRoad).length).toBeGreaterThan(
+        board.tiles.length / 2,
+      );
     }
   },
 );

@@ -91,6 +91,9 @@
   stroke: #8dff96;
   stroke-width: 2;
 }
+.path-debug .paver-clearance[data-on-road="false"] {
+  stroke: #f6d963;
+}
 .path-debug .paver-clearance[data-overlap="true"] {
   fill: #e12947a6;
   stroke: #ff3e50;

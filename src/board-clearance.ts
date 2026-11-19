@@ -78,7 +78,6 @@ export function paverClearance(layout: BoardLayout) {
       polygon,
       onRoad,
       hitsScenery,
-      overlaps: !onRoad || hitsScenery,
     };
   });
 }

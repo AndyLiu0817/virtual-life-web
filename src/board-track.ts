@@ -12,9 +12,7 @@ const clayRadius = 0.19;
 export const tileArtSize = 256;
 
 export function measureTrack(layout: BoardLayout) {
-  const centers = layout.cells.map((cell) =>
-    layout.road ? { x: cell[0], y: cell[1] } : project(layout, cell),
-  );
+  const centers = layout.cells.map((cell) => project(layout, cell));
   const halfWidth = layout.halfWidth;
   const halfHeight = layout.halfHeight;
   const w = halfWidth * 0.982;
@@ -45,7 +43,9 @@ export function measureTrack(layout: BoardLayout) {
 
 export function debugGrid(layout: BoardLayout) {
   if (layout.road) {
-    const route = [...layout.cells, layout.cells[0]];
+    const route = [...layout.cells, layout.cells[0]]
+      .map((cell) => project(layout, cell))
+      .map(({ x, y }) => `${x},${y}`);
     return `<polyline class="road-centerline" points="${route.join(" ")}"/>`;
   }
   const columns = layout.cells.map(([column]) => column);

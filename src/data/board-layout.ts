@@ -11,8 +11,8 @@ export interface BoardLayout {
   halfWidth: number;
   halfHeight: number;
   cells: readonly Cell[];
-  // On painted roads, cells are measured source pixels. The first outline
-  // bounds the road and subsequent outlines are the enclosed islands.
+  // Reference road outlines are in source pixels. The first outline bounds
+  // the road, and subsequent outlines describe the enclosed islands.
   road?: {
     outlines: readonly (readonly MapPoint[])[];
     // Ground footprints of major scenery, in the same source coordinates.
