@@ -320,7 +320,8 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
           const pawn = world
             .querySelector(".board-pawn .pawn-shadow")!
             .getBoundingClientRect();
-          const tolerance = 0.1;
+          // Camera layout measurements round offsets and dimensions to CSS pixels.
+          const tolerance = 1;
           const covered =
             artwork.left <= frame.left + tolerance &&
             artwork.top <= frame.top + tolerance &&

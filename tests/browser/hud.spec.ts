@@ -100,6 +100,50 @@ for (const layout of [
       expect(box.height).toBeCloseTo(box.width, 1);
       expect(ringBounds).toEqual(box);
     }
+    for (const [selector, minimum] of [
+      ["#character-name", portrait ? 32 : 44],
+      [".hud-stage, .hud-date", portrait ? 24 : 32],
+      [".hud-turn dd, .hud-cash dd", portrait ? 24 : 35],
+      [".hud-stat .hud-value", portrait ? 22 : 35],
+      [".hud-menu-trigger", 26],
+      ...(layout.deity
+        ? [[".hud-attached-detail", portrait ? 24 : 29] as const]
+        : []),
+    ] as const) {
+      for (const element of await page.locator(selector).all()) {
+        const text = await element.evaluate((node) => {
+          const controls = node.closest(".board-controls")!;
+          const panel = controls.getClientRects().length
+            ? controls
+            : node.closest(".board-status, .hud-bottom")!;
+          const frame = panel.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const fits = [...range.getClientRects()].every(
+            (rect) =>
+              rect.left >= frame.left - 1 &&
+              rect.right <= frame.right + 1 &&
+              rect.top >= frame.top - 1 &&
+              rect.bottom <= frame.bottom + 1,
+          );
+          return {
+            fontSize: parseFloat(getComputedStyle(node).fontSize),
+            fits,
+          };
+        });
+        expect(text.fontSize, selector).toBeGreaterThanOrEqual(minimum);
+        expect(text.fits, selector).toBe(true);
+      }
+    }
+    for (const stat of await page.locator(".hud-stat").all()) {
+      const icon = (await stat.locator(".hud-stat-icon").boundingBox())!;
+      const value = (await stat.locator("dd").boundingBox())!;
+      const bar = (await stat.locator(".hud-meter").boundingBox())!;
+      expect(icon.height).toBe(portrait ? 48 : 78);
+      expect(bar.height).toBe(portrait ? 10 : 16);
+      expect(icon.y + icon.height).toBeLessThanOrEqual(value.y);
+      expect(value.y + value.height).toBeLessThanOrEqual(bar.y);
+    }
     const diceButton = (await page.locator("#roll").boundingBox())!;
     expect(diceButton.x).toBeGreaterThanOrEqual(0);
     expect(diceButton.y).toBeGreaterThanOrEqual(0);
@@ -283,7 +327,9 @@ for (const size of [
     const roll = page.locator("#roll");
     const flight = page.locator(".board-dice-flight");
     const pawn = page.locator(".board-pawn");
-    await roll.click();
+    await page.clock.install();
+    await page.clock.pauseAt(new Date(Date.now() + 1_000));
+    await roll.evaluate((button: HTMLButtonElement) => button.click());
     await expect(flight).toHaveAttribute("data-phase", "rolling");
     await expect(roll).toBeDisabled();
     await expect(pawn.locator('[data-pose="stand"]')).toHaveAttribute(
@@ -302,6 +348,7 @@ for (const size of [
         path: `${process.env.HUD_SCREENSHOTS}/dice-rolling.png`,
       });
     }
+    await page.clock.runFor(1_000);
     await expect(flight).toHaveAttribute("data-phase", "settled");
     await expect(flight.locator('.flight-die[data-face="2"]')).toHaveCount(2);
     await expect(pawn.locator('[data-pose="stand"]')).toHaveAttribute(
@@ -309,6 +356,7 @@ for (const size of [
       "visible",
     );
     await expect(roll).toBeDisabled();
+    await page.clock.runFor(520);
     await expect(flight).toHaveCount(0);
     await expect(pawn.locator('[data-pose="stand"]')).toHaveAttribute(
       "visibility",

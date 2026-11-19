@@ -439,7 +439,7 @@
   .board-status {
     grid-template:
       "identity stats cash" auto "identity stats attached" auto /
-      minmax(168px, 1.25fr) minmax(0, 3fr) minmax(121px, 0.9fr);
+      minmax(275px, 1.55fr) minmax(0, 2fr) minmax(175px, 0.95fr);
     align-items: center;
     column-gap: clamp(7px, 1.6vw, 24px);
     row-gap: 0;
@@ -453,7 +453,7 @@
     text-align: left;
   }
   .hud-identity h2 {
-    font-size: clamp(1.15rem, 2.8dvh, 1.55rem);
+    font-size: clamp(1.85rem, 5.6dvh, 3.1rem);
     line-height: 1.18;
   }
   .hud-identity h1 {
@@ -469,16 +469,17 @@
   .hud-stage,
   .hud-date {
     display: block;
-    font-size: 1rem;
-    line-height: 1.25;
+    font-size: 2rem;
+    line-height: 1.1;
   }
   .hud-summary > div,
   .hud-turn,
   .hud-stat {
-    font-size: 1.1rem;
+    font-size: 2.2rem;
   }
   .hud-attached {
-    font-size: 0.96rem;
+    font-size: 1.85rem;
+    line-height: 1.12;
   }
   .hud-attached .hud-deity-head {
     width: 33px;
@@ -490,6 +491,8 @@
   .hud-turn {
     display: flex;
     gap: 4px;
+    flex-wrap: wrap;
+    line-height: 1.1;
     align-items: baseline;
     font-weight: 720;
   }
@@ -499,8 +502,9 @@
     gap: clamp(5px, 1.3vw, 16px);
   }
   .hud-stat {
-    grid-template: auto auto / minmax(18px, 1fr) auto;
-    grid-template-areas: "icon value" "meter meter";
+    grid-template: "icon" auto "value" auto "meter" auto / minmax(0, 1fr);
+    justify-items: center;
+    line-height: 1.1;
     gap: 3px 4px;
   }
   .hud-stat dt {
@@ -511,16 +515,18 @@
     overflow: hidden;
   }
   .hud-stat-icon {
-    width: 43px;
-    height: 39px;
+    width: 86px;
+    height: 78px;
     max-width: 100%;
   }
   .hud-meter {
-    height: 8px;
+    height: 16px;
+    width: 100%;
   }
   .hud-cash {
     grid-area: cash;
     flex-wrap: wrap;
+    line-height: 1.12;
   }
   .hud-bottom {
     display: contents;
@@ -545,6 +551,7 @@
     background: #fff9ebed;
   }
   .hud-menu-trigger {
+    font-size: 1.64rem;
     padding-inline: clamp(1px, 0.8vw, 13px);
     white-space: nowrap;
   }
@@ -597,13 +604,18 @@
   .board-status {
     grid-area: top;
     margin: max(8px, env(safe-area-inset-top)) 0 6px;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "avatar stats" "summary summary";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "avatar" "stats" "summary" "attached";
     align-items: center;
     gap: 4px 7px;
   }
   .hud-identity {
     grid-area: avatar;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+    gap: 8px;
   }
   .hud-avatar-compact {
     display: block;
@@ -614,15 +626,31 @@
     width: min(38vw, clamp(82px, 18dvh, 160px));
   }
   .hud-person {
+    line-height: 1.1;
+    min-width: 0;
+  }
+  .hud-identity h1 {
     position: absolute;
     width: 1px;
     height: 1px;
     clip-path: inset(50%);
     overflow: hidden;
   }
-  .hud-avatar-desktop,
-  .hud-attached {
+  .hud-identity h2 {
+    font-size: 2rem;
+  }
+  .hud-stage,
+  .hud-date {
+    display: inline-block;
+    font-size: 1.5rem;
+  }
+  .hud-avatar-desktop {
     display: none;
+  }
+  .hud-attached,
+  .hud-summary > div {
+    font-size: 1.5rem;
+    line-height: 1.15;
   }
   .hud-stats {
     grid-area: stats;
@@ -631,14 +659,15 @@
     gap: 5px;
   }
   .hud-stat {
-    grid-template: auto auto / minmax(11px, 1fr) auto;
-    grid-template-areas: "icon value" "meter meter";
+    grid-template: "icon" auto "value" auto "meter" auto / minmax(0, 1fr);
+    justify-items: center;
+    line-height: 1.05;
     column-gap: 1px;
     row-gap: 3px;
-    font-size: clamp(0.64rem, 2.9vw, 0.96rem);
+    font-size: clamp(1.25rem, 5.8vw, 1.92rem);
   }
   .hud-stat-icon {
-    height: 24px;
+    height: 48px;
   }
   .hud-stat dt {
     position: absolute;
@@ -648,7 +677,8 @@
     overflow: hidden;
   }
   .hud-meter {
-    height: 5px;
+    height: 10px;
+    width: 100%;
   }
   .hud-summary {
     grid-area: summary;
@@ -657,6 +687,7 @@
     grid-area: bottom;
     position: relative;
     z-index: 2;
+    column-gap: 4px;
     margin: 6px 0 max(8px, env(safe-area-inset-bottom));
     width: min(
       calc(
@@ -676,7 +707,10 @@
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
-    padding-inline: 5px;
+    font-size: 1.64rem;
+    padding-inline: 2px;
+    border-width: 8px;
+    border-image-width: 8px;
     white-space: nowrap;
   }
   #roll {
