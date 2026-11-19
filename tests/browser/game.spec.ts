@@ -38,10 +38,12 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
     )
     .toContain("map_junior_noroad_portrait_final");
   await expect(page.getByText("5,000 元")).toBeVisible();
+  await page.getByRole("button", { name: "選單", exact: true }).click();
   await page.getByRole("button", { name: "儲存到存檔格" }).click();
   await page.locator("#use-1").click();
   await expect(page.getByRole("status")).toContainText("已儲存至存檔格 1");
   const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "選單", exact: true }).click();
   await page.getByRole("button", { name: "匯出存檔" }).click();
   const download = await downloading;
   const exported = await download.path();
@@ -61,6 +63,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
       backdrop.evaluate((img) => (img as HTMLImageElement).currentSrc),
     )
     .toContain("map_junior_noroad_landscape_final");
+  await page.getByRole("button", { name: "選單", exact: true }).click();
   await page.getByRole("button", { name: "回標題" }).click();
 
   await page.locator("#file").setInputFiles({
@@ -103,6 +106,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
     const statusBounds = (await status.boundingBox())!;
     expect(
       mapBounds.y + mapBounds.height <= statusBounds.y ||
+        statusBounds.y + statusBounds.height <= mapBounds.y ||
         mapBounds.x + mapBounds.width <= statusBounds.x,
     ).toBe(true);
   }
@@ -336,8 +340,12 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
 
   await checkCamera(2.3);
   const landscapeStatus = await status.boundingBox();
+  await page.getByRole("button", { name: "選單", exact: true }).click();
   await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#overview")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await checkCamera(1);
   expect(await status.boundingBox()).toEqual(landscapeStatus);
 
@@ -345,8 +353,12 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
   await expect(map.locator("svg")).toHaveAttribute("viewBox", "0 0 439 780");
   await checkCamera(1);
   const portraitStatus = await status.boundingBox();
+  await page.getByRole("button", { name: "選單", exact: true }).click();
   await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#overview")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
   await checkCamera(2.3);
   expect(await status.boundingBox()).toEqual(portraitStatus);
   await expect(map.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
@@ -483,6 +495,7 @@ for (const portrait of [false, true]) {
       "data-tile",
       "41",
     );
+    await page.getByRole("button", { name: "選單", exact: true }).click();
     await page.getByRole("button", { name: "看全圖" }).click();
     const tiles = page.locator(".board-tile");
     await expect(tiles).toHaveCount(42);

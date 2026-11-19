@@ -1,15 +1,24 @@
 import { readdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
-test("every minigame and deity sprite has clean transparent edges", async ({
+test("every minigame, deity and HUD sprite has clean transparent edges", async ({
   page,
 }) => {
-  const sprites = ["art/minigames", "art/shoot", "art/deities"].flatMap((dir) =>
+  const sprites = [
+    "art/minigames",
+    "art/shoot",
+    "art/deities",
+    "art/hud",
+  ].flatMap((dir) =>
     readdirSync(dir, { recursive: true, encoding: "utf8" })
       .filter((file) => file.endsWith(".webp"))
       .map((file) => `/${dir}/${file}`),
   );
   expect(sprites.filter((url) => url.includes("/deities/"))).toHaveLength(7);
+  expect(sprites.filter((url) => url.includes("/hud/"))).toHaveLength(64);
+  expect(
+    sprites.filter((url) => /\/hud\/avatar-.*-(128|256)\.webp$/.test(url)),
+  ).toHaveLength(16);
   await page.goto("/");
   const samples = await page.evaluate(async (urls) => {
     return Promise.all(
@@ -33,6 +42,7 @@ test("every minigame and deity sprite has clean transparent edges", async ({
         let opaque = 0;
         let translucent = 0;
         let whiteFringe = 0;
+        let creamFringe = 0;
         // Sample every partially transparent edge pixel. Skip essentially
         // invisible pixels where canvas unpremultiplication rounds RGB.
         for (let i = 0; i < data.length; i += 4) {
@@ -40,7 +50,9 @@ test("every minigame and deity sprite has clean transparent edges", async ({
           if (alpha === 255) opaque++;
           if (alpha < 16 || alpha === 255) continue;
           translucent++;
-          if (Math.min(data[i], data[i + 1], data[i + 2]) >= 235) whiteFringe++;
+          const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+          if (Math.min(r, g, b) >= 235) whiteFringe++;
+          if (r >= 240 && g >= 222 && b >= 200) creamFringe++;
         }
         return {
           url,
@@ -48,6 +60,7 @@ test("every minigame and deity sprite has clean transparent edges", async ({
           opaque,
           translucent,
           whiteFringe,
+          creamFringe,
         };
       }),
     );
@@ -57,5 +70,7 @@ test("every minigame and deity sprite has clean transparent edges", async ({
     expect(sample.opaque, sample.url).toBeGreaterThan(0);
     expect(sample.translucent, sample.url).toBeGreaterThan(0);
     expect(sample.whiteFringe, sample.url).toBe(0);
+    if (sample.url.includes("/hud/"))
+      expect(sample.creamFringe, sample.url).toBe(0);
   }
 });

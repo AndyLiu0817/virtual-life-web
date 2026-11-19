@@ -1,20 +1,12 @@
-.junior {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(265px, 325px);
-  align-items: center;
-  align-content: center;
-  justify-items: center;
-  gap: clamp(0.55rem, 1.4vw, 1.2rem);
-  background: radial-gradient(ellipse at top, #31737c, #193941 75%);
-}
-
 .board-map {
   position: relative;
-  width: min(100%, 1250px);
+  width: min(100%, 1250px, calc((100dvh - 32px) * 780 / 439));
   aspect-ratio: 780 / 439;
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 8px 24px #101f25a0;
+  box-shadow:
+    0 10px 32px #0a202ac4,
+    0 0 0 1px #92cbc56b;
 }
 
 .board-world {
@@ -69,77 +61,6 @@
   stroke-width: 3px;
 }
 
-.board-controls {
-  width: 100%;
-  background: #fff9ee;
-  border: 1px solid #fff;
-  border-radius: 0.85rem;
-  padding: 0.75rem;
-  display: grid;
-  gap: 0.6rem;
-}
-#overview[aria-pressed="true"] {
-  outline: 2px solid #23737c;
-  outline-offset: 2px;
-}
-.board-controls header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.15rem 0.55rem;
-}
-.board-controls h1 {
-  font-size: 1.35rem;
-}
-.board-controls h2 {
-  font-size: 1rem;
-  overflow-wrap: anywhere;
-}
-.board-status {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.25rem;
-  font-size: 0.82rem;
-}
-.board-status > div {
-  background: #e4f1ee;
-  border-radius: 0.4rem;
-  text-align: center;
-  padding: 0.2rem 0;
-}
-.board-status > div:last-child {
-  grid-column: span 3;
-  background: #faebcb;
-}
-.board-status dd {
-  margin: 0;
-  font-weight: 750;
-}
-.board-roll,
-.dice {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.dice span {
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  aspect-ratio: 1;
-  border-radius: 0.42rem;
-  background: #fff;
-  box-shadow:
-    0 2px 0 #89acac,
-    0 0 0 1px #a3b9b7;
-  font-weight: 800;
-}
-.board-controls .actions .action {
-  flex: auto;
-  font-size: 0.82rem;
-  padding-inline: 0.4rem;
-  min-width: 0;
-}
 .board-dialog {
   width: min(calc(100% - 2rem), 450px);
   border: 1px solid #fff;
@@ -160,26 +81,6 @@
 }
 #ending {
   font-weight: 750;
-}
-
-@media (orientation: portrait) {
-  .junior {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .board-map {
-    width: min(100%, max(240px, 33dvh), 440px);
-    aspect-ratio: 439 / 780;
-  }
-  .board-controls {
-    width: min(100%, 440px);
-  }
-  .board-status {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    font-size: clamp(0.68rem, 3.25vw, 0.82rem);
-  }
-  .board-status > div:last-child {
-    grid-column: auto;
-  }
 }
 
 .pawn-silhouette {

@@ -1,11 +1,12 @@
 import { activityPrompt, promptForClub } from "./activity-view";
 import { playContest } from "./contest-view";
-import { clubChoice, clubs, isClubId, visitClub } from "./game/clubs";
+import { clubChoice, visitClub } from "./game/clubs";
 import { nextMatch } from "./game/contests";
 import { assets } from "./assets";
 import { juniorBoard as board, tileLabels } from "./data/junior";
 import { boardCamera } from "./board-camera";
 import { boardView } from "./board-view";
+import { boardHud, boardHudMarkup } from "./board-hud";
 import type { Orientation } from "./data/board-layout";
 import {
   beforeRoll,
@@ -16,7 +17,6 @@ import {
   stageFinished,
   walkStep,
 } from "./game/board";
-import { STAT_LABELS, type Stat } from "./game/opening";
 import {
   activeDeity,
   deities,
@@ -62,25 +62,7 @@ export function showJuniorBoard(
       <div class="board-world"><picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
       <svg class="board-track" preserveAspectRatio="none"></svg></div>
     </div>
-    <section class="board-controls">
-      <header>
-        <div><h1 tabindex="-1">國中棋盤</h1><h2 id="character-name"></h2></div>
-        <button class="action" id="overview" type="button" aria-pressed="false">看全圖</button>
-      </header>
-      ${debug ? '<label class="board-debug-option"><input id="scenery-anchors" type="checkbox"> 顯示前景物件錨點</label>' : ""}
-      <dl class="board-status" aria-label="玩家狀態"></dl>
-      <div class="board-roll">
-        <button class="action" id="roll" type="button">擲骰</button>
-        <div class="dice" aria-label="骰子點數"></div>
-        <span id="dice-total"></span>
-      </div>
-      <p id="notice" role="status"></p>
-      <div class="actions">
-        <button class="action" id="save" type="button">儲存到存檔格</button>
-        <button class="action" id="export" type="button">匯出存檔</button>
-        <button class="action" id="home" type="button">回標題</button>
-      </div>
-    </section>
+    ${boardHudMarkup(debug)}
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
       <h2 id="board-prompt"></h2><p class="board-detail"></p><div class="actions"></div>
     </form></dialog>
@@ -111,6 +93,7 @@ export function showJuniorBoard(
     anchors.onchange = () =>
       track.classList.toggle("show-scenery-anchors", anchors.checked);
   }
+  const hud = boardHud(find(".board-controls"), board.turns);
   let orientation: Orientation = media.matches ? "portrait" : "landscape";
   let view = boardView(
     track,
@@ -130,6 +113,7 @@ export function showJuniorBoard(
     const next = media.matches ? "portrait" : "landscape";
     if (next === orientation) return;
     orientation = next;
+    hud.reorient();
     view = boardView(
       track,
       board.layouts[orientation],
@@ -159,19 +143,28 @@ export function showJuniorBoard(
   const notice = find("#notice");
   const quizDialog = find<HTMLDialogElement>(".assessment-dialog");
   const navigation = Array.from(
-    app.querySelectorAll<HTMLButtonElement>(".board-controls .actions button"),
+    app.querySelectorAll<HTMLButtonElement>(
+      ".board-controls .actions button, [aria-controls=hud-menu]",
+    ),
   );
   const overview = find<HTMLButtonElement>("#overview");
   overview.onclick = () => {
     const active = overview.getAttribute("aria-pressed") !== "true";
     overview.setAttribute("aria-pressed", String(active));
     camera.setOverview(active);
+    hud.closeMenu();
   };
 
-  find("#character-name").textContent = save.name;
   notice.textContent = message;
-  find<HTMLButtonElement>("#save").onclick = () => actions.manualSave(save);
-  find<HTMLButtonElement>("#export").onclick = () => actions.exportSave(save);
+  find<HTMLButtonElement>("#save").onclick = () => {
+    hud.closeMenu(false);
+    orientationChange.disconnect();
+    actions.manualSave(save);
+  };
+  find<HTMLButtonElement>("#export").onclick = () => {
+    hud.closeMenu();
+    actions.exportSave(save);
+  };
   find<HTMLButtonElement>("#home").onclick = () => {
     orientationChange.disconnect();
     actions.home();
@@ -182,31 +175,7 @@ export function showJuniorBoard(
       (event) => event.preventDefault();
 
   function status() {
-    const deity = activeDeity(save);
-    const clubId = save.clubHistory.find(
-      ({ stage }) => stage === save.stage,
-    )?.clubId;
-    const fields = [
-      ["回合", `${Math.min(save.turn + 1, board.turns)} ／ ${board.turns}`],
-      ["骰子", `${diceCount(save)} 顆`],
-      ["水星逆行", `${save.retrogradeTurns} 回合`],
-      ["否極泰來", `${save.turnaroundTurns} 回合`],
-      [
-        "附身神祇",
-        deity ? `${deities[deity.id].name}・${deity.remainingTurns} 回合` : "—",
-      ],
-      ["社團", clubId && isClubId(clubId) ? clubs[clubId].name : "—"],
-      ["人生經驗", save.experience],
-      ["收集卡", `${save.cards.length} 張`],
-      ...Object.entries(STAT_LABELS).map(([key, label]) => [
-        label,
-        save.stats[key as Stat],
-      ]),
-      ["現金", `${save.cash.toLocaleString("zh-TW")} 元`],
-    ];
-    find(".board-status").innerHTML = fields
-      .map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`)
-      .join("");
+    hud.update(save);
   }
 
   function placePawn(nextPose: "stand" | "win") {
@@ -400,6 +369,7 @@ export function showJuniorBoard(
 
   async function playTurn() {
     if (roll.disabled || stageFinished(board, save)) return;
+    hud.closeMenu(false);
     roll.disabled = true;
     navigation.forEach((button) => (button.disabled = true));
     notice.textContent = "";
@@ -504,6 +474,7 @@ export function showJuniorBoard(
   async function startBoard() {
     const needsClub = clubChoice(save, "junior");
     if (!needsClub && !nextMatch(save, "turn")) return;
+    hud.closeMenu(false);
     roll.disabled = true;
     navigation.forEach((button) => (button.disabled = true));
     if (needsClub) {
