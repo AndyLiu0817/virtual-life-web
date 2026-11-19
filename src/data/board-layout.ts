@@ -1,7 +1,6 @@
 export type Orientation = "landscape" | "portrait";
 export type Cell = readonly [column: number, row: number];
 export type MapPoint = readonly [x: number, y: number];
-export type RoadPaver = readonly [halfWidth: number, halfHeight: number];
 
 export interface BoardLayout {
   width: number;
@@ -17,6 +16,6 @@ export interface BoardLayout {
   road?: {
     outlines: readonly (readonly MapPoint[])[];
     centerlines: readonly (readonly MapPoint[])[];
-    pavers: readonly RoadPaver[];
+    faces: readonly (readonly MapPoint[])[];
   };
 }

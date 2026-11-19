@@ -1,11 +1,11 @@
 import { paverClearance } from "./board-clearance";
 import { debugGrid, measureTrack, tileArtSize } from "./board-track";
-import type { BoardLayout, Orientation } from "./data/board-layout";
+import type { BoardLayout, MapPoint, Orientation } from "./data/board-layout";
 import type { SchoolBoard } from "./data/school-board";
 import { tileLabels, type TileKind } from "./data/junior";
 
 const sprites = import.meta.glob<string>(
-  "./board-art/{*-clay,boy-{stand,win},girl-{stand,win},walk-junior/*,high/*,high/walk/*,university/*,university/walk/*}.webp",
+  "./board-art/{*-clay,*-road,boy-{stand,win},girl-{stand,win},walk-junior/*,high/*,high/walk/*,university/*,university/walk/*}.webp",
   {
     eager: true,
     query: "?url",
@@ -29,6 +29,34 @@ const claySides = {
   fork: "#a59e97",
 } satisfies Record<TileKind, string>;
 
+const roadTops = {
+  start: "#f2c553",
+  event: "#5bc8d7",
+  game: "#78c4ac",
+  club: "#52beda",
+  quiz: "#eac356",
+  contest: "#ec9c66",
+  love: "#ef9291",
+  fork: "#ddd5bc",
+} satisfies Record<TileKind, string>;
+
+function roadPaverMarkup(
+  id: number,
+  kind: TileKind,
+  face: readonly MapPoint[],
+  center: { x: number; y: number },
+) {
+  const px = face.map(([x]) => x);
+  const py = face.map(([, y]) => y);
+  const width = Math.min(53, (Math.max(...px) - Math.min(...px)) * 0.76);
+  const height = Math.min(42, (Math.max(...py) - Math.min(...py)) * 0.76);
+  const points = face.join(" ");
+  return `<polygon points="${points}" fill="${claySides[kind]}" transform="translate(0 4)"/>
+    <polygon class="road-paver-face" data-road-face="${id}" points="${points}" fill="${roadTops[kind]}"/>
+    <polygon points="${points}" fill="url(#clay-side-light)" pointer-events="none"/>
+    <image class="paver-top road-paver-icon" href="${sprite(`${kind}-road`)}" x="${center.x - width / 2}" y="${center.y - height / 2}"
+      width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/>`;
+}
 export async function preloadSchool(
   board: SchoolBoard,
   gender: "boy" | "girl",
@@ -74,7 +102,13 @@ export function boardView(
   mapArt: string,
   follow: (point: { x: number; y: number }) => void,
 ) {
-  const { centers, body, footprint, pavers, paver } = measureTrack(layout);
+  const {
+    centers,
+    body,
+    footprint,
+    depth: thickness,
+    tileTop,
+  } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
   const walkHeight = layout.pawnHeight * 1.08;
   const walkWidth = (walkHeight * 104) / 192;
@@ -93,17 +127,20 @@ export function boardView(
   // Rounded corners are baked into the faces, avoiding a per-image SVG clip.
   for (const [id, center] of centers.entries()) {
     const { kind } = tiles[id];
-    const { depth: thickness, tileTop } = paver(id);
-    const shapeId = pavers ? `-${id}` : "";
+    const face = layout.road?.faces[id];
     layers.push({
       y: center.y,
       markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${tileLabels[kind]}">
-        <g transform="translate(${center.x} ${center.y})">
-          <use href="#clay-footprint${shapeId}" class="paver-shadow" transform="translate(0 ${thickness})"/>
-          <use href="#clay-body${shapeId}" fill="${claySides[kind]}"/>
-          <use href="#clay-body${shapeId}" fill="url(#clay-side-light)"/>
+        ${
+          face
+            ? roadPaverMarkup(id, kind, face, center)
+            : `<g transform="translate(${center.x} ${center.y})">
+          <use href="#clay-footprint" class="paver-shadow" transform="translate(0 ${thickness})"/>
+          <use href="#clay-body" fill="${claySides[kind]}"/>
+          <use href="#clay-body" fill="url(#clay-side-light)"/>
         </g>
-        <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="${-tileArtSize / 2}" y="${-tileArtSize / 2}" width="${tileArtSize}" height="${tileArtSize}" preserveAspectRatio="none" transform="${tileTop(center)}"/>
+        <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="${-tileArtSize / 2}" y="${-tileArtSize / 2}" width="${tileArtSize}" height="${tileArtSize}" preserveAspectRatio="none" transform="${tileTop(center)}"/>`
+        }
       </g>`,
     });
   }
@@ -112,7 +149,6 @@ export function boardView(
     <defs>
       <path id="clay-body" d="${body}"/>
       <path id="clay-footprint" d="${footprint}"/>
-      ${pavers?.map(({ body, footprint }, id) => `<path id="clay-body-${id}" d="${body}"/><path id="clay-footprint-${id}" d="${footprint}"/>`).join("") ?? ""}
       <linearGradient id="clay-side-light" x2="100%" y2="56%">
         <stop stop-color="#fff2d2" stop-opacity=".12"/>
         <stop offset=".49" stop-color="#fff2d2" stop-opacity=".04"/>
@@ -164,7 +200,6 @@ export function boardView(
       </clipPath>
     </defs>
     <g class="board-depth">
-      ${layout.road && orientation === "portrait" ? `<polyline class="road-connector" points="${layout.road.centerlines[2].join(" ")}"/>` : ""}
     ${layers
       .sort((a, b) => a.y - b.y)
       .map(({ markup }) => markup)

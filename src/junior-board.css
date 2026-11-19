@@ -152,17 +152,22 @@
   font-size: 0.82rem;
 }
 
-.road-connector,
 .path-debug .road-centerline {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.road-connector {
-  stroke: #ceac79;
-  stroke-width: 10;
-}
 .path-debug .road-centerline {
   stroke: #e26dce;
   stroke-width: 2;
+}
+
+.road-paver-face {
+  stroke: #34524d;
+  stroke-opacity: 0.76;
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+}
+.road-paver-icon {
+  filter: drop-shadow(0 2px 2px #263d405e);
 }

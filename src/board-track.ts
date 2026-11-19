@@ -1,4 +1,4 @@
-import type { BoardLayout, Cell, MapPoint } from "./data/board-layout";
+import type { BoardLayout, Cell } from "./data/board-layout";
 
 function project(layout: BoardLayout, [column, row]: Cell) {
   return {
@@ -15,17 +15,8 @@ export function measureTrack(layout: BoardLayout) {
   const centers = layout.cells.map((cell) =>
     layout.road ? { x: cell[0], y: cell[1] } : project(layout, cell),
   );
-  const standard = paverGeometry(layout.halfWidth, layout.halfHeight);
-  const pavers = layout.road?.pavers.map(([w, h]) => paverGeometry(w, h));
-  return {
-    ...standard,
-    centers,
-    pavers,
-    paver: (id: number) => pavers?.[id] ?? standard,
-  };
-}
-
-function paverGeometry(halfWidth: number, halfHeight: number) {
+  const halfWidth = layout.halfWidth;
+  const halfHeight = layout.halfHeight;
   const w = halfWidth * 0.982;
   const h = halfHeight * 0.982;
   const depth = w * 0.2;
@@ -49,14 +40,7 @@ function paverGeometry(halfWidth: number, halfHeight: number) {
 
   const tileTop = ({ x, y }: { x: number; y: number }) =>
     `matrix(${w / tileArtSize} ${h / tileArtSize} ${-w / tileArtSize} ${h / tileArtSize} ${x} ${y})`;
-  // The painted lane contains the footprint. The extruded wall rises from it.
-  const bounds = ({ x, y }: { x: number; y: number }): MapPoint[] => [
-    [x - w, y],
-    [x, y - h],
-    [x + w, y],
-    [x, y + h],
-  ];
-  return { body, footprint, depth, tileTop, bounds };
+  return { centers, body, footprint, depth, tileTop };
 }
 
 export function debugGrid(layout: BoardLayout) {

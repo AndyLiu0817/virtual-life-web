@@ -38,19 +38,19 @@ describe("學段棋盤", () => {
     [
       "high",
       25,
-      { start: 1, event: 9, game: 6, club: 4, quiz: 3, contest: 2, fork: 2 },
+      { start: 1, event: 12, game: 7, club: 5, quiz: 4, contest: 2, fork: 2 },
     ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 6,
-        game: 4,
-        club: 2,
-        quiz: 3,
-        contest: 1,
-        love: 5,
+        event: 9,
+        game: 6,
+        club: 3,
+        quiz: 4,
+        contest: 2,
+        love: 7,
         fork: 2,
       },
     ],
@@ -269,10 +269,25 @@ it("地磚踏入跑道內島或越過跑道外框時標示重疊", () => {
     road: {
       outlines: fakeGround,
       centerlines: [],
-      pavers: [
-        [15, 10],
-        [15, 10],
-        [15, 10],
+      faces: [
+        [
+          [35, 54],
+          [50, 44],
+          [65, 54],
+          [50, 64],
+        ],
+        [
+          [65, 70],
+          [80, 60],
+          [95, 70],
+          [80, 80],
+        ],
+        [
+          [95, 54],
+          [110, 44],
+          [125, 54],
+          [110, 64],
+        ],
       ],
     },
     origin: [50, 54],
@@ -306,23 +321,45 @@ it.each(["high", "university"] as const)(
           : schoolBoards.junior.layouts.landscape;
       const target =
         Math.hypot(junior.halfWidth, junior.halfHeight) *
-        (layout.width / junior.width) *
-        0.85;
-      const last = board.tiles.length - 1;
+        (layout.width / junior.width);
+      const length = layout.road!.centerlines.reduce(
+        (sum, line) =>
+          sum +
+          line
+            .slice(1)
+            .reduce(
+              (part, [x, y], i) =>
+                part + Math.hypot(x - line[i][0], y - line[i][1]),
+              0,
+            ),
+        0,
+      );
+      expect(length / board.tiles.length / target).toBeGreaterThanOrEqual(0.9);
+      expect(length / board.tiles.length / target).toBeLessThanOrEqual(1.1);
       for (const { id, polygon } of results) {
-        const [previous, following] =
-          id === last
-            ? board.tiles[id].next
-            : [(id + last - 1) % last, (id + 1) % last];
-        const dx = centers[following].x - centers[previous].x;
-        const dy = centers[following].y - centers[previous].y;
-        const projection = polygon.map(
-          ([x, y]) => (dx * x + dy * y) / Math.hypot(dx, dy),
-        );
-        expect(
-          Math.max(...projection) - Math.min(...projection),
-          `${orientation} 格 ${id}`,
-        ).toBeGreaterThanOrEqual(target);
+        for (const other of board.tiles[id].next) {
+          const seam = Math.min(
+            ...polygon.flatMap(([x, y]) => {
+              const next = results[other].polygon;
+              return next.map(([ax, ay], i) => {
+                const [bx, by] = next[(i + 1) % next.length];
+                const dx = bx - ax,
+                  dy = by - ay;
+                const t = Math.max(
+                  0,
+                  Math.min(
+                    1,
+                    ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1),
+                  ),
+                );
+                return Math.hypot(x - ax - t * dx, y - ay - t * dy);
+              });
+            }),
+          );
+          expect(seam, `${orientation} ${id} → ${other}`).toBeLessThanOrEqual(
+            4,
+          );
+        }
       }
       const blockedLinks = board.tiles.flatMap(({ next }, from) =>
         next

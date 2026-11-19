@@ -1,5 +1,4 @@
 import type { BoardLayout, MapPoint } from "./data/board-layout";
-import { measureTrack } from "./board-track";
 
 type Polygon = readonly MapPoint[];
 
@@ -52,9 +51,7 @@ export function routeLeavesRoad(
 export function paverClearance(layout: BoardLayout) {
   if (!layout.road) return [];
   const [ground, ...obstacles] = layout.road.outlines;
-  const { centers, paver } = measureTrack(layout);
-  return centers.map((center, id) => {
-    const polygon = paver(id).bounds(center);
+  return layout.road.faces.map((polygon, id) => {
     const overlaps =
       polygon.some((point) => !contains(ground, point)) ||
       outlinesIntersect(polygon, ground) ||

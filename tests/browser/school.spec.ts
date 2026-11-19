@@ -501,6 +501,9 @@ for (const [stage, filename] of [
       new RegExp(`map_${filename}_landscape_final`),
     );
     await expect(page.locator(".road-centerline")).toHaveCount(3);
+    await expect(page.locator("[data-road-face]")).toHaveCount(
+      schoolBoards[stage].tiles.length,
+    );
     await expect(
       page.locator("[data-clearance-tile][data-overlap=false]"),
     ).toHaveCount(schoolBoards[stage].tiles.length);
