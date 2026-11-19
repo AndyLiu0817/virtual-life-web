@@ -464,7 +464,7 @@
     overflow: hidden;
   }
   .hud-avatar-desktop {
-    width: clamp(64px, 10.8dvh, 88px);
+    width: clamp(96px, 18dvh, 152px);
   }
   .hud-stage,
   .hud-date {
@@ -527,8 +527,8 @@
   }
   .board-roll {
     position: fixed;
-    right: max(8px, env(safe-area-inset-right));
-    bottom: max(5px, env(safe-area-inset-bottom));
+    right: calc(20px + env(safe-area-inset-right));
+    bottom: calc(20px + env(safe-area-inset-bottom));
     z-index: 1;
     flex-direction: column-reverse;
     align-items: end;
@@ -597,7 +597,7 @@
   .board-status {
     grid-area: top;
     margin: max(8px, env(safe-area-inset-top)) 0 6px;
-    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas: "avatar stats" "summary summary";
     align-items: center;
     gap: 4px 7px;
@@ -607,11 +607,11 @@
   }
   .hud-avatar-compact {
     display: block;
-    width: 44px;
+    width: clamp(56px, 18.5vw, 72px);
   }
   .hud-avatar-mobile {
     display: block;
-    width: clamp(71px, 13dvh, 122px);
+    width: min(38vw, clamp(82px, 18dvh, 160px));
   }
   .hud-person {
     position: absolute;
@@ -658,6 +658,13 @@
     position: relative;
     z-index: 2;
     margin: 6px 0 max(8px, env(safe-area-inset-bottom));
+    width: min(
+      calc(
+        100% - 2 *
+          max(8px, env(safe-area-inset-left), env(safe-area-inset-right))
+      ),
+      560px
+    );
     grid-template-columns: auto 1fr auto;
   }
   .board-roll {
@@ -669,6 +676,8 @@
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
+    padding-inline: 5px;
+    white-space: nowrap;
   }
   #roll {
     width: clamp(63px, 13dvh, 122px);

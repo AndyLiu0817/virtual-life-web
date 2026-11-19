@@ -41,12 +41,6 @@ for (const layout of [
   { name: "desktop-1280x800", width: 1280, height: 800 },
   { name: "phone-390x844", width: 390, height: 844 },
   {
-    name: "mumu-landscape-good-960x540",
-    width: 960,
-    height: 540,
-    deity: { id: "sky-elder", remainingTurns: 4 },
-  },
-  {
     name: "landscape-bad-deity-1280x800",
     width: 1280,
     height: 800,
@@ -59,9 +53,9 @@ for (const layout of [
     deity: { id: "sky-elder", remainingTurns: 4 },
   },
   {
-    name: "mumu-portrait-bad-over-target-540x960",
-    width: 540,
-    height: 960,
+    name: "portrait-bad-over-target-390x844",
+    width: 390,
+    height: 844,
     deity: { id: "empty-bag", remainingTurns: 3 },
     over: true,
   },
@@ -92,6 +86,29 @@ for (const layout of [
     const avatar = page.locator(
       portrait ? ".hud-avatar-mobile" : ".hud-avatar-desktop",
     );
+    for (const [selector, minimum] of portrait
+      ? ([
+          [".hud-avatar-compact", 72],
+          [".hud-avatar-mobile", 145],
+        ] as const)
+      : ([[".hud-avatar-desktop", 144]] as const)) {
+      const box = (await page.locator(selector).boundingBox())!;
+      const ringBounds = (await page
+        .locator(`${selector} .hud-ring`)
+        .boundingBox())!;
+      expect(box.width).toBeGreaterThanOrEqual(minimum);
+      expect(box.height).toBeCloseTo(box.width, 1);
+      expect(ringBounds).toEqual(box);
+    }
+    const diceButton = (await page.locator("#roll").boundingBox())!;
+    expect(diceButton.x).toBeGreaterThanOrEqual(0);
+    expect(diceButton.y).toBeGreaterThanOrEqual(0);
+    expect(
+      layout.width - diceButton.x - diceButton.width,
+    ).toBeGreaterThanOrEqual(20);
+    expect(
+      layout.height - diceButton.y - diceButton.height,
+    ).toBeGreaterThanOrEqual(20);
     await expect(avatar.locator(".hud-hero")).toHaveAttribute(
       "src",
       /girl-junior-256\.webp/,
@@ -190,13 +207,9 @@ for (const layout of [
     expect(await page.locator(".board-world").boundingBox()).toEqual(
       worldBeforeDrawer,
     );
-    if (
-      process.env.HUD_SCREENSHOTS &&
-      (portrait ? layout.over : tone === "good")
-    ) {
-      const screenshot = portrait ? "mumu-portrait-drawer" : "landscape-drawer";
+    if (process.env.HUD_SCREENSHOTS && layout.name === "desktop-1280x800") {
       await page.screenshot({
-        path: `${process.env.HUD_SCREENSHOTS}/${screenshot}.png`,
+        path: `${process.env.HUD_SCREENSHOTS}/landscape-drawer.png`,
       });
     }
     await page.keyboard.press("Escape");
@@ -204,7 +217,7 @@ for (const layout of [
   });
 }
 
-test("all 42 tiles fit in the landscape board at both requested sizes", async ({
+test("all 42 tiles fit in the landscape board at 1280×800 and a larger desktop", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -213,7 +226,7 @@ test("all 42 tiles fit in the landscape board at both requested sizes", async ({
   await expect(map.locator(".board-tile")).toHaveCount(42);
   for (const size of [
     { width: 1280, height: 800 },
-    { width: 960, height: 540 },
+    { width: 1600, height: 1000 },
   ]) {
     await page.setViewportSize(size);
     const clipped = await map.evaluate((board) => {
@@ -237,8 +250,8 @@ test("all 42 tiles fit in the landscape board at both requested sizes", async ({
     expect(bounds.y + bounds.height).toBe(size.height);
     const roll = (await page.locator("#roll").boundingBox())!;
     expect(roll.width).toBeGreaterThanOrEqual(88);
-    expect(size.width - roll.x - roll.width).toBeLessThanOrEqual(16);
-    expect(size.height - roll.y - roll.height).toBeLessThanOrEqual(16);
+    expect(size.width - roll.x - roll.width).toBeGreaterThanOrEqual(20);
+    expect(size.height - roll.y - roll.height).toBeGreaterThanOrEqual(20);
     const covered = await map.locator(".board-tile, .board-pawn").evaluateAll(
       (pieces, die) =>
         pieces

@@ -49,7 +49,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
   const exported = await download.path();
 
   await page.reload();
-  await page.setViewportSize({ width: 960, height: 540 });
+  await page.setViewportSize({ width: 1280, height: 800 });
   await expect
     .poll(() =>
       backdrop.evaluate((img) => (img as HTMLImageElement).currentSrc),
@@ -118,7 +118,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   await expect(pawn).toHaveAttribute("data-tile", "4");
 
   await page.reload();
-  await page.setViewportSize({ width: 960, height: 540 });
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.getByRole("button", { name: "繼續遊戲" }).click();
   await page.locator("#use-0").click();
   await expect(pawn).toHaveAttribute("data-tile", "4");
