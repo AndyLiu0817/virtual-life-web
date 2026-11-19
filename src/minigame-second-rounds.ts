@@ -1,3 +1,4 @@
+import { minigames } from "./game/minigames";
 import { differenceHotspots } from "./game/differences";
 import { minigameBackground, sprite } from "./minigame-art";
 import { differencePictures } from "./minigame-second-art";
@@ -18,6 +19,10 @@ function feedback(className: string) {
   return mark;
 }
 
+const signboard = `<div class="mg-signboard" aria-hidden="true">
+  <span class="mg-sign-score"></span><span class="mg-sign-clock"></span>
+</div>`;
+
 const whack: Round = async ({ field, score, clock }) => {
   const holes = [
     [172, 122],
@@ -32,9 +37,12 @@ const whack: Round = async ({ field, score, clock }) => {
   ];
   field.innerHTML = `<div class="mg-whack-board">
     ${minigameBackground("whack")}
+    ${signboard}
     <button class="mg-critter" type="button" aria-label="打小怪獸" hidden></button>
   </div>`;
   const board = field.querySelector<HTMLElement>(".mg-whack-board")!;
+  const signScore = board.querySelector<HTMLElement>(".mg-sign-score")!;
+  const signClock = board.querySelector<HTMLElement>(".mg-sign-clock")!;
   const critter = field.querySelector<HTMLButtonElement>(".mg-critter")!;
   const mark = feedback("mg-tap-mark");
   board.append(mark);
@@ -47,14 +55,14 @@ const whack: Round = async ({ field, score, clock }) => {
   let hits = 0;
   let feedbackUntil = 0;
   const start = performance.now();
-  score.textContent = "命中 0 隻";
+  score.textContent = signScore.textContent = "命中 0 隻";
   field.onpointerdown = (event) => {
     const elapsed = performance.now() - start;
     if (!primary(event) || elapsed >= duration * 1000) return;
     const hit =
       !critter.hidden && event.target === critter && elapsed % period < visible;
     if (hit) {
-      score.textContent = `命中 ${++hits} 隻`;
+      score.textContent = signScore.textContent = `命中 ${++hits} 隻`;
       critter.hidden = true;
     }
     const bounds = board.getBoundingClientRect();
@@ -69,21 +77,27 @@ const whack: Round = async ({ field, score, clock }) => {
     feedbackUntil = elapsed + 260;
   };
 
-  await timedRound(clock, duration, start, (elapsed) => {
-    if (elapsed >= feedbackUntil) mark.hidden = true;
-    const next = Math.floor(elapsed / period);
-    if (next !== cycle) {
-      cycle = next;
-      hole =
-        (hole + 1 + Math.floor(Math.random() * (holes.length - 1))) %
-        holes.length;
-      const [x, y] = holes[hole];
-      place(critter, x / 480, y / 270);
-      critter.innerHTML = sprite("whack", cycle % 3);
-      critter.hidden = false;
-    }
-    if (elapsed % period >= visible) critter.hidden = true;
-  });
+  await timedRound(
+    clock,
+    duration,
+    start,
+    (elapsed) => {
+      if (elapsed >= feedbackUntil) mark.hidden = true;
+      const next = Math.floor(elapsed / period);
+      if (next !== cycle) {
+        cycle = next;
+        hole =
+          (hole + 1 + Math.floor(Math.random() * (holes.length - 1))) %
+          holes.length;
+        const [x, y] = holes[hole];
+        place(critter, x / 480, y / 270);
+        critter.innerHTML = sprite("whack", cycle % 3);
+        critter.hidden = false;
+      }
+      if (elapsed % period >= visible) critter.hidden = true;
+    },
+    signClock,
+  );
   field.onpointerdown = null;
   return { score: hits };
 };
@@ -180,6 +194,7 @@ function animateRound(
   clock: HTMLElement,
   seconds: number,
   frame: (elapsed: number) => boolean,
+  signClock?: HTMLElement,
 ) {
   return new Promise<void>((resolve) => {
     const start = performance.now();
@@ -190,6 +205,7 @@ function animateRound(
       if (next !== remaining) {
         remaining = next;
         clock.textContent = `${remaining} 秒`;
+        if (signClock) signClock.textContent = clock.textContent;
       }
       if (frame(Math.min(elapsed, seconds * 1000)) || !next) resolve();
       else requestAnimationFrame(step);
@@ -200,6 +216,12 @@ function animateRound(
 
 const catchFruit: Round = async ({ field, score, clock }) => {
   field.innerHTML = `<div class="mg-basket">${sprite("catch", 10)}</div>`;
+  const scene = document.createElement("div");
+  scene.className = "mg-catch-scene";
+  scene.innerHTML = minigameBackground("catch") + signboard;
+  field.before(scene);
+  const signScore = scene.querySelector<HTMLElement>(".mg-sign-score")!;
+  const signClock = scene.querySelector<HTMLElement>(".mg-sign-clock")!;
   const basket = field.querySelector<HTMLElement>(".mg-basket")!;
   const items: {
     element: HTMLElement;
@@ -217,6 +239,7 @@ const catchFruit: Round = async ({ field, score, clock }) => {
 
   const paint = () => {
     score.textContent = `接到 ${caught}・漏接 ${misses}`;
+    signScore.textContent = `接到 ${caught}・漏接 ${misses}/${minigames.catch.maxMisses}`;
   };
   const move = (event: PointerEvent) => {
     const bounds = field.getBoundingClientRect();
@@ -274,27 +297,32 @@ const catchFruit: Round = async ({ field, score, clock }) => {
   const active = new Set<(typeof items)[number]>();
   let nextItem = 0;
   paint();
-  await animateRound(clock, 30, (elapsed) => {
-    while (nextItem < items.length && items[nextItem].at <= elapsed) {
-      const item = items[nextItem++];
-      field.append(item.element);
-      active.add(item);
-    }
-    for (const item of active) {
-      const progress = (elapsed - item.at) / fall;
-      if (progress < 1) {
-        item.element.style.top = `${-10 + 92 * progress}%`;
-        continue;
+  await animateRound(
+    clock,
+    30,
+    (elapsed) => {
+      while (nextItem < items.length && items[nextItem].at <= elapsed) {
+        const item = items[nextItem++];
+        field.append(item.element);
+        active.add(item);
       }
-      active.delete(item);
-      item.element.remove();
-      if (item.junk) continue;
-      if (Math.abs(item.x - center) <= 0.135) caught++;
-      else misses++;
-      paint();
-    }
-    return false;
-  });
+      for (const item of active) {
+        const progress = (elapsed - item.at) / fall;
+        if (progress < 1) {
+          item.element.style.top = `${-10 + 92 * progress}%`;
+          continue;
+        }
+        active.delete(item);
+        item.element.remove();
+        if (item.junk) continue;
+        if (Math.abs(item.x - center) <= 0.135) caught++;
+        else misses++;
+        paint();
+      }
+      return false;
+    },
+    signClock,
+  );
   input.abort();
   return { score: caught, misses };
 };

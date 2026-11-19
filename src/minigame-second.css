@@ -23,12 +23,39 @@
 .mg-whack-board {
   position: relative;
   isolation: isolate;
+  container-type: size;
   width: 100%;
   height: 100%;
 }
 .mg-whack-board .mg-backdrop {
   object-fit: fill;
 }
+/* Both panels span roughly x=195–285 and y=42–91 in the 480 × 270 art. */
+.mg-signboard {
+  position: absolute;
+  left: 50%;
+  top: 24.6%;
+  width: 18%;
+  height: 17%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  transform: translate(-50%, -50%);
+  color: #f3fbff;
+  font-size: clamp(10px, min(2.3cqw, 5.5cqh), 20px);
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 3px #081d2d,
+    0 0 3px #081d2d;
+  pointer-events: none;
+}
+.mg-sign-clock {
+  color: #ffe4a4;
+}
+
 .mg-critter {
   position: absolute;
   display: grid;
@@ -132,6 +159,31 @@
   }
 }
 
+.mg-play[data-game="catch"] {
+  container-type: size;
+}
+.mg-catch-scene {
+  position: absolute;
+  --image-height: max(100cqh, 56.25cqw);
+  /* Keep the centered cover crop unless the header would cover the sign. */
+  top: clamp(
+    calc((100cqh - var(--image-height)) / 2),
+    calc(52px - var(--image-height) * 0.16),
+    0px
+  );
+  left: 50%;
+  width: max(100%, calc(100cqh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  transform: translateX(-50%);
+  container-type: size;
+  isolation: isolate;
+  z-index: -1;
+  pointer-events: none;
+}
+.mg-catch-scene .mg-sign-score {
+  font-size: 0.8em;
+}
+
 .mg-play[data-game="catch"] .mg-field {
   cursor: ew-resize;
 }
@@ -165,9 +217,8 @@
 }
 .mg-stack-world {
   --step: clamp(13px, 5cqh, 27px);
-  --block: calc(var(--step) * 1.7);
   position: absolute;
-  width: min(100%, 420px);
+  width: min(100%, 300px, 87cqh);
   height: 100%;
   transform: translateY(calc(var(--rise) * var(--step)));
   transition: transform 140ms ease-out;
@@ -191,7 +242,6 @@
   );
 }
 .mg-stack-world .mg-sprite {
-  height: var(--block);
   width: 100%;
 }
 @media (orientation: portrait) {

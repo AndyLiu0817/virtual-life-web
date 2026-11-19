@@ -347,6 +347,22 @@ async function keyMash(page: Page) {
   }
 }
 
+async function expectSignOnBackdrop(dialog: Locator) {
+  const backdrop = (await dialog
+    .locator(".mg-play .mg-backdrop")
+    .boundingBox())!;
+  const sign = (await dialog.locator(".mg-signboard").boundingBox())!;
+  expect((sign.x + sign.width / 2 - backdrop.x) / backdrop.width).toBeCloseTo(
+    0.5,
+    2,
+  );
+  expect((sign.y + sign.height / 2 - backdrop.y) / backdrop.height).toBeCloseTo(
+    0.246,
+    2,
+  );
+  await expect(dialog.locator(".mg-signboard")).toBeInViewport({ ratio: 1 });
+}
+
 test("打地鼠 scores on real pointerdown and 30 hits earns 優秀", async ({
   page,
 }) => {
@@ -354,6 +370,13 @@ test("打地鼠 scores on real pointerdown and 30 hits earns 優秀", async ({
   await freeze(page);
   await begin(page, dialog);
   const target = dialog.getByRole("button", { name: "打小怪獸" });
+  const sign = dialog.locator(".mg-signboard");
+  await expect(sign.locator(".mg-sign-score")).toHaveText("命中 0 隻");
+  await expect(sign.locator(".mg-sign-clock")).toHaveText("30 秒");
+  await expectSignOnBackdrop(dialog);
+  await page.setViewportSize({ width: 360, height: 780 });
+  await expectSignOnBackdrop(dialog);
+  await page.setViewportSize({ width: 780, height: 360 });
   const score = dialog.locator(".mg-score");
   const first = (await target.boundingBox())!;
   expect(first.width).toBeGreaterThanOrEqual(72);
@@ -370,7 +393,11 @@ test("打地鼠 scores on real pointerdown and 30 hits earns 優秀", async ({
 
   for (let hit = 2; hit <= 30; hit++) {
     await page.clock.runFor(800);
-    if (hit === 14) await capture(page, "whack-landscape");
+    if (hit === 14) {
+      await expect(sign.locator(".mg-sign-score")).toHaveText("命中 13 隻");
+      await expect(sign.locator(".mg-sign-clock")).toHaveText("20 秒");
+      await capture(page, "whack-landscape");
+    }
     await tap(page, target);
     await expect(score).toHaveText(`命中 ${hit} 隻`);
   }
@@ -423,6 +450,13 @@ test("接水果 accepts a held mouse drag and records fruit and misses", async (
   const dialog = await openGame(page, 0.8125, true);
   await freeze(page);
   await begin(page, dialog, true);
+  const sign = dialog.locator(".mg-signboard");
+  await expect(sign.locator(".mg-sign-score")).toHaveText("接到 0・漏接 0/5");
+  await expect(sign.locator(".mg-sign-clock")).toHaveText("30 秒");
+  await expectSignOnBackdrop(dialog);
+  await page.setViewportSize({ width: 780, height: 360 });
+  await expectSignOnBackdrop(dialog);
+  await page.setViewportSize({ width: 390, height: 844 });
   const field = dialog.locator(".mg-field");
   const box = (await field.boundingBox())!;
   const score = dialog.locator(".mg-score");
@@ -444,9 +478,25 @@ test("接水果 accepts a held mouse drag and records fruit and misses", async (
   }
   await page.mouse.up();
   await expect(score).toHaveText("接到 30・漏接 5");
+  await expect(sign.locator(".mg-sign-score")).toHaveText("接到 30・漏接 5/5");
+  await expect(sign.locator(".mg-sign-clock")).toHaveText("1 秒");
   await page.clock.fastForward(2000);
   await confirmResult(page, dialog, "catch", 30, "優秀");
 });
+
+async function expectBlockProportions(sprites: Locator) {
+  const errors = await sprites.evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const [width, height] = (node as HTMLElement).style.aspectRatio
+        .split("/")
+        .map(Number);
+      const bounds = node.getBoundingClientRect();
+      return Math.abs(bounds.width / bounds.height - width / height);
+    }),
+  );
+  expect(errors.length).toBeGreaterThan(0);
+  for (const error of errors) expect(error).toBeLessThan(0.01);
+}
 
 for (const portrait of [false, true]) {
   test(`疊疊樂 builds 15 layers and raises the camera (${portrait ? "portrait" : "landscape"})`, async ({
@@ -465,8 +515,12 @@ for (const portrait of [false, true]) {
     await expect(score).toHaveText("疊好 0 層");
     for (let layer = 1; layer <= 15; layer++) {
       await page.clock.runFor(640);
-      if (layer === 7)
+      if (layer === 7) {
+        await expectBlockProportions(
+          dialog.locator(".mg-stack-world .mg-sprite"),
+        );
         await capture(page, portrait ? "stack-portrait" : "stack-landscape");
+      }
       await tap(page, field, portrait);
       await page.clock.runFor(160);
       await expect(score).toHaveText(`疊好 ${layer} 層`);
@@ -489,6 +543,9 @@ for (const portrait of [false, true]) {
           .locator(".mg-stack-moving")
           .evaluate((block) => (block as HTMLElement).style.clipPath),
       ).toMatch(/inset\(0px [1-9][\d.]*% 0px 0px\)/);
+      await expectBlockProportions(
+        dialog.locator(".mg-stack-world .mg-sprite"),
+      );
       await tap(page, field);
       await page.clock.runFor(160);
       await confirmResult(page, dialog, "stack", 16, "優秀");

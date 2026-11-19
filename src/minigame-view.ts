@@ -47,7 +47,7 @@ export async function playMinigameRound(
   dialog.showModal();
   await confirmation(dialog);
   dialog.innerHTML = `<section class="mg-play" data-game="${game}">
-    ${game === "diff" || game === "whack" ? "" : minigameBackground(game)}
+    ${game === "diff" || game === "whack" || game === "catch" ? "" : minigameBackground(game)}
     <header class="mg-hud">
       <h2 id="activity-title" tabindex="-1">${title}</h2>
       <div><span class="mg-score"></span><span class="mg-clock"></span></div>
