@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { schoolBoards } from "../src/data/school-board";
-import { paverClearance, routeCrossesScenery } from "../src/board-clearance";
+import { paverClearance, routeLeavesRoad } from "../src/board-clearance";
 import { measureTrack } from "../src/board-track";
 import highEvents from "../src/data/high-events.json";
 import universityEvents from "../src/data/university-events.json";
@@ -38,19 +38,19 @@ describe("學段棋盤", () => {
     [
       "high",
       25,
-      { start: 1, event: 17, game: 11, club: 8, quiz: 6, contest: 3, fork: 2 },
+      { start: 1, event: 9, game: 6, club: 4, quiz: 3, contest: 2, fork: 2 },
     ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 19,
-        game: 12,
-        club: 7,
-        quiz: 8,
-        contest: 3,
-        love: 14,
+        event: 6,
+        game: 4,
+        club: 2,
+        quiz: 3,
+        contest: 1,
+        love: 5,
         fork: 2,
       },
     ],
@@ -80,11 +80,6 @@ describe("學段棋盤", () => {
         expect(new Set(cells.map(String)).size).toBe(total);
         for (const [from, tile] of board.tiles.entries()) {
           for (const to of tile.next) {
-            const [cx, cy] = cells[from];
-            const [tx, ty] = cells[to];
-            expect(
-              Math.max(Math.abs(cx - tx), Math.abs(cy - ty)),
-            ).toBeLessThanOrEqual(2);
             if (!loop.has(from) || !loop.has(to))
               expect(board.tiles[to].next).toContain(from);
             if (tile.kind === "love")
@@ -253,7 +248,7 @@ it.each([
   expect(nextMatch(save, "tile")).toBeUndefined();
 });
 
-it("地磚外框伸到景物或越過草地邊界時標示重疊", () => {
+it("地磚踏入跑道內島或越過跑道外框時標示重疊", () => {
   const layout = schoolBoards.high.layouts.landscape;
   const fakeGround = [
     [
@@ -271,14 +266,22 @@ it("地磚外框伸到景物或越過草地邊界時標示重疊", () => {
   ] as const;
   const fixture = {
     ...layout,
-    walkable: fakeGround,
+    road: {
+      outlines: fakeGround,
+      centerlines: [],
+      pavers: [
+        [15, 10],
+        [15, 10],
+        [15, 10],
+      ],
+    },
     origin: [50, 54],
     halfWidth: 15,
     halfHeight: 10,
     cells: [
-      [0, 0],
-      [2, 0],
-      [5, 0],
+      [50, 54],
+      [80, 70],
+      [110, 54],
     ],
   } as const;
   expect(paverClearance(fixture).map((paver) => paver.overlaps)).toEqual([
@@ -289,19 +292,43 @@ it("地磚外框伸到景物或越過草地邊界時標示重疊", () => {
 });
 
 it.each(["high", "university"] as const)(
-  "%s 橫直版每塊地磚都避開景物",
+  "%s 橫直版每塊地磚都在跑道範圍",
   (stage) => {
     const board = schoolBoards[stage];
     for (const [orientation, layout] of Object.entries(board.layouts)) {
       const results = paverClearance(layout);
       expect(results).toHaveLength(board.tiles.length);
-      expect(layout.walkable).toBeDefined();
+      expect(layout.road?.outlines).toBeDefined();
       const { centers } = measureTrack(layout);
+      const junior =
+        orientation === "portrait"
+          ? schoolBoards.junior.layouts.portrait
+          : schoolBoards.junior.layouts.landscape;
+      const target =
+        Math.hypot(junior.halfWidth, junior.halfHeight) *
+        (layout.width / junior.width) *
+        0.85;
+      const last = board.tiles.length - 1;
+      for (const { id, polygon } of results) {
+        const [previous, following] =
+          id === last
+            ? board.tiles[id].next
+            : [(id + last - 1) % last, (id + 1) % last];
+        const dx = centers[following].x - centers[previous].x;
+        const dy = centers[following].y - centers[previous].y;
+        const projection = polygon.map(
+          ([x, y]) => (dx * x + dy * y) / Math.hypot(dx, dy),
+        );
+        expect(
+          Math.max(...projection) - Math.min(...projection),
+          `${orientation} 格 ${id}`,
+        ).toBeGreaterThanOrEqual(target);
+      }
       const blockedLinks = board.tiles.flatMap(({ next }, from) =>
         next
           .filter((to) =>
-            routeCrossesScenery(
-              layout.walkable!,
+            routeLeavesRoad(
+              layout.road?.outlines!,
               [centers[from].x, centers[from].y],
               [centers[to].x, centers[to].y],
             ),

@@ -11,6 +11,7 @@ export interface SchoolBoard extends Board {
   stage: BoardStage;
   label: string;
   maps: Record<Orientation, string>;
+  roadMaps?: Record<Orientation, string>;
   scenery: Record<Orientation, readonly SceneryObject[]>;
   pawnFolder: string;
   walkFolder: string;

@@ -12,9 +12,22 @@ const clayRadius = 0.19;
 export const tileArtSize = 256;
 
 export function measureTrack(layout: BoardLayout) {
-  const scale = (layout.tileScale ?? 1) * 0.982;
-  const w = layout.halfWidth * scale;
-  const h = layout.halfHeight * scale;
+  const centers = layout.cells.map((cell) =>
+    layout.road ? { x: cell[0], y: cell[1] } : project(layout, cell),
+  );
+  const standard = paverGeometry(layout.halfWidth, layout.halfHeight);
+  const pavers = layout.road?.pavers.map(([w, h]) => paverGeometry(w, h));
+  return {
+    ...standard,
+    centers,
+    pavers,
+    paver: (id: number) => pavers?.[id] ?? standard,
+  };
+}
+
+function paverGeometry(halfWidth: number, halfHeight: number) {
+  const w = halfWidth * 0.982;
+  const h = halfHeight * 0.982;
   const depth = w * 0.2;
   const roundX = w * clayRadius;
   const roundY = h * clayRadius;
@@ -33,23 +46,27 @@ export function measureTrack(layout: BoardLayout) {
     L ${-outerX} ${y + roundY} Q ${-sideX} ${y + roundY / 2} ${-sideX} ${y}`;
   const body = `${behind} V ${depth} ${front(depth)} Z`;
   const footprint = `${behind} ${front(0)} Z`;
-  const centers = layout.cells.map((cell) => project(layout, cell));
-  const tileTop = ({ x, y }: (typeof centers)[number]) =>
+
+  const tileTop = ({ x, y }: { x: number; y: number }) =>
     `matrix(${w / tileArtSize} ${h / tileArtSize} ${-w / tileArtSize} ${h / tileArtSize} ${x} ${y})`;
-  // Bounding polygon includes the extruded side wall. The rounded paver
-  // and its image are entirely inside this polygon.
-  const bounds = ({ x, y }: (typeof centers)[number]): MapPoint[] => [
+  // The painted lane contains the footprint. The extruded wall rises from it.
+  const bounds = ({ x, y }: { x: number; y: number }): MapPoint[] => [
     [x - w, y],
     [x, y - h],
     [x + w, y],
-    [x + w, y + depth],
-    [x, y + h + depth],
-    [x - w, y + depth],
+    [x, y + h],
   ];
-  return { centers, body, footprint, depth, tileTop, bounds };
+  return { body, footprint, depth, tileTop, bounds };
 }
 
 export function debugGrid(layout: BoardLayout) {
+  if (layout.road)
+    return layout.road.centerlines
+      .map(
+        (path) =>
+          `<polyline class="road-centerline" points="${path.join(" ")}"/>`,
+      )
+      .join("");
   const columns = layout.cells.map(([column]) => column);
   const rows = layout.cells.map(([, row]) => row);
   const left = Math.min(...columns) - 0.5;

@@ -54,8 +54,11 @@ export function showStageBoard(
   actions: BoardActions,
 ) {
   let save = initial;
-  const debug = new URLSearchParams(location.search).get("debug") === "path";
-  const { portrait, landscape } = board.maps;
+  const debugMode = new URLSearchParams(location.search).get("debug");
+  const showRoadArt = debugMode === "road" && !!board.roadMaps;
+  const debug = debugMode === "path" || showRoadArt;
+  const maps = showRoadArt ? board.roadMaps! : board.maps;
+  const { portrait, landscape } = maps;
   app.innerHTML = `<main class="stage junior">
     <div class="board-map" role="group" aria-label="${board.label}">
       <div class="board-world"><picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
@@ -108,6 +111,7 @@ export function showStageBoard(
     board,
     save.gender,
     debug,
+    maps[orientation],
     camera.follow,
   );
   let facing = 1;
@@ -130,6 +134,7 @@ export function showStageBoard(
       board,
       save.gender,
       debug,
+      maps[orientation],
       camera.follow,
     );
     if (moving) {

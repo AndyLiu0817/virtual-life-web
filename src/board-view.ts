@@ -71,15 +71,10 @@ export function boardView(
   board: SchoolBoard,
   gender: "boy" | "girl",
   debug: boolean,
+  mapArt: string,
   follow: (point: { x: number; y: number }) => void,
 ) {
-  const {
-    centers,
-    body,
-    footprint,
-    depth: thickness,
-    tileTop,
-  } = measureTrack(layout);
+  const { centers, body, footprint, pavers, paver } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
   const walkHeight = layout.pawnHeight * 1.08;
   const walkWidth = (walkHeight * 104) / 192;
@@ -98,13 +93,15 @@ export function boardView(
   // Rounded corners are baked into the faces, avoiding a per-image SVG clip.
   for (const [id, center] of centers.entries()) {
     const { kind } = tiles[id];
+    const { depth: thickness, tileTop } = paver(id);
+    const shapeId = pavers ? `-${id}` : "";
     layers.push({
       y: center.y,
       markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${tileLabels[kind]}">
         <g transform="translate(${center.x} ${center.y})">
-          <use href="#clay-footprint" class="paver-shadow" transform="translate(0 ${thickness})"/>
-          <use href="#clay-body" fill="${claySides[kind]}"/>
-          <use href="#clay-body" fill="url(#clay-side-light)"/>
+          <use href="#clay-footprint${shapeId}" class="paver-shadow" transform="translate(0 ${thickness})"/>
+          <use href="#clay-body${shapeId}" fill="${claySides[kind]}"/>
+          <use href="#clay-body${shapeId}" fill="url(#clay-side-light)"/>
         </g>
         <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="${-tileArtSize / 2}" y="${-tileArtSize / 2}" width="${tileArtSize}" height="${tileArtSize}" preserveAspectRatio="none" transform="${tileTop(center)}"/>
       </g>`,
@@ -115,13 +112,14 @@ export function boardView(
     <defs>
       <path id="clay-body" d="${body}"/>
       <path id="clay-footprint" d="${footprint}"/>
+      ${pavers?.map(({ body, footprint }, id) => `<path id="clay-body-${id}" d="${body}"/><path id="clay-footprint-${id}" d="${footprint}"/>`).join("") ?? ""}
       <linearGradient id="clay-side-light" x2="100%" y2="56%">
         <stop stop-color="#fff2d2" stop-opacity=".12"/>
         <stop offset=".49" stop-color="#fff2d2" stop-opacity=".04"/>
         <stop offset=".52" stop-color="#352122" stop-opacity=".07"/>
         <stop offset="1" stop-color="#352122" stop-opacity=".15"/>
       </linearGradient>
-      <image id="scene-art" href="${board.maps[orientation]}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
+      <image id="scene-art" href="${mapArt}" width="${layout.width}" height="${layout.height}" preserveAspectRatio="none"/>
       ${scenery
         .map(
           ({
@@ -166,6 +164,7 @@ export function boardView(
       </clipPath>
     </defs>
     <g class="board-depth">
+      ${layout.road && orientation === "portrait" ? `<polyline class="road-connector" points="${layout.road.centerlines[2].join(" ")}"/>` : ""}
     ${layers
       .sort((a, b) => a.y - b.y)
       .map(({ markup }) => markup)
@@ -204,11 +203,11 @@ export function boardView(
       debug
         ? `<g class="path-debug" aria-hidden="true">
       ${debugGrid(layout)}
-      ${layout.walkable?.map((polygon) => `<polygon class="walkable-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
+      ${layout.road?.outlines.map((polygon) => `<polygon class="road-outline" points="${polygon.join(" ")}"/>`).join("") ?? ""}
       ${paverClearance(layout)
         .map(
           ({ id, polygon, overlaps }) =>
-            `<polygon class="paver-clearance" data-clearance-tile="${id}" data-overlap="${overlaps}" points="${polygon.join(" ")}"><title>${id}・${overlaps ? "與景物重疊" : "位於可走區域"}</title></polygon>`,
+            `<polygon class="paver-clearance" data-clearance-tile="${id}" data-overlap="${overlaps}" points="${polygon.join(" ")}"><title>${id}・${overlaps ? "超出跑道區域" : "位於跑道內"}</title></polygon>`,
         )
         .join("")}
       ${centers.map(({ x, y }, id) => `<circle cx="${x}" cy="${y}" r="2.5"/><text x="${x}" y="${y - 5}">${id}</text>`).join("")}

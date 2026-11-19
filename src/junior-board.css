@@ -74,7 +74,7 @@
   stroke-width: 0.75;
   opacity: 0.64;
 }
-.path-debug .walkable-outline {
+.path-debug .road-outline {
   fill: none;
   stroke: #f6d963;
   stroke-width: 1.5;
@@ -150,4 +150,19 @@
 }
 .board-debug-option {
   font-size: 0.82rem;
+}
+
+.road-connector,
+.path-debug .road-centerline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.road-connector {
+  stroke: #ceac79;
+  stroke-width: 10;
+}
+.path-debug .road-centerline {
+  stroke: #e26dce;
+  stroke-width: 2;
 }

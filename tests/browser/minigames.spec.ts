@@ -607,6 +607,7 @@ test("記憶翻牌在四種尺寸完整顯示 16 張方形牌", async ({ page })
     await page.setViewportSize({ width, height });
     const field = (await dialog.locator(".mg-field").boundingBox())!;
     const boxes = [];
+    const gap = width >= 1024 ? 12 : 8;
     for (const card of await cards.all()) {
       await expect(card).toBeInViewport({ ratio: 1 });
       const bounds = (await card.boundingBox())!;
@@ -624,9 +625,13 @@ test("記憶翻牌在四種尺寸完整顯示 16 張方形牌", async ({ page })
     }
     for (const [i, box] of boxes.entries()) {
       if (i % 4 !== 3)
-        expect(boxes[i + 1].x - (box.x + box.width)).toBeGreaterThanOrEqual(8);
+        expect(boxes[i + 1].x - (box.x + box.width)).toBeGreaterThanOrEqual(
+          gap,
+        );
       if (i < 12)
-        expect(boxes[i + 4].y - (box.y + box.height)).toBeGreaterThanOrEqual(8);
+        expect(boxes[i + 4].y - (box.y + box.height)).toBeGreaterThanOrEqual(
+          gap,
+        );
     }
     await capture(page, `memory-${width}x${height}`);
   }

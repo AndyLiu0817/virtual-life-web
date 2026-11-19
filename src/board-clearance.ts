@@ -39,22 +39,22 @@ function outlinesIntersect(a: Polygon, b: Polygon) {
   );
 }
 
-export function routeCrossesScenery(
-  walkable: readonly Polygon[],
+export function routeLeavesRoad(
+  outlines: readonly Polygon[],
   from: MapPoint,
   to: MapPoint,
 ) {
-  return walkable.some((polygon) =>
+  return outlines.some((polygon) =>
     edges(polygon).some(([a, b]) => intersects(from, to, a, b)),
   );
 }
 
 export function paverClearance(layout: BoardLayout) {
-  if (!layout.walkable) return [];
-  const [ground, ...obstacles] = layout.walkable;
-  const { centers, bounds } = measureTrack(layout);
+  if (!layout.road) return [];
+  const [ground, ...obstacles] = layout.road.outlines;
+  const { centers, paver } = measureTrack(layout);
   return centers.map((center, id) => {
-    const polygon = bounds(center);
+    const polygon = paver(id).bounds(center);
     const overlaps =
       polygon.some((point) => !contains(ground, point)) ||
       outlinesIntersect(polygon, ground) ||

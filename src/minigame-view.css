@@ -317,3 +317,9 @@
     border-top: 3px solid #d9ad63;
   }
 }
+
+@media (orientation: landscape) and (min-width: 1024px) {
+  .mg-deck {
+    gap: 12px;
+  }
+}

@@ -74,7 +74,7 @@ async function openSlot(page: Page) {
 async function seed(
   page: Page,
   save: Save,
-  debug = false,
+  debug: boolean | "road" = false,
   reducedMotion = true,
 ) {
   await page.emulateMedia({
@@ -89,7 +89,9 @@ async function seed(
     },
     { key: slot, save },
   );
-  await page.goto(debug ? "/?debug=path" : "/");
+  await page.goto(
+    debug ? `/?debug=${debug === "road" ? "road" : "path"}` : "/",
+  );
   await openSlot(page);
 }
 
@@ -484,5 +486,27 @@ for (const [viewport, gender] of [
       page,
       `university-avatar-${viewport === portrait ? "portrait" : "landscape"}`,
     );
+  });
+}
+
+for (const [stage, filename] of [
+  ["high", "high"],
+  ["university", "uni"],
+] as const) {
+  test(`${stage} 有路版對照顯示跑道與同一套地磚`, async ({ page }) => {
+    await page.setViewportSize(landscape);
+    await seed(page, schoolSave(stage), "road");
+    await expect(page.locator(".board-world picture img")).toHaveAttribute(
+      "src",
+      new RegExp(`map_${filename}_landscape_final`),
+    );
+    await expect(page.locator(".road-centerline")).toHaveCount(3);
+    await expect(
+      page.locator("[data-clearance-tile][data-overlap=false]"),
+    ).toHaveCount(schoolBoards[stage].tiles.length);
+    await expect(
+      page.locator("[data-clearance-tile][data-overlap=true]"),
+    ).toHaveCount(0);
+    await capture(page, `${stage}-painted-road-landscape`);
   });
 }
