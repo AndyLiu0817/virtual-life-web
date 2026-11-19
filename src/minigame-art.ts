@@ -1,9 +1,6 @@
 import rhythmBg from "../art/mg_rhythm_bg_final.jpg";
-import rhythmSheet from "../art/mg_rhythm_sheet_final.jpg";
 import memoryBg from "../art/mg_memory_bg_final.jpg";
-import memorySheet from "../art/mg_memory_sheet_final.jpg";
 import mathBg from "../art/mg_math_bg_final.jpg";
-import mathSheet from "../art/mg_math_sheet_final.jpg";
 import shootBg from "../art/mg_shoot_bg_final.jpg";
 import bullseye from "../art/shoot/bullseye.webp";
 import sun from "../art/shoot/sun.webp";
@@ -15,41 +12,20 @@ import type { Minigame } from "./game/minigames";
 
 import { differencePictures, secondArt } from "./minigame-second-art";
 
-type Crop = [x: number, y: number, width: number, height: number];
-const art: Record<
-  Exclude<Minigame, "shoot" | "diff">,
-  { bg: string; sheet: string; crops: Crop[] }
-> = {
+const art = {
   ...secondArt,
-  rhythm: {
-    bg: rhythmBg,
-    sheet: rhythmSheet,
-    crops: [
-      [28, 21, 65, 65],
-      [107, 21, 65, 65],
-      [185, 21, 65, 65],
-      [263, 21, 65, 65],
-    ],
-  },
-  memory: {
-    bg: memoryBg,
-    sheet: memorySheet,
-    crops: [11, 68, 119, 170, 221, 272, 323, 374, 424].map((x) => [
-      x,
-      57,
-      47,
-      66,
-    ]),
-  },
-  math: {
-    bg: mathBg,
-    sheet: mathSheet,
-    crops: [
-      [35, 12, 52, 89],
-      [24, 115, 74, 48],
-    ],
-  },
+  rhythm: { bg: rhythmBg },
+  memory: { bg: memoryBg },
+  math: { bg: mathBg },
 };
+
+const sprites = import.meta.glob<string>("../art/minigames/*/*.webp", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+
+export const whackCritters = ["clock", "ghost", "worm"] as const;
 
 export function minigameBackground(game: Minigame) {
   const bg =
@@ -64,13 +40,11 @@ export function minigameBackground(game: Minigame) {
     : img;
 }
 
-// Coordinates use the same 480 × 270 scale for every 16:9 source sheet.
-export function sprite(game: Minigame, index = 0) {
-  if (game === "shoot") return shootingSprite(shootingTargets[index]);
+export function sprite(game: Minigame, index: number | string = 0) {
+  if (game === "shoot") return shootingSprite(shootingTargets[Number(index)]);
   if (game === "diff") return "";
-  const { sheet, crops } = art[game];
-  const [x, y, width, height] = crops[index];
-  return `<span class="mg-sprite" aria-hidden="true" style="aspect-ratio:${width}/${height};background-image:url('${sheet}');background-size:${(480 / width) * 100}% ${(270 / height) * 100}%;background-position:${(x / (480 - width)) * 100}% ${(y / (270 - height)) * 100}%"></span>`;
+  const name = game === "whack" && index === 0 ? whackCritters[0] : index;
+  return `<img class="mg-sprite" src="${sprites[`../art/minigames/${game}/${name}.webp`]}" alt="" draggable="false">`;
 }
 
 export const shootingTargets = [bullseye, sun, star, coin];

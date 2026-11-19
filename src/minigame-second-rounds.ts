@@ -1,6 +1,6 @@
 import { minigames } from "./game/minigames";
 import { differenceHotspots } from "./game/differences";
-import { minigameBackground, sprite } from "./minigame-art";
+import { minigameBackground, sprite, whackCritters } from "./minigame-art";
 import { differencePictures } from "./minigame-second-art";
 import { timedRound, type Round } from "./minigame-timing";
 
@@ -44,8 +44,11 @@ const whack: Round = async ({ field, score, clock }) => {
   const signScore = board.querySelector<HTMLElement>(".mg-sign-score")!;
   const signClock = board.querySelector<HTMLElement>(".mg-sign-clock")!;
   const critter = field.querySelector<HTMLButtonElement>(".mg-critter")!;
-  const mark = feedback("mg-tap-mark");
-  board.append(mark);
+  const impact = feedback("mg-whack-impact");
+  impact.innerHTML = sprite("whack", "burst") + sprite("whack", "hammer-glow");
+  const puff = feedback("mg-whack-puff");
+  puff.innerHTML = sprite("whack", "cloud");
+  board.append(impact, puff);
 
   const duration = 30;
   const period = 800;
@@ -53,28 +56,38 @@ const whack: Round = async ({ field, score, clock }) => {
   let cycle = -1;
   let hole = -1;
   let hits = 0;
-  let feedbackUntil = 0;
+  let hitAt = -Infinity;
+  let puffUntil = 0;
+  let struck = false;
+  let critterName: (typeof whackCritters)[number] = whackCritters[0];
   const start = performance.now();
   score.textContent = signScore.textContent = "命中 0 隻";
   field.onpointerdown = (event) => {
     const elapsed = performance.now() - start;
     if (!primary(event) || elapsed >= duration * 1000) return;
     const hit =
-      !critter.hidden && event.target === critter && elapsed % period < visible;
+      !struck &&
+      !critter.hidden &&
+      event.target === critter &&
+      Math.floor(elapsed / period) === cycle &&
+      elapsed % period < visible;
     if (hit) {
       score.textContent = signScore.textContent = `命中 ${++hits} 隻`;
-      critter.hidden = true;
+      struck = true;
+      hitAt = elapsed;
+      critter.innerHTML = sprite("whack", `${critterName}-dizzy`);
+      critter.classList.add("struck");
+    } else {
+      puffUntil = elapsed + 260;
     }
+    const effect = hit ? impact : puff;
     const bounds = board.getBoundingClientRect();
     place(
-      mark,
+      effect,
       (event.clientX - bounds.left) / bounds.width,
       (event.clientY - bounds.top) / bounds.height,
     );
-    mark.textContent = hit ? "✓" : "×";
-    mark.classList.toggle("hit", hit);
-    mark.hidden = false;
-    feedbackUntil = elapsed + 260;
+    effect.hidden = false;
   };
 
   await timedRound(
@@ -82,7 +95,8 @@ const whack: Round = async ({ field, score, clock }) => {
     duration,
     start,
     (elapsed) => {
-      if (elapsed >= feedbackUntil) mark.hidden = true;
+      if (elapsed >= hitAt + 230) impact.hidden = true;
+      if (elapsed >= puffUntil) puff.hidden = true;
       const next = Math.floor(elapsed / period);
       if (next !== cycle) {
         cycle = next;
@@ -91,10 +105,14 @@ const whack: Round = async ({ field, score, clock }) => {
           holes.length;
         const [x, y] = holes[hole];
         place(critter, x / 480, y / 270);
-        critter.innerHTML = sprite("whack", cycle % 3);
+        struck = false;
+        critterName = whackCritters[cycle % whackCritters.length];
+        critter.classList.remove("struck");
+        critter.innerHTML = sprite("whack", critterName);
         critter.hidden = false;
       }
-      if (elapsed % period >= visible) critter.hidden = true;
+      if (struck ? elapsed >= hitAt + 250 : elapsed % period >= visible)
+        critter.hidden = true;
     },
     signClock,
   );

@@ -8,7 +8,8 @@ function project(layout: BoardLayout, [column, row]: Cell) {
 }
 
 // The crop and the extruded edge share this radius in ground coordinates.
-export const clayRadius = 0.19;
+const clayRadius = 0.19;
+export const tileArtSize = 256;
 
 export function measureTrack(layout: BoardLayout) {
   const w = layout.halfWidth * 0.982;
@@ -33,7 +34,7 @@ export function measureTrack(layout: BoardLayout) {
   const footprint = `${behind} ${front(0)} Z`;
   const centers = layout.cells.map((cell) => project(layout, cell));
   const tileTop = ({ x, y }: (typeof centers)[number]) =>
-    `matrix(${w} ${h} ${-w} ${h} ${x} ${y})`;
+    `matrix(${w / tileArtSize} ${h / tileArtSize} ${-w / tileArtSize} ${h / tileArtSize} ${x} ${y})`;
   return { centers, body, footprint, depth, tileTop };
 }
 

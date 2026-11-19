@@ -1,7 +1,4 @@
-import goodSheet from "../art/deities_good_final.jpg";
-import badSheet from "../art/deities_bad_final.jpg";
 import {
-  badDeities,
   deities,
   goodDeities,
   type DeityId,
@@ -28,48 +25,14 @@ const npcByRole: Record<string, string> = {
   vendor: "clerk",
 };
 
-function sheetCrop(
-  url: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  shadowless = false,
-) {
-  // The source includes a painted floor shadow. This outline follows 空袋客
-  // in sheet coordinates (relative to x=395), including both shoe soles.
-  const outline = shadowless
-    ? `<defs><clipPath id="empty-bag-outline">
-    <path transform="translate(395)" d="M170 82 Q195 71 233 62 Q248 57 262 114 Q310 103 315 117 Q320 127 279 147 L287 165 L284 178 Q305 178 304 216 Q335 221 374 346 L373 369 Q386 404 377 421 L368 413 Q368 450 348 472 L357 499 L382 541 L371 534 L370 553 L363 545 L354 557 L340 544 L338 556 L325 550 L325 581 L329 600 L325 610 Q348 656 336 661 Q303 670 286 657 L282 647 L281 596 L272 592 L273 570 L266 540 L247 562 L243 543 L235 549 L227 538 L222 548 L219 563 L224 571 L219 590 L210 596 L216 640 L198 644 L187 643 Q145 659 119 646 Q111 635 129 620 L157 607 L171 589 L166 572 L171 560 L172 541 L163 539 L160 550 L151 544 L144 538 L138 546 L129 536 L110 570 Q100 544 124 495 L158 431 L130 378 L128 347 L123 318 L114 265 Q128 314 98 332 L73 339 L74 354 L67 361 L61 338 Q18 331 29 277 Q38 243 61 216 L50 203 L31 205 L25 199 L53 192 L63 198 L51 169 L57 164 L78 187 L84 165 L91 159 L103 175 L92 196 L110 195 L113 212 L96 210 L143 307 L155 306 L181 263 L179 244 L190 240 L167 222 L184 198 L169 172 Q123 183 126 164 Q128 149 169 131 Z"/>
-    </clipPath></defs>`
-    : "";
-  return `<svg class="event-portrait" viewBox="${x} ${y} ${width} ${height}" aria-hidden="true">
-    ${outline}<image href="${url}" width="1280" height="720"${shadowless ? ' clip-path="url(#empty-bag-outline)"' : ""}/>
-  </svg>`;
-}
+const deitySprites = import.meta.glob<string>("../art/deities/*.webp", {
+  eager: true,
+  import: "default",
+  query: "?url",
+});
 
 function deityPortrait(id: DeityId) {
-  const goodIndex = goodDeities.findIndex((entry) => entry === id);
-  if (goodIndex >= 0) {
-    const edges = [19, 383, 666, 903, 1265];
-    return sheetCrop(
-      goodSheet,
-      edges[goodIndex],
-      55,
-      edges[goodIndex + 1] - edges[goodIndex],
-      600,
-    );
-  }
-  if (id === "empty-bag") return sheetCrop(badSheet, 395, 45, 395, 630, true);
-  const index = badDeities.findIndex((entry) => entry === id);
-  const edges = [20, 396, 820, 1265];
-  return sheetCrop(
-    badSheet,
-    edges[index],
-    45,
-    edges[index + 1] - edges[index],
-    632,
-  );
+  return `<img class="event-portrait" src="${deitySprites[`../art/deities/${id}.webp`]}" alt="">`;
 }
 
 export function changeText({ target, amount }: ValueChange) {

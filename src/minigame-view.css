@@ -37,7 +37,7 @@
 }
 .mg-sprite {
   display: block;
-  background-repeat: no-repeat;
+  object-fit: contain;
   pointer-events: none;
 }
 .mg-illustration > .mg-shoot-sprite {
@@ -201,6 +201,7 @@
 .mg-answer .mg-sprite {
   position: absolute;
   inset: 0;
+  width: 100%;
   height: 100%;
   z-index: -1;
 }

@@ -104,17 +104,9 @@ for (const scene of [
     await expect(dialog).toContainText(scene.label);
     await expect(dialog).toContainText(scene.result);
     if (scene.label === "神祇登場") {
-      const sprite = dialog.locator("svg image");
-      await expect(sprite).toHaveAttribute("href", /deities_bad_final/);
-      await expect(sprite).toHaveAttribute(
-        "clip-path",
-        "url(#empty-bag-outline)",
-      );
-      await sprite.evaluate(async (element) => {
-        const image = new Image();
-        image.src = element.getAttribute("href")!;
-        await image.decode();
-      });
+      const sprite = dialog.locator(".event-portrait");
+      await expect(sprite).toHaveAttribute("src", /empty-bag\.webp/);
+      await sprite.evaluate((image: HTMLImageElement) => image.decode());
     } else {
       const background = dialog.locator(".event-background");
       await expect(background).toHaveAttribute(
@@ -219,4 +211,22 @@ test("迷途使自選岔路並減一步，最後一回合結束時消失", async
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(page.getByRole("status")).toContainText("已自動存檔");
   expect(await saved(page)).toMatchObject({ deity: null, boardTile: 39 });
+});
+
+test("護心獅 uses a transparent portrait in the deity scene", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1080, height: 664 });
+  await loadBoard(page, [0.3, 0.1, 0.1, 0.1, 0.1, 0.9]);
+  await page.getByRole("button", { name: "擲骰" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "護心獅" })).toBeVisible();
+  const portrait = dialog.locator(".event-portrait");
+  await expect(portrait).toHaveAttribute("src", /guard-lion\.webp/);
+  await portrait.evaluate((image: HTMLImageElement) => image.decode());
+  if (process.env.ANDY_SCREENSHOTS) {
+    await page.screenshot({
+      path: `${process.env.ANDY_SCREENSHOTS}/guard-lion.png`,
+    });
+  }
 });
