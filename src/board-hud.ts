@@ -8,7 +8,7 @@ import "./board-hud.css";
 const sprites = import.meta.glob<string>(
   [
     "../art/hud/avatar-*.webp",
-    "../art/hud/{intellect,morality,charm,fitness,frame-red,kit-dice,dice-glow-1,dice-disabled-1,close-normal-1}.webp",
+    "../art/hud/{intellect,morality,charm,fitness,kit-dice,dice-glow-1,dice-disabled-1,close-normal-1}.webp",
   ],
   { eager: true, import: "default", query: "?url" },
 );
@@ -39,7 +39,7 @@ export const boardHudMarkup = (
 ) => `<section class="board-controls" aria-label="玩家儀表板">
   <div class="board-status">
     <header class="hud-identity">
-      ${avatar(256, "hud-avatar-desktop")}
+      ${avatar(256, "hud-avatar-desktop", true)}
       ${avatar(128, "hud-avatar-compact", true)}
       <div class="hud-person">
         <h1 tabindex="-1"></h1>
@@ -62,7 +62,9 @@ export const boardHudMarkup = (
       <div class="hud-cash"><dt>現金</dt><dd><span class="hud-value"></span></dd></div>
       <div class="hud-turn"><dt>回合</dt><dd></dd></div>
     </dl>
-    <dl class="hud-badges hud-badges-inline"></dl>
+    <div class="hud-attached" hidden>
+      <span class="hud-deity-head"><img alt=""></span><span class="hud-attached-detail"></span>
+    </div>
   </div>
   <div class="hud-bottom">
     ${avatar(256, "hud-avatar-mobile", true)}
@@ -102,7 +104,6 @@ export function boardHud(root: HTMLElement, turns: number) {
   const triggers = root.querySelectorAll<HTMLButtonElement>(
     "[aria-controls=hud-menu]",
   );
-  const portrait = matchMedia("(orientation: portrait)");
   let opener: HTMLButtonElement | undefined;
 
   function closeMenu(restoreFocus = true) {
@@ -160,6 +161,11 @@ export function boardHud(root: HTMLElement, turns: number) {
   const cash = status.querySelector<HTMLElement>(".hud-cash")!;
   const turn = status.querySelector<HTMLElement>(".hud-turn dd")!;
   const badges = root.querySelectorAll<HTMLElement>(".hud-badges");
+  const attached = status.querySelector<HTMLElement>(".hud-attached")!;
+  const attachedHead = attached.querySelector<HTMLImageElement>("img")!;
+  const attachedDetail = attached.querySelector<HTMLElement>(
+    ".hud-attached-detail",
+  )!;
   const avatars = root.querySelectorAll<HTMLElement>(".hud-avatar");
   const stageLabel = root.querySelector<HTMLElement>(".hud-stage")!;
   const name = root.querySelector<HTMLElement>("#character-name")!;
@@ -206,7 +212,7 @@ export function boardHud(root: HTMLElement, turns: number) {
       hero.src = sprite(`avatar-${save.gender}-${art}-${hero.dataset.size}`);
       ring.src = sprite(
         tone === "bad"
-          ? "frame-red"
+          ? "avatar-ring-red"
           : tone === "good"
             ? "avatar-halo"
             : "avatar-ring",
@@ -250,15 +256,19 @@ export function boardHud(root: HTMLElement, turns: number) {
     )?.clubId;
     const club = clubId && isClubId(clubId) ? clubs[clubId].name : "";
     const head = deity ? deityArt[`../art/deities/${deity.id}.webp`] : "";
+    const deityLabel = deity
+      ? `${deities[deity.id].name}・${deity.remainingTurns} 回合`
+      : "";
+    attached.hidden = !deity;
+    if (deity) {
+      attachedHead.src = head;
+      attachedDetail.textContent = deityLabel;
+    }
     const fields = [
       ["骰子顆數", `${diceCount(save)} 顆`, true],
       ["水星逆行", `${save.retrogradeTurns} 回合`, save.retrogradeTurns > 0],
       ["否極泰來", `${save.turnaroundTurns} 回合`, save.turnaroundTurns > 0],
-      [
-        "附身神祇",
-        deity ? `${deities[deity.id].name}・${deity.remainingTurns} 回合` : "—",
-        Boolean(deity),
-      ],
+      ["附身神祇", deityLabel || "—", Boolean(deity)],
       ["社團", club || "—", Boolean(club)],
       ["人生經驗", String(save.experience), save.experience > 0],
       ["收集卡", `${save.cards.length} 張`, save.cards.length > 0],
@@ -279,8 +289,7 @@ export function boardHud(root: HTMLElement, turns: number) {
     update,
     closeMenu,
     reorient() {
-      if (!portrait.matches && opener && !opener.getClientRects().length)
-        closeMenu();
+      if (opener && !opener.getClientRects().length) closeMenu();
     },
   };
 }

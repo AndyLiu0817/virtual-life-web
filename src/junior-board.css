@@ -1,18 +1,43 @@
 .board-map {
+  --scene: url("../art/map_junior_noroad_landscape_final.jpg");
+  --aspect: 780 / 439;
+  grid-area: map;
   position: relative;
-  width: min(100%, 1250px, calc((100dvh - 32px) * 780 / 439));
-  aspect-ratio: 780 / 439;
-  border-radius: 1rem;
+  display: grid;
+  grid: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  container-type: size;
   overflow: hidden;
-  box-shadow:
-    0 10px 32px #0a202ac4,
-    0 0 0 1px #92cbc56b;
+  background: #344b38;
 }
-
-.board-world {
+.board-map::before {
+  content: "";
   position: absolute;
-  inset: 0;
+  inset: -25px;
+  background: var(--scene) center / cover;
+  filter: blur(18px) brightness(0.8);
+}
+.board-world {
+  position: relative;
+  width: min(100cqw, calc(100cqh * var(--aspect)));
+  aspect-ratio: var(--aspect);
   transform-origin: top left;
+}
+@media (orientation: landscape) {
+  /* At these aspect ratios the landscape art can cover the viewport by
+     cropping only the sky above the track. */
+  @container (min-aspect-ratio: 780 / 439) and (max-aspect-ratio: 12 / 5) {
+    .board-world {
+      width: 100cqw;
+      align-self: end;
+    }
+  }
+}
+@media (orientation: portrait) {
+  .board-map {
+    --scene: url("../art/map_junior_noroad_portrait_final.jpg");
+    --aspect: 439 / 780;
+  }
 }
 
 .board-map picture {

@@ -47,6 +47,18 @@ for (const layout of [
     deity: { id: "sky-elder", remainingTurns: 4 },
   },
   {
+    name: "landscape-bad-deity-1280x800",
+    width: 1280,
+    height: 800,
+    deity: { id: "empty-bag", remainingTurns: 3 },
+  },
+  {
+    name: "portrait-good-deity-390x844",
+    width: 390,
+    height: 844,
+    deity: { id: "sky-elder", remainingTurns: 4 },
+  },
+  {
     name: "mumu-portrait-bad-over-target-540x960",
     width: 540,
     height: 960,
@@ -84,25 +96,43 @@ for (const layout of [
       "src",
       /girl-junior-256\.webp/,
     );
-    const tone = !layout.deity ? "normal" : layout.over ? "bad" : "good";
+    const tone = !layout.deity
+      ? "normal"
+      : layout.deity.id === "empty-bag"
+        ? "bad"
+        : "good";
     await expect(avatar).toHaveAttribute("data-tone", tone);
     const ring =
       tone === "good"
         ? "avatar-halo"
         : tone === "bad"
-          ? "frame-red"
+          ? "avatar-ring-red"
           : "avatar-ring";
     await expect(avatar.locator(".hud-ring")).toHaveAttribute(
       "src",
       new RegExp(ring),
     );
 
+    if (tone === "bad") {
+      const geometry = await avatar.evaluate(async (button) => {
+        const actual = button.querySelector<HTMLImageElement>(".hud-ring")!;
+        const normal = new Image();
+        normal.src = actual.src.replace("avatar-ring-red", "avatar-ring");
+        await Promise.all([normal.decode(), actual.decode()]);
+        return {
+          sameSize:
+            normal.naturalHeight === actual.naturalHeight &&
+            normal.naturalWidth === actual.naturalWidth,
+          radius: getComputedStyle(button).borderRadius,
+        };
+      });
+      expect(geometry).toEqual({ sameSize: true, radius: "50%" });
+    }
+
     const assertLayout = async () => {
       const map = (await page.locator(".board-map").boundingBox())!;
-      expect(map.width / map.height).toBeCloseTo(
-        portrait ? 439 / 780 : 780 / 439,
-        2,
-      );
+      expect(map.x).toBe(0);
+      expect(map.width).toBe(layout.width);
       for (const selector of portrait
         ? [".board-status", ".hud-bottom"]
         : [".board-controls"]) {
@@ -122,6 +152,16 @@ for (const layout of [
       }
     };
     await assertLayout();
+    const scene = (await page.locator(".board-world").boundingBox())!;
+    const viewport = (await page.locator(".board-map").boundingBox())!;
+    expect(scene.x).toBeLessThanOrEqual(viewport.x + 0.5);
+    expect(scene.y).toBeLessThanOrEqual(viewport.y + 0.5);
+    expect(scene.x + scene.width).toBeGreaterThanOrEqual(
+      viewport.x + viewport.width - 0.5,
+    );
+    expect(scene.y + scene.height).toBeGreaterThanOrEqual(
+      viewport.y + viewport.height - 0.5,
+    );
     if (process.env.HUD_SCREENSHOTS) {
       await page.evaluate(async () => {
         await document.fonts.ready;
@@ -135,29 +175,63 @@ for (const layout of [
         path: `${process.env.HUD_SCREENSHOTS}/${layout.name}.png`,
       });
     }
-    if (portrait) {
-      await avatar.click();
-      await expect(
-        page.getByRole("region", { name: "棋盤選單" }),
-      ).toBeVisible();
-      await expect(page.locator(".hud-badges-drawer")).toContainText(
-        "人生經驗",
-      );
-      if (layout.deity)
-        await expect(page.locator(".hud-badges-drawer")).toContainText(
-          "空袋客・3 回合",
-        );
-      await assertLayout();
-      if (process.env.HUD_SCREENSHOTS && layout.deity) {
-        await page.screenshot({
-          path: `${process.env.HUD_SCREENSHOTS}/mumu-portrait-drawer.png`,
-        });
-      }
-      await page.keyboard.press("Escape");
-      await expect(avatar).toBeFocused();
+    await avatar.click();
+    await expect(page.getByRole("region", { name: "棋盤選單" })).toBeVisible();
+    await expect(page.locator(".hud-badges-drawer")).toContainText("人生經驗");
+    if (layout.deity) {
+      const deity = tone === "bad" ? "空袋客・3 回合" : "晴空爺・4 回合";
+      await expect(page.locator(".hud-badges-drawer")).toContainText(deity);
+      if (!portrait)
+        await expect(page.locator(".hud-attached")).toHaveText(deity);
     }
+    await assertLayout();
+    if (
+      process.env.HUD_SCREENSHOTS &&
+      (portrait ? layout.over : tone === "good")
+    ) {
+      const screenshot = portrait ? "mumu-portrait-drawer" : "landscape-drawer";
+      await page.screenshot({
+        path: `${process.env.HUD_SCREENSHOTS}/${screenshot}.png`,
+      });
+    }
+    await page.keyboard.press("Escape");
+    await expect(avatar).toBeFocused();
   });
 }
+
+test("all 42 tiles fit in the landscape board at both requested sizes", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await loadBoard(page);
+  const map = page.locator(".board-map");
+  await expect(map.locator(".board-tile")).toHaveCount(42);
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 960, height: 540 },
+  ]) {
+    await page.setViewportSize(size);
+    const clipped = await map.evaluate((board) => {
+      const frame = board.getBoundingClientRect();
+      return [...board.querySelectorAll(".board-tile")]
+        .filter((tile) => {
+          const box = tile.getBoundingClientRect();
+          return (
+            box.left < frame.left - 0.5 ||
+            box.right > frame.right + 0.5 ||
+            box.top < frame.top - 0.5 ||
+            box.bottom > frame.bottom + 0.5
+          );
+        })
+        .map((tile) => tile.getAttribute("data-tile"));
+    });
+    expect(clipped).toEqual([]);
+    const bounds = (await map.boundingBox())!;
+    expect(bounds.x).toBe(0);
+    expect(bounds.width).toBe(size.width);
+    expect(bounds.y + bounds.height).toBe(size.height);
+  }
+});
 
 test("dice disables through pawn movement and the landing popup", async ({
   page,

@@ -204,6 +204,7 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await expect(track.locator(".path-debug text")).toHaveCount(42);
   await expect(track.locator(".board-pawn")).toHaveAttribute("data-tile", "0");
 
+  await expect(page.locator("#roll")).toBeEnabled();
   await page.clock.install();
   await page.clock.pauseAt(new Date(Date.now() + 1_000));
   const trace = await page.evaluateHandle(() => {
@@ -330,16 +331,25 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
             pawn.top >= frame.top &&
             pawn.right <= frame.right &&
             pawn.bottom <= frame.bottom;
-          if (!covered || !pawnVisible)
+          const fitted =
+            artwork.left >= frame.left - tolerance &&
+            artwork.top >= frame.top - tolerance &&
+            artwork.right <= frame.right + tolerance &&
+            artwork.bottom <= frame.bottom + tolerance;
+          const scale = new DOMMatrix(getComputedStyle(world).transform).a;
+          if (!(covered || (scale === 1 && fitted)) || !pawnVisible)
             throw new Error("鏡頭超出地圖或棋子離開畫面");
-          return new DOMMatrix(getComputedStyle(world).transform).a;
+          return scale;
         }),
       )
       .toBe(zoom);
   }
 
-  await checkCamera(2.3);
+  await checkCamera(1);
   const landscapeStatus = await status.boundingBox();
+  await page.getByRole("button", { name: "選單", exact: true }).click();
+  await toggle.click();
+  await checkCamera(2.3);
   await page.getByRole("button", { name: "選單", exact: true }).click();
   await toggle.click();
   await expect(page.locator("#overview")).toHaveAttribute(
@@ -495,8 +505,10 @@ for (const portrait of [false, true]) {
       "data-tile",
       "41",
     );
-    await page.getByRole("button", { name: "選單", exact: true }).click();
-    await page.getByRole("button", { name: "看全圖" }).click();
+    if (portrait) {
+      await page.getByRole("button", { name: "選單", exact: true }).click();
+      await page.getByRole("button", { name: "看全圖" }).click();
+    }
     const tiles = page.locator(".board-tile");
     await expect(tiles).toHaveCount(42);
     for (const tile of await tiles.all()) {

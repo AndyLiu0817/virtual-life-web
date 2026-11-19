@@ -1,10 +1,10 @@
 .junior:has(.board-controls) {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-  align-items: center;
-  justify-items: center;
-  gap: clamp(0.65rem, 1.7vw, 1.6rem);
-  background: radial-gradient(ellipse at 38% 18%, #397b82, #142f3a 85%);
+  grid-template: "hud" auto "map" minmax(200px, 1fr) / minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 0;
+  background: #193941;
 }
 
 .board-controls,
@@ -81,15 +81,12 @@
   scale: 0.78;
 }
 .hud-avatar[data-tone="bad"] {
-  border-radius: 18%;
-  background: none;
-}
-.hud-avatar[data-tone="bad"] .hud-ring {
-  z-index: -1;
-  scale: 1.16;
-}
-.hud-avatar[data-tone="bad"] .hud-hero {
-  scale: 0.76;
+  background: radial-gradient(
+    circle,
+    #fff0f3 45%,
+    #f79cb0 58%,
+    transparent 59%
+  );
 }
 .hud-avatar[data-tone="good"] {
   background: radial-gradient(
@@ -408,91 +405,166 @@
 .hud-close:active img {
   content: url("../art/hud/close-pressed-1.webp");
 }
-.hud-badges-drawer {
+.hud-attached {
+  grid-area: attached;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.69rem;
+  font-weight: 750;
+}
+.hud-attached[hidden] {
   display: none;
+}
+.hud-deity-head {
+  flex: none;
 }
 
 @media (orientation: landscape) {
+  .board-controls {
+    grid-area: hud;
+    width: auto;
+    margin: max(5px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right)) 4px
+      max(8px, env(safe-area-inset-left));
+    border-width: clamp(11px, 2.1dvh, 16px);
+    border-image-width: clamp(11px, 2.1dvh, 16px);
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 1px clamp(6px, 1.3vw, 20px);
+    padding: 0 4px;
+    z-index: 1;
+  }
   .board-status {
-    grid-template-areas: "identity" "turn" "stats" "cash" "badges";
+    grid-template:
+      "identity stats cash" auto "turn stats attached" auto /
+      minmax(112px, 1fr) minmax(0, 3.3fr) minmax(74px, 0.85fr);
+    align-items: center;
+    column-gap: clamp(7px, 1.6vw, 24px);
+    row-gap: 0;
   }
   .hud-identity {
     grid-area: identity;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 7px;
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+  }
+  .hud-identity h2 {
+    font-size: clamp(0.85rem, 2.2dvh, 1.25rem);
+    line-height: 1.18;
+  }
+  .hud-identity h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+  }
+  .hud-avatar-desktop {
+    width: clamp(44px, 7.5dvh, 66px);
   }
   .hud-summary {
     display: contents;
   }
   .hud-turn {
     grid-area: turn;
-    justify-self: center;
+    justify-self: end;
   }
   .hud-stats {
     grid-area: stats;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(5px, 1.3vw, 16px);
+  }
+  .hud-stat {
+    grid-template: auto auto / minmax(18px, 1fr) auto;
+    grid-template-areas: "icon value" "meter meter";
+    gap: 3px 4px;
+  }
+  .hud-stat dt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+  }
+  .hud-stat-icon {
+    width: 29px;
+    height: 27px;
+    max-width: 100%;
+  }
+  .hud-meter {
+    height: 6px;
   }
   .hud-cash {
     grid-area: cash;
+    flex-wrap: wrap;
   }
-  .hud-badges-inline {
-    grid-area: badges;
+  .hud-bottom {
+    display: contents;
   }
-}
-@media (orientation: landscape) and (max-height: 640px) {
-  .board-controls {
-    border-width: 16px;
-    border-image-width: 16px;
-    gap: 4px;
-  }
-  .board-status,
-  .hud-stats {
-    gap: 4px;
-  }
-  .hud-avatar-desktop {
-    width: clamp(66px, 15dvh, 95px);
-  }
-  .hud-stat-icon {
-    height: 28px;
+  .board-roll {
+    flex-direction: row-reverse;
   }
   #roll {
-    width: clamp(56px, 12dvh, 76px);
+    width: clamp(50px, 8.5dvh, 72px);
+  }
+  .hud-menu-trigger {
+    padding-inline: clamp(1px, 0.8vw, 13px);
+    white-space: nowrap;
+  }
+  .hud-menu {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    position: static;
+    border: 0;
+    filter: none;
+    align-items: center;
+  }
+  .hud-close {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .hud-menu .actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .hud-bottom #notice {
+    font-size: 0.65rem;
+    min-height: 0;
+    margin-top: -1px;
+  }
+  .hud-bottom #notice:empty {
+    display: none;
   }
 }
-
 @media (orientation: portrait) {
   .junior:has(.board-controls) {
     height: 100dvh;
     min-height: max(560px, 100dvh);
-    padding: max(8px, env(safe-area-inset-top))
-      max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom))
-      max(8px, env(safe-area-inset-left));
     grid-template: "top" auto "map" minmax(160px, 1fr) "bottom" auto / minmax(
         0,
         1fr
       );
-    gap: 7px;
   }
   .board-controls {
     display: contents;
     filter: none;
-  }
-  .junior .board-map {
-    grid-area: map;
-    height: 100%;
-    max-height: calc((100vw - 20px) * 780 / 439);
-    width: auto;
-    max-width: 100%;
-    aspect-ratio: 439 / 780;
   }
   .board-status,
   .hud-bottom {
     color: #234550;
     border: 14px solid #ece8e2;
     border-image: url("../art/hud/frame-large.webp") 70 fill / 14px;
-    width: min(100%, 560px);
+    justify-self: center;
+    width: min(calc(100% - 16px), 560px);
     min-width: 0;
     filter: drop-shadow(0 6px 10px #10263070);
   }
   .board-status {
     grid-area: top;
+    margin: max(8px, env(safe-area-inset-top)) 0 6px;
     grid-template-columns: 44px minmax(0, 1fr);
     grid-template-areas: "avatar stats" "summary summary";
     align-items: center;
@@ -517,7 +589,7 @@
     overflow: hidden;
   }
   .hud-avatar-desktop,
-  .hud-badges-inline {
+  .hud-attached {
     display: none;
   }
   .hud-stats {
@@ -551,6 +623,7 @@
   }
   .hud-bottom {
     grid-area: bottom;
+    margin: 6px 0 max(8px, env(safe-area-inset-bottom));
     grid-template-columns: auto 1fr auto;
   }
   .board-roll {

@@ -95,6 +95,13 @@ export function showJuniorBoard(
   }
   const hud = boardHud(find(".board-controls"), board.turns);
   let orientation: Orientation = media.matches ? "portrait" : "landscape";
+  const overview = find<HTMLButtonElement>("#overview");
+  let overviewPreference: boolean | undefined;
+  function syncOverview(immediate = false) {
+    const active = overviewPreference ?? orientation === "landscape";
+    overview.setAttribute("aria-pressed", String(active));
+    camera.setOverview(active, immediate);
+  }
   let view = boardView(
     track,
     board.layouts[orientation],
@@ -111,7 +118,10 @@ export function showJuniorBoard(
 
   const orientationChange = new ResizeObserver(() => {
     const next = media.matches ? "portrait" : "landscape";
-    if (next === orientation) return;
+    if (next === orientation) {
+      camera.snap();
+      return;
+    }
     orientation = next;
     hud.reorient();
     view = boardView(
@@ -128,7 +138,7 @@ export function showJuniorBoard(
     } else {
       view.place(landed, pose, facing);
     }
-    camera.snap();
+    syncOverview(true);
   });
   orientationChange.observe(find(".board-map"));
 
@@ -147,11 +157,10 @@ export function showJuniorBoard(
       ".board-controls .actions button, [aria-controls=hud-menu]",
     ),
   );
-  const overview = find<HTMLButtonElement>("#overview");
+  syncOverview(true);
   overview.onclick = () => {
-    const active = overview.getAttribute("aria-pressed") !== "true";
-    overview.setAttribute("aria-pressed", String(active));
-    camera.setOverview(active);
+    overviewPreference = overview.getAttribute("aria-pressed") !== "true";
+    syncOverview();
     hud.closeMenu();
   };
 
@@ -469,7 +478,7 @@ export function showJuniorBoard(
   status();
   placePawn("stand");
   roll.onclick = () => void playTurn();
-  find("h1").focus();
+  find("h1").focus({ preventScroll: true });
 
   async function startBoard() {
     const needsClub = clubChoice(save, "junior");

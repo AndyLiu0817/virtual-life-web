@@ -15,7 +15,7 @@ test("every minigame, deity and HUD sprite has clean transparent edges", async (
       .map((file) => `/${dir}/${file}`),
   );
   expect(sprites.filter((url) => url.includes("/deities/"))).toHaveLength(7);
-  expect(sprites.filter((url) => url.includes("/hud/"))).toHaveLength(64);
+  expect(sprites.filter((url) => url.includes("/hud/"))).toHaveLength(65);
   expect(
     sprites.filter((url) => /\/hud\/avatar-.*-(128|256)\.webp$/.test(url)),
   ).toHaveLength(16);
