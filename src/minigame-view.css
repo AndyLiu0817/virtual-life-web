@@ -61,8 +61,8 @@
 .mg-copy p {
   line-height: 1.5;
 }
-.mg-confirm {
-  min-height: 50px;
+.mg-dialog .mg-confirm {
+  min-height: 72px;
 }
 .mg-result,
 .mg-reward {

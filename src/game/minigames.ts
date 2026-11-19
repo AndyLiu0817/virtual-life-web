@@ -34,12 +34,47 @@ export const minigames = {
     unit: " 個",
     instructions: "看到靶子就點它。30 秒內盡量多命中幾個。",
   },
+  whack: {
+    name: "打地鼠",
+    stat: "fitness",
+    normal: 20,
+    excellent: 30,
+    unit: " 隻",
+    instructions: "小怪獸從洞口冒出時，立刻點牠。30 秒內盡量多打中幾隻。",
+  },
+  diff: {
+    name: "找不同",
+    stat: "intellect",
+    normal: 4,
+    excellent: 5,
+    unit: " 處",
+    instructions:
+      "60 秒內找出兩張圖的 5 處不同。點任一張圖都可以，點錯要等 1 秒。",
+  },
+  catch: {
+    name: "接水果",
+    stat: "fitness",
+    normal: 20,
+    excellent: 30,
+    unit: " 個",
+    maxMisses: 5,
+    instructions: "左右拖動籃子接水果。30 秒內漏接最多 5 個，接到雜物不計分。",
+  },
+  stack: {
+    name: "疊疊樂",
+    stat: "charm",
+    normal: 10,
+    excellent: 15,
+    unit: " 層",
+    instructions:
+      "對準下方的積木時點一下放下。凸出的部分會切掉，完全疊空或到 60 秒就結束。",
+  },
 } as const;
 
 export type Minigame = keyof typeof minigames;
 export const minigameIds = Object.keys(minigames) as Minigame[];
 export const minigameTiers = ["未達", "普通", "優秀"] as const;
-export type RoundScore = { score: number; elapsedMs?: number };
+export type RoundScore = { score: number; elapsedMs?: number; misses?: number };
 
 export function pickMinigame(random = Math.random) {
   return minigameIds[Math.floor(random() * minigameIds.length)];
@@ -55,6 +90,11 @@ export function minigameTier(
     if (result.score < 8 || seconds > normal) return "未達";
     return seconds <= excellent ? "優秀" : "普通";
   }
+  if (
+    game === "catch" &&
+    (result.misses ?? Infinity) > minigames.catch.maxMisses
+  )
+    return "未達";
   if (result.score >= excellent) return "優秀";
   return result.score >= normal ? "普通" : "未達";
 }

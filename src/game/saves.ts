@@ -86,6 +86,7 @@ const saveSchema = z
           score: z.number().nonnegative(),
           tier: z.enum(minigameTiers),
           elapsedMs: count.optional(),
+          misses: count.optional(),
         }),
       )
       .default([]),

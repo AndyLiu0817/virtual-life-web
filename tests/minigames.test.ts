@@ -8,6 +8,7 @@ import {
   settleMinigame,
   type Minigame,
 } from "../src/game/minigames";
+import { differenceHotspots } from "../src/game/differences";
 import { createSave, exportSave, importSave } from "../src/game/saves";
 
 const player = createSave({
@@ -21,6 +22,9 @@ test.each([
   ["rhythm", 69.9, 70, 94.9, 95],
   ["math", 7, 8, 11, 12],
   ["shoot", 14, 15, 22, 23],
+  ["whack", 19, 20, 29, 30],
+  ["diff", 3, 4, 4, 5],
+  ["stack", 9, 10, 14, 15],
 ] as const)(
   "%s classifies both tier boundaries",
   (game, fail, normal, close, excellent) => {
@@ -100,6 +104,10 @@ test("random pick uses all games in the data list", () => {
     "memory",
     "math",
     "shoot",
+    "whack",
+    "diff",
+    "catch",
+    "stack",
   ] satisfies Minigame[]);
   expect(
     minigameIds.map((_, i) =>
@@ -164,3 +172,66 @@ test("arithmetic answers are spread uniformly across the four sorted positions",
     expect(rank / count).toBeLessThan(0.28);
   }
 });
+
+test("fruit tiers require at most five misses and preserve misses in the save", () => {
+  for (const [score, tier] of [
+    [19, "未達"],
+    [20, "普通"],
+    [29, "普通"],
+    [30, "優秀"],
+  ] as const) {
+    expect(minigameTier("catch", { score, misses: 5 })).toBe(tier);
+    expect(minigameTier("catch", { score, misses: 6 })).toBe("未達");
+  }
+  const { save } = settleMinigame(player, "catch", { score: 30, misses: 5 });
+  expect(importSave(exportSave(save)).minigames[0]).toMatchObject({
+    game: "catch",
+    misses: 5,
+    tier: "優秀",
+  });
+});
+
+test("all three picture pairs have exactly five in-bounds hotspots", () => {
+  expect(differenceHotspots).toHaveLength(3);
+  for (const spots of differenceHotspots) {
+    expect(spots).toHaveLength(5);
+    expect(new Set(spots.map(({ label }) => label)).size).toBe(5);
+    for (const { x, y, radius } of spots) {
+      expect(x).toBeGreaterThan(0);
+      expect(x).toBeLessThan(1);
+      expect(y).toBeGreaterThan(0);
+      expect(y).toBeLessThan(1);
+      expect(radius).toBeGreaterThan(0);
+    }
+  }
+});
+
+test.each([
+  ["whack", 30, "fitness"],
+  ["diff", 5, "intellect"],
+  ["catch", 30, "fitness"],
+  ["stack", 15, "charm"],
+] as const)(
+  "%s awards its main stat, lion bonus and cap",
+  (game, score, stat) => {
+    const result = { score, ...(game === "catch" ? { misses: 0 } : {}) };
+    const lion = { id: "guard-lion", remainingTurns: 1 };
+    expect(settleMinigame(player, game, result)).toMatchObject({
+      stat: 18,
+      cash: 600,
+    });
+    expect(
+      settleMinigame({ ...player, deity: lion }, game, result),
+    ).toMatchObject({ stat: 22, cash: 720 });
+    const nearCap = {
+      ...player,
+      deity: lion,
+      stats: { ...player.stats, [stat]: 9998 },
+    };
+    expect(settleMinigame(nearCap, game, result)).toMatchObject({
+      stat: 1,
+      cash: 720,
+      save: { stats: { [stat]: 9999 } },
+    });
+  },
+);

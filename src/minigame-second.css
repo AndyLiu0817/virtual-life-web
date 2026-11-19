@@ -1,0 +1,215 @@
+.mg-illustration:is(
+    [data-game="whack"],
+    [data-game="catch"],
+    [data-game="stack"]
+  )
+  > .mg-sprite {
+  box-shadow: none;
+  border-radius: 0;
+  filter: drop-shadow(0 5px 6px #25170d80);
+}
+
+.mg-play:is(
+    [data-game="whack"],
+    [data-game="diff"],
+    [data-game="catch"],
+    [data-game="stack"]
+  )
+  .mg-field {
+  container-type: size;
+  overflow: hidden;
+  touch-action: none;
+}
+.mg-whack-board {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+}
+.mg-whack-board .mg-backdrop {
+  object-fit: fill;
+}
+.mg-critter {
+  position: absolute;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  width: max(72px, 14%);
+  height: max(72px, 21%);
+  padding: 0;
+  border: 0;
+  transform: translate(-50%, -99%);
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mg-critter .mg-sprite {
+  width: 78%;
+  max-height: 100%;
+  animation: mg-pop 110ms ease-out both;
+}
+@keyframes mg-pop {
+  from {
+    transform: translateY(22%) scale(0.76);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mg-critter .mg-sprite {
+    animation: none;
+  }
+}
+.mg-tap-mark {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #9f2e25;
+  color: white;
+  font: bold 23px/1 system-ui;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.mg-tap-mark.hit {
+  background: #245f2f;
+}
+
+.mg-play[data-game="diff"] {
+  height: min(350px, calc(37.5vw + 46px), calc(100dvh - 1.15rem));
+}
+.mg-diff-pair {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 8px;
+}
+.mg-diff-picture {
+  position: relative;
+  width: min(calc(50cqw - 8px), calc((100cqh - 8px) * 4 / 3));
+  overflow: hidden;
+  outline: 1px solid #ead6a2;
+  border-radius: 5px;
+  cursor: crosshair;
+}
+.mg-diff-picture img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
+.mg-diff-ring {
+  position: absolute;
+  display: none;
+  aspect-ratio: 1;
+  border: 2px solid #ffe15a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #452600;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.mg-diff-pair.debug .mg-diff-ring,
+.mg-diff-ring.found {
+  display: block;
+}
+.mg-diff-ring.found {
+  border-color: #84ff89;
+}
+@media (orientation: portrait) {
+  .mg-whack-board {
+    position: absolute;
+    left: 50%;
+    width: max(100%, calc(100cqh * 16 / 9));
+    transform: translateX(-50%);
+  }
+  .mg-diff-pair {
+    grid-auto-flow: row;
+  }
+  .mg-diff-picture {
+    width: min(calc(100cqw - 8px), calc((50cqh - 8px) * 4 / 3));
+  }
+  .mg-play[data-game="diff"] {
+    height: min(740px, calc(100dvh - 1.15rem));
+  }
+}
+
+.mg-play[data-game="catch"] .mg-field {
+  cursor: ew-resize;
+}
+.mg-basket,
+.mg-falling {
+  position: absolute;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.mg-basket {
+  width: clamp(72px, 24%, 162px);
+  height: clamp(54px, 18%, 100px);
+  left: 50%;
+  top: 78%;
+  z-index: 1;
+}
+.mg-basket .mg-sprite {
+  width: 100%;
+  height: 100%;
+}
+.mg-falling {
+  width: clamp(32px, 9%, 57px);
+  transform: translate(-50%, -80%);
+}
+.mg-falling .mg-sprite {
+  width: 100%;
+}
+
+.mg-play[data-game="stack"] .mg-field {
+  cursor: pointer;
+}
+.mg-stack-world {
+  --step: clamp(13px, 5cqh, 27px);
+  --block: calc(var(--step) * 1.7);
+  position: absolute;
+  width: min(100%, 420px);
+  height: 100%;
+  transform: translateY(calc(var(--rise) * var(--step)));
+  transition: transform 140ms ease-out;
+  pointer-events: none;
+}
+.mg-stack-pile,
+.mg-stack-moving {
+  position: absolute;
+  bottom: 27%;
+}
+.mg-stack-pile {
+  width: 100%;
+}
+.mg-stack-pile > div {
+  position: absolute;
+  bottom: 0;
+}
+.mg-stack-moving {
+  margin-bottom: calc(
+    (var(--layers) + 1 + (1 - var(--drop, 0)) * 2.8) * var(--step)
+  );
+}
+.mg-stack-world .mg-sprite {
+  height: var(--block);
+  width: 100%;
+}
+@media (orientation: portrait) {
+  .mg-stack-pile,
+  .mg-stack-moving {
+    bottom: 24%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mg-stack-world {
+    transition: none;
+  }
+}
+
+.mg-play > picture,
+.mg-illustration > picture {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+}
