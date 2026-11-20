@@ -292,6 +292,15 @@ export function boardView(
 
   return {
     place,
+    routePlacement(from: number, to: number) {
+      const start = centers[from];
+      const end = centers[to];
+      return {
+        x: (100 * end.x) / layout.width,
+        y: (100 * end.y) / layout.height,
+        angle: (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
+      };
+    },
     step(from: number, to: number, progress: number) {
       const start = centers[from];
       const end = centers[to];

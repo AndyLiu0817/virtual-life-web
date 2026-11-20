@@ -37,15 +37,15 @@ describe("學段棋盤", () => {
     [
       "high",
       25,
-      { start: 1, event: 11, shop: 2, game: 9, club: 6, quiz: 5, contest: 2 },
+      { start: 1, event: 9, shop: 4, game: 9, club: 6, quiz: 5, contest: 2 },
     ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 9,
-        shop: 2,
+        event: 7,
+        shop: 4,
         game: 7,
         club: 4,
         quiz: 5,

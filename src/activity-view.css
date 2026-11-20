@@ -142,3 +142,24 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.shop-stock .activity-option {
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.65rem;
+}
+.shop-item-icon {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+.activity-option .shop-item-copy {
+  display: grid;
+  gap: 0.15rem;
+  font-size: inherit;
+}
+@media (orientation: portrait) {
+  .shop-stock .activity-option {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+}

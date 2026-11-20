@@ -759,6 +759,11 @@ for (const [direction, viewport] of [
       ratio: 1,
     });
     await step9aReview(page, `shop-${direction}`);
+    await expect(dialog.locator(".shop-item-icon")).toHaveCount(8);
+    expect((await buy.locator(".shop-item-icon").boundingBox())!.width).toBe(
+      direction === "landscape" ? 52 : 42,
+    );
+    if (direction === "portrait") await captureShopIcons(page, direction);
     await buy.click();
     await expect(buy).toBeDisabled();
     await expect(buy).toContainText("剩餘限購 0 件");
@@ -850,3 +855,40 @@ if (process.env.STEP_9A_SCREENSHOTS) {
     });
   });
 }
+
+async function captureShopIcons(page: Page, direction: string) {
+  const directory = process.env.STEP_9A2_SHOP_ROUTE_SCREENSHOTS;
+  if (!directory) return;
+  await page
+    .locator(".shop-item-icon")
+    .evaluateAll((images) =>
+      Promise.all(images.map((image) => (image as HTMLImageElement).decode())),
+    );
+  await page.screenshot({
+    path: `${directory}/shop-${direction}.jpg`,
+    quality: 93,
+  });
+}
+
+test("大學福利社顯示八個獨立商品圖示", async ({ page }) => {
+  await page.setViewportSize(landscape);
+  await seed(page, { ...schoolSave("university"), boardTile: 1, cash: 4500 });
+  await page.locator("#roll").click();
+  const dialog = page.getByRole("dialog", { name: "福利社" });
+  const icons = dialog.locator(".shop-item-icon");
+  await expect(icons).toHaveCount(8);
+  const decoded = await icons.evaluateAll(async (images) =>
+    Promise.all(
+      images.map(async (element) => {
+        const image = element as HTMLImageElement;
+        await image.decode();
+        return image.src;
+      }),
+    ),
+  );
+  expect(new Set(decoded).size).toBe(8);
+  expect(decoded.every((url) => url.includes("/art/shop/uni-shop-"))).toBe(
+    true,
+  );
+  await captureShopIcons(page, "landscape");
+});

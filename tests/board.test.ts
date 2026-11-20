@@ -223,8 +223,8 @@ it("越界位置回起點，失效的岔路連結清除，保留其餘存檔進�
 });
 
 it.each([
-  ["high", [2, 19]],
-  ["university", [3, 25]],
+  ["high", [2, 10, 19, 28]],
+  ["university", [3, 14, 25, 32]],
 ] as const)("%s 福利社沿用原格子 ID，橫直共用路線", (stage, ids) => {
   const school = schoolBoards[stage];
   expect(
