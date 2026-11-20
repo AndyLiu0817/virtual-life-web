@@ -368,7 +368,10 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
   expect(await status.boundingBox()).toEqual(landscapeStatus);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(map.locator("svg")).toHaveAttribute("viewBox", "0 0 439 780");
+  await expect(map.locator(".board-track")).toHaveAttribute(
+    "viewBox",
+    "0 0 439 780",
+  );
   await checkCamera(1);
   const portraitStatus = await status.boundingBox();
   await page.getByRole("button", { name: "選單", exact: true }).click();
