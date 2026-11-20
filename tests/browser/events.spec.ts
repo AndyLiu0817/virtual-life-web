@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import { schoolBoards } from "../../src/data/school-board";
 import { chooseClub } from "../../src/game/clubs";
 import { createSave, type Save } from "../../src/game/saves";
+
+import { enterSchool } from "../../src/game/school";
 
 const saveKey = "virtual-life-web:v3:slot:0";
 const initial = chooseClub(
@@ -63,23 +66,21 @@ async function saved(page: Page): Promise<Save> {
 for (const scene of [
   {
     label: "好事",
-    title: "粉筆救援隊",
+    title: "口水地圖",
     random: [0.8, 0, 0, 0, 0],
     result: "智力 ＋10",
     name: "good-landscape",
-    background: "classroom",
-    npc: "teacher",
+    id: "junior-good-01",
     width: 1080,
     height: 664,
   },
   {
     label: "壞事",
-    title: "撈到的是盆",
+    title: "套到老闆",
     random: [0.8, 0.9, 0.36, 0],
     result: "現金 −200 元",
     name: "bad-portrait",
-    background: "festival",
-    npc: "clerk",
+    id: "junior-bad-08",
     width: 390,
     height: 844,
   },
@@ -111,44 +112,12 @@ for (const scene of [
       await expect(sprite).toHaveAttribute("src", /empty-bag\.webp/);
       await sprite.evaluate((image: HTMLImageElement) => image.decode());
     } else {
-      const background = dialog.locator(".event-background");
-      await expect(background).toHaveAttribute(
-        "src",
-        new RegExp(`event_${scene.background}_final`),
+      const image = dialog.locator(".event-illustration");
+      await expect(image).toHaveAttribute("src", new RegExp(`${scene.id}_m`));
+      await image.evaluate((image: HTMLImageElement) => image.decode());
+      await expect(dialog.locator(".event-background, .event-npc")).toHaveCount(
+        0,
       );
-      await background.evaluate((image: HTMLImageElement) => image.decode());
-      const npc = dialog.locator(".event-npc");
-      await expect(npc).toHaveAttribute(
-        "src",
-        new RegExp(`/${scene.npc}[^/]*\\.webp$`),
-      );
-      const transparency = await npc.evaluate(
-        async (image: HTMLImageElement) => {
-          await image.decode();
-          const canvas = document.createElement("canvas");
-          canvas.width = image.naturalWidth;
-          canvas.height = image.naturalHeight;
-          const context = canvas.getContext("2d")!;
-          context.drawImage(image, 0, 0);
-          const pixels = context.getImageData(
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-          ).data;
-          return [
-            pixels[3],
-            pixels[(canvas.width - 1) * 4 + 3],
-            pixels[
-              (Math.floor(canvas.height / 2) * canvas.width +
-                Math.floor(canvas.width / 2)) *
-                4 +
-                3
-            ],
-          ];
-        },
-      );
-      expect(transparency).toEqual([0, 0, 255]);
     }
     await page.evaluate(() => new Promise(requestAnimationFrame));
     const confirm = dialog.getByRole("button", { name: "確定" });
@@ -235,4 +204,127 @@ test("護心獅 uses a transparent portrait in the deity scene", async ({
       path: `${process.env.ANDY_SCREENSHOTS}/guard-lion.png`,
     });
   }
+});
+
+const reviewCases = [
+  ["junior", "口水地圖", "夢中點名"],
+  ["high", "塗卡藝術", "全猜C"],
+  ["university", "午睡學分", "五個鬧鐘"],
+] as const;
+
+for (const [stage, goodTitle, badTitle] of reviewCases) {
+  for (const [kind, title, polarity] of [
+    ["good", goodTitle, 0],
+    ["bad", badTitle, 0.9],
+  ] as const) {
+    for (const [gender, suffix] of [
+      ["girl", "f"],
+      ["boy", "m"],
+    ] as const) {
+      for (const [orientation, width, height] of [
+        ["landscape", 1280, 800],
+        ["portrait", 390, 844],
+      ] as const) {
+        const id = `${stage}-${kind}-01`;
+        const name = `${id}_${suffix}-${orientation}`;
+        test(name, async ({ page }) => {
+          await page.setViewportSize({ width, height });
+          const save =
+            stage === "junior"
+              ? initial
+              : chooseClub(enterSchool(initial, stage), stage, "study");
+          const target =
+            stage === "junior"
+              ? 31
+              : schoolBoards[stage].tiles.findIndex(
+                  ({ kind }, index, tiles) =>
+                    index > 2 &&
+                    kind === "event" &&
+                    tiles
+                      .slice(index - 2, index)
+                      .every((tile) => tile.kind !== "fork"),
+                );
+          await loadBoard(page, [0.3, 0.1, 0.1, 0.8, polarity, 0, 0, 0], {
+            ...save,
+            gender,
+            stageIntroSeen: ["high", "university"],
+            boardTile: target - 2,
+            previousTile: target - 3,
+          });
+          await page.getByRole("button", { name: "擲骰" }).click();
+          const dialog = page.getByRole("dialog");
+          await expect(
+            dialog.getByRole("heading", { name: title }),
+          ).toBeVisible();
+          await expect(dialog.locator(".event-label")).toHaveText(
+            kind === "good" ? "好事" : "壞事",
+          );
+          const image = dialog.locator(".event-illustration");
+          await expect(image).toHaveAttribute(
+            "src",
+            new RegExp(`${id}_${suffix}`),
+          );
+          expect(
+            await image.evaluate(async (image: HTMLImageElement) => {
+              await image.decode();
+              return [
+                image.naturalWidth,
+                image.naturalHeight,
+                getComputedStyle(image).objectFit,
+              ];
+            }),
+          ).toEqual([1280, 960, "contain"]);
+          await expect(dialog.locator("#event-text")).toBeInViewport({
+            ratio: 1,
+          });
+          await expect(
+            dialog.getByRole("button", { name: "確定" }),
+          ).toBeInViewport({ ratio: 1 });
+          if (process.env.STEP12_SCREENSHOTS) {
+            await page.screenshot({
+              path: `${process.env.STEP12_SCREENSHOTS}/${name}.jpg`,
+              quality: 88,
+            });
+          }
+        });
+      }
+    }
+  }
+}
+
+test("收集卡使用同一事件的女主角配圖", async ({ page }) => {
+  await loadBoard(page, [0.3, 0.1, 0.1, 0.2, 0, 0], {
+    gender: "girl",
+    boardTile: 29,
+    previousTile: 28,
+  });
+  await page.getByRole("button", { name: "擲骰" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.locator(".event-label")).toHaveText("收集卡");
+  await expect(dialog.locator(".event-illustration")).toHaveAttribute(
+    "src",
+    /junior-good-01_f/,
+  );
+  await dialog.getByRole("button", { name: "確定" }).click();
+  await expect(page.getByRole("status")).toContainText("已自動存檔");
+  expect((await saved(page)).cards).toEqual(["junior-good-01"]);
+});
+
+test("配圖模組無法載入時顯示原場景及 NPC", async ({ page }) => {
+  await page.route("**/junior-good-01_m.webp?*", (route) => route.abort());
+  await loadBoard(page, [0.3, 0.1, 0.1, 0.8, 0, 0, 0, 0], {
+    boardTile: 29,
+    previousTile: 28,
+  });
+  await page.getByRole("button", { name: "擲骰" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "口水地圖" })).toBeVisible();
+  await expect(dialog.locator(".event-background")).toHaveAttribute(
+    "src",
+    /event_classroom_final/,
+  );
+  await expect(dialog.locator(".event-npc")).toHaveAttribute(
+    "src",
+    /teacher.*\.webp$/,
+  );
 });

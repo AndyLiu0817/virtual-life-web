@@ -6,6 +6,12 @@ import {
 } from "./game/deities";
 import type { EventOutcome } from "./game/events";
 import { STAT_LABELS } from "./game/opening";
+import type { Save } from "./game/saves";
+
+const eventIllustrations = import.meta.glob<string>("../art/events/*/*.webp", {
+  import: "default",
+  query: "?url",
+});
 
 const scenes = import.meta.glob<string>("../art/event_*_final.jpg", {
   eager: true,
@@ -49,7 +55,10 @@ export function sceneArt(scene: string, role?: string) {
   return `<img class="event-background" src="${background}" alt="">${npc ? `<img class="event-npc" src="${npc}" alt="">` : ""}`;
 }
 
-export function eventPresentation(outcome: EventOutcome) {
+export async function eventPresentation(
+  outcome: EventOutcome,
+  gender: Save["gender"],
+) {
   if ("id" in outcome) {
     const deity = deities[outcome.id];
     return {
@@ -66,10 +75,18 @@ export function eventPresentation(outcome: EventOutcome) {
   }
 
   const { story } = outcome;
-  const art = sceneArt(story.scene, story.npc);
+  const stage = story.id.split("-")[0];
+  const suffix = gender === "boy" ? "m" : "f";
+  const loadIllustration =
+    eventIllustrations[`../art/events/${stage}/${story.id}_${suffix}.webp`];
+  const illustration = await loadIllustration?.().catch(() => undefined);
+  const tone = illustration ? "illustrated" : "scene";
+  const art = illustration
+    ? `<img class="event-illustration" src="${illustration}" alt="">`
+    : sceneArt(story.scene, story.npc);
   if (outcome.kind === "protected") {
     return {
-      tone: "scene",
+      tone,
       art,
       label: "護心獅",
       title: "無事發生",
@@ -79,7 +96,7 @@ export function eventPresentation(outcome: EventOutcome) {
   }
   if (outcome.kind === "card") {
     return {
-      tone: "scene",
+      tone,
       art,
       label: "收集卡",
       title: story.title,
@@ -88,7 +105,7 @@ export function eventPresentation(outcome: EventOutcome) {
     };
   }
   return {
-    tone: "scene",
+    tone,
     art,
     label: outcome.kind === "good" ? "好事" : "壞事",
     title: story.title,
