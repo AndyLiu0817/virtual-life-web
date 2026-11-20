@@ -67,7 +67,7 @@ export function graduationDetails(save: Save) {
     )
     .join("");
   const exam = (id: string) =>
-    save.exams.find((entry) => entry.id === id)?.correct;
+    [...save.exams].reverse().find((entry) => entry.id === id)?.correct;
   const quizCount = save.exams.filter((entry) => entry.id === "quiz").length;
   const deity = activeDeity(save);
   const games = ["優秀", "普通", "未達"]

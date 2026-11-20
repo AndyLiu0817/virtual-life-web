@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { elementaryIds } from "./main-story";
 import { isBoardStage, schoolBoards } from "../data/school-board";
 import {
   BLOOD_TYPES,
@@ -25,97 +26,117 @@ const count = z.number().int().nonnegative();
 const stat = count.max(9999);
 const nullableId = z.string().min(1).nullable();
 const school = z.enum(["elementary", "junior", "high", "university"]);
-const saveSchema = z
-  .object({
-    version: z.literal(SAVE_VERSION),
-    updatedAt: z.iso.datetime(),
-    gender: z.enum(["boy", "girl"]),
-    name: z.string().trim().min(1).max(20),
-    birthday: z.object({ month: count, day: count }).refine(isBirthday),
-    zodiac: z.string(),
-    season: z.string(),
-    bloodType: z.enum(bloodTypesKeys()),
-    stats: z.object({
-      intellect: stat,
-      morality: stat,
-      charm: stat,
-      fitness: stat,
-    }),
-    cash: count,
-    level: count.min(1),
-    experience: count,
-    cards: z.array(z.string()),
-    stage: z.enum([...school.options, "graduated", "earlyExit"]),
-    turn: count,
-    education: school.nullable(),
-    hiddenJobUnlock: z.boolean(),
-    exams: z.array(z.object({ id: z.string(), correct: count })),
-    seenQuestionIds: z.array(z.string()).default([]),
-    entranceAttempt: attemptSchema
-      .refine(
-        ({ kind, items }) =>
-          (kind === "highEntrance" || kind === "universityEntrance") &&
-          items.some(({ answer }) => answer === null),
-      )
-      .nullable()
-      .default(null),
-    ending: z
-      .enum(["juniorEarlyExit", "universityExamFail", "universityGraduate"])
-      .nullable()
-      .default(null),
-    stageIntroSeen: z.array(z.enum(["high", "university"])).default([]),
-    examResultPending: z.boolean().default(false),
-    clubHistory: z
-      .array(z.object({ stage: school, clubId: z.string(), visits: count }))
-      .default([]),
-    clubEventHistory: z.array(z.string()).default([]),
-    shopPurchases: z
-      .array(
+const saveFields = z.object({
+  version: z.literal(SAVE_VERSION),
+  updatedAt: z.iso.datetime(),
+  gender: z.enum(["boy", "girl"]),
+  name: z.string().trim().min(1).max(20),
+  birthday: z.object({ month: count, day: count }).refine(isBirthday),
+  zodiac: z.string(),
+  season: z.string(),
+  bloodType: z.enum(bloodTypesKeys()),
+  stats: z.object({
+    intellect: stat,
+    morality: stat,
+    charm: stat,
+    fitness: stat,
+  }),
+  cash: count,
+  level: count.min(1),
+  experience: count,
+  cards: z.array(z.string()),
+  stage: z.enum([...school.options, "graduated", "earlyExit"]),
+  turn: count,
+  education: school.nullable(),
+  hiddenJobUnlock: z.boolean(),
+  exams: z.array(z.object({ id: z.string(), correct: count })),
+  seenQuestionIds: z.array(z.string()).default([]),
+  entranceAttempt: attemptSchema
+    .refine(
+      ({ kind, items }) =>
+        (kind === "highEntrance" || kind === "universityEntrance") &&
+        items.some(({ answer }) => answer === null),
+    )
+    .nullable()
+    .default(null),
+  ending: z
+    .enum(["juniorEarlyExit", "universityExamFail", "universityGraduate"])
+    .nullable()
+    .default(null),
+  stageIntroSeen: z.array(z.enum(["high", "university"])).default([]),
+  examResultPending: z.boolean().default(false),
+  clubHistory: z
+    .array(z.object({ stage: school, clubId: z.string(), visits: count }))
+    .default([]),
+  clubEventHistory: z.array(z.string()).default([]),
+  shopPurchases: z
+    .array(
+      z.object({
+        stage: z.enum(["high", "university"]),
+        itemId: z.string(),
+        count,
+      }),
+    )
+    .default([]),
+  competitions: z
+    .array(
+      z.union([
         z.object({
-          stage: z.enum(["high", "university"]),
-          itemId: z.string(),
-          count,
-        }),
-      )
-      .default([]),
-    competitions: z
-      .array(
-        z.union([
-          z.object({
-            stage: z.enum(clubStages),
-            matchNumber: count.min(1),
-            event: z.enum(contestEventIds),
-            score: z.number().nonnegative(),
-            rank: count.min(1).max(4),
-            elapsedMs: count.optional(),
-          }),
-          z.object({ id: z.string(), rank: count.min(1) }),
-        ]),
-      )
-      .default([]),
-    minigames: z
-      .array(
-        z.object({
-          stage: z.enum([...school.options, "graduated", "earlyExit"]),
-          game: z.enum(minigameIds),
+          stage: z.enum(clubStages),
+          matchNumber: count.min(1),
+          event: z.enum(contestEventIds),
           score: z.number().nonnegative(),
-          tier: z.enum(minigameTiers),
+          rank: count.min(1).max(4),
           elapsedMs: count.optional(),
-          misses: count.optional(),
         }),
-      )
-      .default([]),
-    partner: nullableId,
-    affection: count.max(99),
-    spouse: nullableId,
-    children: z.array(z.object({ id: z.string(), name: z.string() })),
-    deity: z.object({ id: z.string(), remainingTurns: count }).nullable(),
-    retrogradeTurns: count,
-    turnaroundTurns: count,
-    retrogradeRepeated: z.boolean().default(false),
-    boardTile: count.default(0),
-    previousTile: count.nullable().default(null),
-    nextTile: count.nullable().default(null),
+        z.object({ id: z.string(), rank: count.min(1) }),
+      ]),
+    )
+    .default([]),
+  minigames: z
+    .array(
+      z.object({
+        stage: z.enum([...school.options, "graduated", "earlyExit"]),
+        game: z.enum(minigameIds),
+        score: z.number().nonnegative(),
+        tier: z.enum(minigameTiers),
+        elapsedMs: count.optional(),
+        misses: count.optional(),
+      }),
+    )
+    .default([]),
+  partner: nullableId,
+  affection: count.max(99),
+  spouse: nullableId,
+  children: z.array(z.object({ id: z.string(), name: z.string() })),
+  deity: z.object({ id: z.string(), remainingTurns: count }).nullable(),
+  retrogradeTurns: count,
+  turnaroundTurns: count,
+  retrogradeRepeated: z.boolean().default(false),
+  storyFragments: z.array(z.string()).default(elementaryIds),
+  storyTilesUsed: z
+    .array(
+      z.object({
+        stage: z.enum(["junior", "high", "university"]),
+        tile: count,
+      }),
+    )
+    .default([]),
+  boardTile: count.default(0),
+  previousTile: count.nullable().default(null),
+  nextTile: count.nullable().default(null),
+});
+const saveSchema = saveFields
+  .extend({
+    stageSnapshots: z
+      .object({
+        junior: saveFields.extend({ stage: z.literal("junior") }).optional(),
+        high: saveFields.extend({ stage: z.literal("high") }).optional(),
+        university: saveFields
+          .extend({ stage: z.literal("university") })
+          .optional(),
+      })
+      .default({}),
   })
   .transform((save) => {
     if (save.stage === "earlyExit" && save.ending === null)
@@ -192,6 +213,7 @@ export function createSave(profile: Profile): Save {
     education: null,
     hiddenJobUnlock: false,
     exams: [],
+    storyFragments: [],
     clubHistory: [],
     competitions: [],
     partner: null,

@@ -60,6 +60,7 @@ test("直向必選社團，橫向造訪領獎並更新存檔", async ({ page }) 
   await page.getByLabel("名字").fill("小晴");
   await page.getByRole("button", { name: "查看開局結果" }).click();
   await page.getByRole("button", { name: "確認開局" }).click();
+  await page.getByRole("button", { name: "略過" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("heading", { name: "國中選社" })).toBeVisible();
   await expect(dialog.getByRole("button")).toHaveCount(8);

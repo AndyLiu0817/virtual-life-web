@@ -34,7 +34,8 @@ it("兩版共用相同路線，每條路只經過斜角網格上的相鄰格", (
   expect(board.tiles.map((tile) => tile.kind).sort()).toEqual(
     [
       "start",
-      ...Array(13).fill("event"),
+      ...Array(8).fill("event"),
+      ...Array(5).fill("story"),
       ...Array(10).fill("game"),
       ...Array(5).fill("club"),
       ...Array(8).fill("quiz"),

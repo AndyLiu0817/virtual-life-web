@@ -1,3 +1,4 @@
+import { storyProgress } from "./game/main-story";
 import { diceCount } from "./game/board";
 import { clubs, isClubId } from "./game/clubs";
 import { activeDeity, deities } from "./game/deities";
@@ -96,6 +97,7 @@ export const boardHudMarkup = (
       <div class="actions">
         <button class="hud-clay" id="overview" type="button" aria-pressed="false">看全圖</button>
         <button class="hud-clay" id="save" type="button">儲存到存檔格</button>
+        <button class="hud-clay" id="board-gallery" type="button">記憶畫廊</button>
         <button class="hud-clay" id="export" type="button">匯出存檔</button>
         <button class="hud-clay" id="home" type="button">回標題</button>
       </div>
@@ -266,6 +268,7 @@ export function boardHud(root: HTMLElement, turns: number) {
       ({ stage }) => stage === save.stage,
     )?.clubId;
     const club = clubId && isClubId(clubId) ? clubs[clubId].name : "";
+    const progress = storyProgress(save.storyFragments);
     const head = deity ? sprite(`deity-${deity.id}`) : "";
     const deityLabel = deity
       ? `${deities[deity.id].name}・${deity.remainingTurns} 回合`
@@ -279,6 +282,7 @@ export function boardHud(root: HTMLElement, turns: number) {
       ["骰子顆數", `${diceCount(save)} 顆`, true],
       ["水星逆行", `${save.retrogradeTurns} 回合`, save.retrogradeTurns > 0],
       ["否極泰來", `${save.turnaroundTurns} 回合`, save.turnaroundTurns > 0],
+      ["主線故事", `${progress.count}／${progress.total}`, false],
       ["附身神祇", deityLabel || "—", Boolean(deity)],
       ["社團", club || "—", Boolean(club)],
       ["人生經驗", String(save.experience), save.experience > 0],

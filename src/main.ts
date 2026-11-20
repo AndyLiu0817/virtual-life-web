@@ -1,9 +1,20 @@
+import { restartStage, snapshotStage, storyEnding } from "./game/main-story";
+import {
+  confirmStoryRestart,
+  openStoryGallery,
+  playElementaryStory,
+  playTrueStoryEnding,
+  rememberStory,
+  showBittersweet,
+  stageStoryReminder,
+} from "./story-view";
 import { showStageBoard } from "./junior-board";
 import { preloadSchool } from "./board-view";
 import {
   isBoardStage,
   schoolBoards,
   type SchoolBoard,
+  type BoardStage,
 } from "./data/school-board";
 import { finishEntrance, graduate } from "./game/school";
 import { graduationDetails, introArt, endingScene } from "./school-view";
@@ -92,6 +103,7 @@ function title() {
     <nav class="title-actions" aria-label="遊戲選單">
       ${button("start", "開始新人生")}
       ${button("continue", "繼續遊戲", !records.some((record) => record.save))}
+      ${button("gallery", "記憶畫廊")}
       ${button("import", "匯入存檔")}
       <input type="file" id="file" accept=".json,application/json" hidden>
       <p id="notice" role="status"></p>
@@ -100,6 +112,9 @@ function title() {
   action("start", () => setup());
   action("continue", () => selectSlot("load"));
   const file = element<HTMLInputElement>("#file");
+  action("gallery", () =>
+    openStoryGallery(undefined, records.find(({ save }) => save)?.save?.gender),
+  );
   action("import", () => file.click());
   file.onchange = async () => {
     const selected = file.files?.[0];
@@ -258,15 +273,21 @@ function confirmOpening(profile: Profile) {
   );
   element("#character-name").textContent = save.name;
   action("edit", () => setup(profile));
-  action("confirm", () => {
+  action("confirm", async () => {
     try {
       if (
         readSlots()[0].save &&
         !window.confirm("開始新人生將覆蓋自動存檔。確定開始嗎？")
       )
         return;
-      slots.write(0, save);
-      board(save, "已自動存檔。");
+      const updated = snapshotStage(await playElementaryStory(save));
+      const warning = persistExam(updated);
+      board(
+        updated,
+        ["已收集主線故事・國小 3／3，可在記憶畫廊重看", warning]
+          .filter(Boolean)
+          .join(" "),
+      );
     } catch {
       notice(new Error("無法自動存檔，請確認瀏覽器允許儲存網站資料。"));
     }
@@ -274,6 +295,7 @@ function confirmOpening(profile: Profile) {
 }
 
 function board(save: Save, message = "") {
+  rememberStory(save);
   if (save.examResultPending) return schoolResult(save, message);
   if (save.stage === "earlyExit" || save.stage === "graduated")
     return showEnding(save, message);
@@ -301,7 +323,8 @@ function openBoard(save: Save, school: SchoolBoard, message: string) {
     manualSave: (updated) => selectSlot("write", updated),
     exportSave: download,
     home: title,
-    complete: completeSchool,
+    complete: (save) => void completeSchool(save),
+    gallery: (save) => gallery(save),
   });
 }
 
@@ -331,6 +354,7 @@ async function loadSchool(save: Save, school: SchoolBoard, message: string) {
     );
     action("retry-school", () => loadSchool(save, school, message));
     action("home", title);
+
     return;
   }
 
@@ -360,7 +384,32 @@ async function loadSchool(save: Save, school: SchoolBoard, message: string) {
   });
 }
 
-function completeSchool(save: Save) {
+async function replay(save: Save, stage: BoardStage) {
+  const restarted = restartStage(save, stage);
+  if (!restarted || !(await confirmStoryRestart(stage))) return false;
+  board(restarted, persistExam(restarted));
+  return true;
+}
+
+async function gallery(save: Save) {
+  let restarted = false;
+  await openStoryGallery(save, save.gender, async (stage) => {
+    restarted = await replay(save, stage);
+    return restarted;
+  });
+  return restarted;
+}
+
+async function completeSchool(save: Save) {
+  if (isBoardStage(save.stage) && !save.entranceAttempt) {
+    const stage = save.stage;
+    while (true) {
+      const choice = await stageStoryReminder(save, stage);
+      if (choice === "next") break;
+      if (choice === "restart" && (await replay(save, stage))) return;
+      if (choice === "gallery" && (await gallery(save))) return;
+    }
+  }
   if (save.stage === "university") {
     const completed = graduate(save);
     return showEnding(completed, persistExam(completed));
@@ -409,9 +458,11 @@ function entranceExam(save: Save) {
 
 function schoolResult(save: Save, message: string) {
   const university = save.education === "high";
-  const exam = save.exams.find(
-    ({ id }) => id === (university ? "universityEntrance" : "highEntrance"),
-  );
+  const exam = [...save.exams]
+    .reverse()
+    .find(
+      ({ id }) => id === (university ? "universityEntrance" : "highEntrance"),
+    );
   const passed = save.stage === (university ? "university" : "high");
   show(
     resultScene(
@@ -428,7 +479,8 @@ function schoolResult(save: Save, message: string) {
       examResultPending: false,
       updatedAt: new Date().toISOString(),
     };
-    board(acknowledged, persistExam(acknowledged));
+    const updated = snapshotStage(acknowledged);
+    board(updated, persistExam(updated));
   });
   element("#notice").textContent = message;
 }
@@ -437,9 +489,9 @@ function showEnding(save: Save, message: string) {
   const graduated =
     save.ending === "universityGraduate" || save.stage === "graduated";
   const high = save.ending === "universityExamFail";
-  const exam = save.exams.find(
-    ({ id }) => id === (high ? "universityEntrance" : "highEntrance"),
-  );
+  const exam = [...save.exams]
+    .reverse()
+    .find(({ id }) => id === (high ? "universityEntrance" : "highEntrance"));
   const title = graduated ? "大學畢業" : high ? "聯考落榜" : "提前出社會";
   const copy = graduated
     ? "<p>畢業帽飛起來的那一刻，連趕報告的鬧鐘也終於可以關掉了。</p>"
@@ -450,27 +502,69 @@ function showEnding(save: Save, message: string) {
     endingScene(
       title,
       `${copy}
+    ${!graduated && storyEnding(save) ? `<p>${storyEnding(save)}</p>` : ""}
     ${!graduated && exam ? `<p>${scoreText(exam.correct)}</p>` : ""}
     <div class="actions">${button("advance-ending", graduated ? "查看結算" : "下一章預告")}</div>
-    ${graduated ? "" : endingActions()}`,
+    ${graduated ? "" : endingActions(save)}`,
       graduated ? graduation : firstJob,
     ),
   );
   element("#notice").textContent = message;
   if (!graduated) bindEndingActions(save);
   action("advance-ending", () =>
-    graduated ? showGraduation(save) : showPreview(save),
+    graduated ? finishStory(save) : showPreview(save),
   );
 }
 
-function endingActions() {
-  return `<div class="actions">${button("save", "儲存到存檔格")}${button("export", "匯出存檔")}${button("home", "回標題")}</div>`;
+async function finishStory(save: Save) {
+  if (storyEnding(save) === "true") {
+    await playTrueStoryEnding(save.gender);
+    rememberStory(save, true);
+  } else {
+    while (true) {
+      const choice = await showBittersweet(save);
+      if (choice === "next") break;
+      if (choice === "gallery" && (await gallery(save))) return;
+      if (
+        choice.startsWith("restart:") &&
+        (await replay(save, choice.slice(8) as BoardStage))
+      )
+        return;
+    }
+  }
+  showGraduation(save);
+}
+
+function endingActions(save?: Save) {
+  return `<div class="actions">${button("save", "儲存到存檔格")}${button("export", "匯出存檔")}${button("home", "回標題")}${
+    save
+      ? button("ending-gallery", "記憶畫廊") +
+        Object.keys(save.stageSnapshots)
+          .map((stage) =>
+            button(
+              `ending-restart-${stage}`,
+              `從${stage === "junior" ? "國中" : stage === "high" ? "高中" : "大學"}起點重玩`,
+            ),
+          )
+          .join("")
+      : ""
+  }</div>`;
 }
 
 function bindEndingActions(save: Save) {
   action("save", () => selectSlot("write", save));
   action("export", () => download(save));
   action("home", title);
+  if (app.querySelector("#ending-gallery"))
+    action("ending-gallery", async () => {
+      await gallery(save);
+    });
+  for (const stage of Object.keys(save.stageSnapshots) as BoardStage[]) {
+    if (app.querySelector(`#ending-restart-${stage}`))
+      action(`ending-restart-${stage}`, async () => {
+        await replay(save, stage);
+      });
+  }
 }
 
 function showGraduation(save: Save) {
@@ -478,7 +572,7 @@ function showGraduation(save: Save) {
     endingScene(
       "大學畢業結算",
       `${graduationDetails(save)}
-    <div class="actions">${button("next-chapter", "下一章預告")}</div>${endingActions()}`,
+    <div class="actions">${button("next-chapter", "下一章預告")}</div>${endingActions(save)}`,
       graduation,
       true,
     ),

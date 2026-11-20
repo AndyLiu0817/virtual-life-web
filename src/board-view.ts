@@ -21,6 +21,7 @@ type Pose = "stand" | "win" | `${WalkSet}-${number}`;
 const claySides = {
   start: "#af8727",
   event: "#3293a1",
+  story: "#d9893b",
   game: "#55947b",
   club: "#3293a1",
   quiz: "#af8727",
