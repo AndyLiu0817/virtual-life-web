@@ -105,6 +105,11 @@ export async function promptForClub(
   );
 }
 
+const shopIcons = import.meta.glob<string>("../art/shop/*.webp", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
 const statIcons = { intellect, morality, charm, fitness };
 const money = (value: number) => `${value.toLocaleString("zh-TW")} 元`;
 
@@ -131,9 +136,12 @@ export function promptForShop(
       .map(
         (item) => `
       <button class="activity-option" type="button" data-item="${item.id}" ${item.available ? "" : "disabled"}>
-        <strong>${item.name}・${money(item.price)}</strong>
-        <span class="shop-effects">${item.effects.map((effect) => `<span>${effect.target === "cash" ? "" : `<img src="${statIcons[effect.target]}" alt="">`}${changeText(effect)}</span>`).join("")}</span>
-        <span>剩餘限購 ${item.remaining} 件${item.remaining && save.cash < item.price ? "・現金不足" : ""}</span>
+        <img class="shop-item-icon" src="${shopIcons[`../art/shop/${item.id}.webp`]}" alt="">
+        <span class="shop-item-copy">
+          <strong>${item.name}・${money(item.price)}</strong>
+          <span class="shop-effects">${item.effects.map((effect) => `<span>${effect.target === "cash" ? "" : `<img src="${statIcons[effect.target]}" alt="">`}${changeText(effect)}</span>`).join("")}</span>
+          <span>剩餘限購 ${item.remaining} 件${item.remaining && save.cash < item.price ? "・現金不足" : ""}</span>
+        </span>
       </button>`,
       )
       .join("");

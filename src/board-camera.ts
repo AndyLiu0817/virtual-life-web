@@ -32,6 +32,7 @@ export function boardCamera(world: HTMLElement, reducedMotion: boolean) {
   }
 
   function render({ x, y, zoom }: NonNullable<typeof current>) {
+    world.style.setProperty("--board-zoom", String(zoom));
     world.style.transform = `translate(${x * 100}%, ${y * 100}%) scale(${zoom})`;
   }
 

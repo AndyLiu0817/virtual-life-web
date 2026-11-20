@@ -1,15 +1,15 @@
 import { diceCount } from "./game/board";
 import { clubs, isClubId } from "./game/clubs";
-import { activeDeity, deities, goodDeities } from "./game/deities";
+import { activeDeity, deities } from "./game/deities";
 import { STAT_LABELS, type Stat } from "./game/opening";
 import type { Save } from "./game/saves";
 import "./board-hud.css";
 
 const sprites = import.meta.glob<string>(
   [
-    "../art/hud/avatar-*.webp",
+    "../art/hud/avatar-{boy,girl}-*.webp",
     "../art/hud/deity-*.webp",
-    "../art/hud/{intellect,morality,charm,fitness,kit-dice,dice-glow-1,dice-disabled-1,close-normal-1}.webp",
+    "../art/hud/{intellect,morality,charm,fitness,dice-disabled-1,close-normal-1}.webp",
   ],
   { eager: true, import: "default", query: "?url" },
 );
@@ -22,12 +22,13 @@ const schools = {
 };
 const stats: Stat[] = ["intellect", "morality", "charm", "fitness"];
 
-function avatar(size: 128 | 256, className: string, trigger = false) {
-  const art = `<img class="hud-hero" data-size="${size}" alt="">
-    <img class="hud-ring" alt="">`;
-  return trigger
-    ? `<button class="hud-avatar ${className}" type="button" aria-label="玩家狀態與選單" aria-controls="hud-menu" aria-expanded="false">${art}</button>`
-    : `<div class="hud-avatar ${className}">${art}</div>`;
+const hudRing = '<span class="hud-ring" aria-hidden="true"></span>';
+
+function avatar(size: 128 | 256, className: string) {
+  return `<button class="hud-avatar ${className}" type="button" aria-label="玩家狀態與選單" aria-controls="hud-menu" aria-expanded="false">
+    <img class="hud-hero" data-size="${size}" alt="">
+    ${hudRing}
+  </button>`;
 }
 
 // The overlapping dashes share a leading edge and taper toward the tail.
@@ -45,8 +46,8 @@ export const boardHudMarkup = (
   <div class="board-status">
     ${hudFrame("mobile")}
     <header class="hud-identity">
-      ${avatar(256, "hud-avatar-desktop", true)}
-      ${avatar(128, "hud-avatar-compact", true)}
+      ${avatar(256, "hud-avatar-desktop")}
+      ${avatar(128, "hud-avatar-compact")}
       <div class="hud-person">
         <h1 tabindex="-1"></h1>
         <h2 id="character-name"></h2>
@@ -75,12 +76,11 @@ export const boardHudMarkup = (
   </div>
   <div class="hud-bottom">
     ${hudFrame("mobile")}
-    ${avatar(256, "hud-avatar-mobile", true)}
+    ${avatar(256, "hud-avatar-mobile")}
     <div class="board-roll">
       <button id="roll" type="button" aria-label="擲骰">
-        <img class="hud-die-ready" src="${sprite("kit-dice")}" alt="">
-        <img class="hud-die-pressed" src="${sprite("dice-glow-1")}" alt="">
-        <img class="hud-die-disabled" src="${sprite("dice-disabled-1")}" alt="">
+        <img class="hud-die" src="${sprite("dice-disabled-1")}" alt="">
+        ${hudRing}
       </button>
       <div class="hud-roll-result">
         <div class="dice" aria-label="骰子點數"></div>
@@ -212,11 +212,6 @@ export function boardHud(root: HTMLElement, turns: number) {
         : (save.education ?? "junior");
     const { title, art, target } = schools[school];
     const deity = activeDeity(save);
-    const tone = deity
-      ? goodDeities.some((id) => id === deity.id)
-        ? "good"
-        : "bad"
-      : "normal";
     name.textContent = save.name;
     date.textContent = `生日 ${save.birthday.month}/${save.birthday.day}`;
     heading.textContent = `${title}棋盤`;
@@ -231,17 +226,8 @@ export function boardHud(root: HTMLElement, turns: number) {
             : title;
     turn.textContent = `${Math.min(save.turn + 1, turns)} ／ ${turns}`;
     avatars.forEach((element) => {
-      element.dataset.tone = tone;
       const hero = element.querySelector<HTMLImageElement>(".hud-hero")!;
-      const ring = element.querySelector<HTMLImageElement>(".hud-ring")!;
       hero.src = sprite(`avatar-${save.gender}-${art}-${hero.dataset.size}`);
-      ring.src = sprite(
-        tone === "bad"
-          ? "avatar-ring-red"
-          : tone === "good"
-            ? "avatar-halo"
-            : "avatar-ring",
-      );
     });
 
     for (const [key, row] of statRows) {

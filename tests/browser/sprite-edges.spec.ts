@@ -10,6 +10,7 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
   expect(clay).toHaveLength(9);
   const sprites = [
     "art/minigames",
+    "art/shop",
     "art/shoot",
     "art/deities",
     "art/hud",
@@ -29,7 +30,10 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
   expect(
     sprites.filter((url) => url.startsWith("/src/board-art/")),
   ).toHaveLength(84);
-  sprites.push(...clay);
+  expect(sprites.filter((url) => url.startsWith("/art/shop/"))).toHaveLength(
+    16,
+  );
+  sprites.push(...clay, "/art/route-arrow.webp");
   await page.goto("/");
   const samples = await page.evaluate(async (urls) => {
     return Promise.all(
@@ -118,7 +122,9 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
       expect(sample.whiteFringe, sample.url).toBe(0);
     if (
       sample.url.endsWith("/love-clay.webp") ||
-      sample.url.endsWith("/shop-clay.webp")
+      sample.url.endsWith("/shop-clay.webp") ||
+      sample.url.startsWith("/art/shop/") ||
+      sample.url.endsWith("/route-arrow.webp")
     )
       expect(sample.creamFringe, sample.url).toBe(0);
     if (sample.url.includes("/hud/")) {

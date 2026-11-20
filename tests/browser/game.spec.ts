@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { chooseClub } from "../../src/game/clubs";
+import { createSave } from "../../src/game/saves";
 
 async function skipMinigame(page: Page) {
   await page
@@ -112,8 +114,10 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   }
   await checkLayout();
   await roll.click();
-  await expect(dialog).toContainText("下一回合的前進方向");
-  await dialog.getByRole("button", { name: /走捷徑/ }).click();
+  const routes = map.getByRole("group", { name: /下一回合的前進方向/ });
+  await expect(routes).toBeVisible();
+  await expect(dialog).toHaveCount(0);
+  await routes.getByRole("button", { name: /走捷徑/ }).click();
   await expect(status).toContainText("2 ／ 15");
   await expect(pawn).toHaveAttribute("data-tile", "4");
 
@@ -137,14 +141,18 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
     while (true) {
       // A turn can include a reward, a route choice and a landing notice.
       const confirm = dialog.getByRole("button", { name: "確定" });
-      const outer = dialog.getByRole("button", { name: /沿外圈/ });
+      const outer = map.getByRole("button", { name: /沿外圈/ });
       await expect(
         page
           .locator(
-            "dialog:modal, #roll:enabled:visible, .assessment-screen:visible",
+            "dialog:modal, .board-routes:visible, #roll:enabled:visible, .assessment-screen:visible",
           )
           .first(),
       ).toBeVisible();
+      if (await outer.isVisible()) {
+        await outer.click();
+        continue;
+      }
       if (!(await dialog.isVisible())) break;
       const option = page
         .locator(".assessment-dialog .assessment-option")
@@ -152,7 +160,6 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
       const event = dialog.getByRole("button", { name: /智囊搶答/ });
       if (await option.isVisible()) await option.click();
       else if (await event.isVisible()) await event.click();
-      else if (await outer.isVisible()) await outer.click();
       else if (await confirm.isVisible()) await confirm.click();
       else if (
         await dialog
@@ -361,7 +368,10 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
   expect(await status.boundingBox()).toEqual(landscapeStatus);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(map.locator("svg")).toHaveAttribute("viewBox", "0 0 439 780");
+  await expect(map.locator(".board-track")).toHaveAttribute(
+    "viewBox",
+    "0 0 439 780",
+  );
   await checkCamera(1);
   const portraitStatus = await status.boundingBox();
   await page.getByRole("button", { name: "選單", exact: true }).click();
@@ -496,7 +506,7 @@ for (const portrait of [false, true]) {
     const roll = page.locator("#roll");
     const dialog = page.getByRole("dialog");
     await roll.click();
-    await dialog.getByRole("button", { name: /走捷徑/ }).click();
+    await page.getByRole("button", { name: /走捷徑/ }).click();
     await roll.click();
     await page.clock.install();
     await skipMinigame(page);
@@ -596,5 +606,96 @@ for (const portrait of [false, true]) {
         path: `${process.env.ANDY_SCREENSHOTS}/board-${orientation}.png`,
       });
     }
+  });
+}
+
+for (const [direction, width, height] of [
+  ["landscape", 1280, 800],
+  ["portrait", 390, 844],
+] as const) {
+  test.describe(direction, () => {
+    test.use({ hasTouch: direction === "portrait" });
+    test("岔路黏土箭頭可用鍵盤或觸控選擇並繼續走完", async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      const save = chooseClub(
+        createSave({
+          name: "安安",
+          gender: "girl",
+          birthday: { month: 3, day: 21 },
+          bloodType: "A",
+        }),
+        "junior",
+        "study",
+      );
+      await page.addInitScript((save) => {
+        localStorage.setItem(
+          "virtual-life-web:v3:slot:0",
+          JSON.stringify(save),
+        );
+        Math.random = () => 0.35;
+      }, save);
+      await page.goto("/");
+      await page.getByRole("button", { name: "繼續遊戲" }).click();
+      await page.locator("#use-0").click();
+      await page.locator("#roll").click();
+      const group = page.getByRole("group", { name: "岔路：還有 2 步" });
+      await expect(group).toBeVisible();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      const pawn = page.locator(".board-pawn");
+      await expect(pawn).toHaveAttribute("data-tile", "4");
+      const buttons = group.getByRole("button");
+      await expect(buttons).toHaveCount(2);
+      for (const button of await buttons.all()) {
+        await expect(button).toBeInViewport({ ratio: 0.99 });
+        const box = (await button.boundingBox())!;
+        expect(box.width).toBeGreaterThanOrEqual(56);
+        expect(box.height).toBeGreaterThanOrEqual(56);
+        const tile = await button.getAttribute("value");
+        const face = (await page
+          .locator(`.board-tile[data-tile="${tile}"] .paver-top`)
+          .boundingBox())!;
+        expect(box.x + box.width / 2).toBeCloseTo(face.x + face.width / 2, 0);
+        expect(box.y + box.height / 2).toBeCloseTo(face.y, 0);
+        const arrow = button.locator("img");
+        await expect(arrow).toBeInViewport({ ratio: 0.99 });
+        const arrowWidth = await arrow.evaluate((image) =>
+          parseFloat(getComputedStyle(image).width),
+        );
+        const zoom = await button.evaluate((node) =>
+          Number(getComputedStyle(node).getPropertyValue("--board-zoom")),
+        );
+        expect((arrowWidth * zoom) / face.width).toBeCloseTo(0.61, 2);
+        const map = (await page.locator(".board-map").boundingBox())!;
+        const art = (await arrow.boundingBox())!;
+        expect(art.y).toBeGreaterThanOrEqual(map.y);
+        expect(art.y + art.height).toBeLessThanOrEqual(map.y + map.height);
+      }
+      const directory = process.env.STEP_9A2_SHOP_ROUTE_SCREENSHOTS;
+      if (directory) {
+        await group
+          .locator("img")
+          .evaluateAll((images) =>
+            Promise.all(
+              images.map((image) => (image as HTMLImageElement).decode()),
+            ),
+          );
+        await page.screenshot({
+          path: `${directory}/route-${direction}.jpg`,
+          quality: 93,
+        });
+      }
+      const shortcut = group.getByRole("button", { name: /走捷徑/ });
+      if (direction === "portrait") {
+        await shortcut.tap();
+      } else {
+        await expect(buttons.first()).toBeFocused();
+        await page.keyboard.press("Tab");
+        await expect(shortcut).toBeFocused();
+        await page.keyboard.press("Enter");
+      }
+      await expect(group).toHaveCount(0);
+      await expect(pawn).toHaveAttribute("data-tile", "39");
+    });
   });
 }

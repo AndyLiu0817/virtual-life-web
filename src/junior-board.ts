@@ -10,6 +10,7 @@ import { nextMatch } from "./game/contests";
 import type { SchoolBoard } from "./data/school-board";
 import { handleLoveTile } from "./game/school";
 import { tileLabels } from "./data/junior";
+import routeArrow from "../art/route-arrow.webp";
 import { boardCamera } from "./board-camera";
 import { playDiceFlight } from "./board-dice-flight";
 import { boardView } from "./board-view";
@@ -67,7 +68,16 @@ export function showStageBoard(
   app.innerHTML = `<main class="stage junior" data-board-stage="${board.stage}">
     <div class="board-map" role="group" aria-label="${board.label}">
       <div class="board-world"><picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
-      <svg class="board-track" preserveAspectRatio="none"></svg></div>
+      <svg class="board-track" preserveAspectRatio="none"></svg>
+      <svg class="route-filter" aria-hidden="true" width="0" height="0">
+        <filter id="route-arrow-outline" x="-25%" y="-35%" width="150%" height="170%" color-interpolation-filters="sRGB">
+          <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="stroke"/>
+          <feFlood flood-color="white"/>
+          <feComposite in2="stroke" operator="in" result="white-outline"/>
+          <feMerge><feMergeNode in="white-outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </svg>
+      <div class="board-routes" role="group" hidden></div></div>
     </div>
     ${boardHudMarkup(debug)}
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
@@ -92,7 +102,16 @@ export function showStageBoard(
   const find = <T extends HTMLElement>(selector: string) =>
     app.querySelector<T>(selector)!;
   const viewport = find(".board-map");
+  const routeOptions = find(".board-routes");
   const track = app.querySelector<SVGSVGElement>(".board-track")!;
+  track.addEventListener("click", (event) => {
+    if (routeOptions.hidden || !(event.target instanceof Element)) return;
+    const tile = event.target.closest<SVGGElement>(".board-tile")?.dataset.tile;
+    if (!tile) return;
+    for (const button of routeOptions.querySelectorAll("button")) {
+      if (button.value === tile) button.click();
+    }
+  });
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const camera = boardCamera(find(".board-world"), reducedMotion);
   const media = matchMedia("(orientation: portrait)");
@@ -108,7 +127,9 @@ export function showStageBoard(
   let walking = false;
   function syncOverview(immediate = false) {
     const active =
-      !walking && (overviewPreference ?? orientation === "landscape");
+      !walking &&
+      routeOptions.hidden &&
+      (overviewPreference ?? orientation === "landscape");
     overview.setAttribute("aria-pressed", String(active));
     camera.setOverview(active, immediate);
   }
@@ -152,6 +173,7 @@ export function showStageBoard(
     } else {
       view.place(landed, pose, facing);
     }
+    positionRoutes();
     syncOverview(true);
   });
   orientationChange.observe(viewport);
@@ -250,28 +272,56 @@ export function showStageBoard(
     });
   }
 
+  function positionRoutes() {
+    for (const button of routeOptions.querySelectorAll("button")) {
+      const to = Number(button.value);
+      const { x, y, angle, faceWidth, lift } = view.routePlacement(
+        save.boardTile,
+        to,
+      );
+      button.style.left = `${x}%`;
+      button.style.top = `calc(${y}% - ${lift}cqw)`;
+      button.style.setProperty("--route-face-width", `${faceWidth}cqw`);
+      button.style.setProperty("--route-lift", `${lift}cqw`);
+      button.style.setProperty("--route-angle", `${angle}deg`);
+    }
+  }
+
   async function chooseRoute(steps: number) {
     const routes = directions(board, save);
-    if (
-      routes.length < 2 ||
-      board.tiles[save.boardTile].kind !== "fork" ||
-      save.nextTile !== null
-    )
-      return;
+    if (routes.length < 2 || save.nextTile !== null) return;
     if (activeDeity(save)?.id === "lost-envoy") {
       // Pick on departure so an expiring deity cannot dictate the next turn.
       if (steps > 0) save = { ...save, nextTile: randomFork(save, routes) };
       return;
     }
-    const choice = await prompt(
-      "岔路：選擇方向",
-      steps ? `還有 ${steps} 步。` : "請選擇下一回合的前進方向。",
-      routes.map(
-        (tile, index) =>
-          `${index === 0 ? "沿外圈" : "走捷徑"}・第 ${tile + 1} 格${tileLabels[board.tiles[tile].kind]}`,
-      ),
+    routeOptions.setAttribute(
+      "aria-label",
+      steps ? `岔路：還有 ${steps} 步` : "岔路：請選擇下一回合的前進方向",
     );
-    save = { ...save, nextTile: routes[choice] };
+    const choice = await new Promise<number>((resolve) => {
+      const buttons = routes.map((tile, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.value = String(tile);
+        button.setAttribute(
+          "aria-label",
+          `${index === 0 ? "沿外圈" : "走捷徑"}・第 ${tile + 1} 格${tileLabels[board.tiles[tile].kind]}`,
+        );
+        button.innerHTML = `<img src="${routeArrow}" alt="" draggable="false">`;
+        button.onclick = () => resolve(tile);
+        return button;
+      });
+      routeOptions.replaceChildren(...buttons);
+      routeOptions.hidden = false;
+      positionRoutes();
+      syncOverview(true);
+      buttons[0].focus({ preventScroll: true });
+    });
+    save = { ...save, nextTile: choice };
+    routeOptions.hidden = true;
+    routeOptions.replaceChildren();
+    syncOverview();
   }
 
   async function playEvent() {
@@ -463,8 +513,8 @@ export function showStageBoard(
           : `共 ${points} 點`;
     }
 
-    await chooseRoute(steps);
     walking = steps > 0;
+    await chooseRoute(steps);
     syncOverview();
     while (steps > 0) {
       const from = save.boardTile;

@@ -38,7 +38,15 @@ export function measureTrack(layout: BoardLayout) {
 
   const tileTop = ({ x, y }: { x: number; y: number }) =>
     `matrix(${w / tileArtSize} ${h / tileArtSize} ${-w / tileArtSize} ${h / tileArtSize} ${x} ${y})`;
-  return { centers, body, footprint, depth, tileTop };
+  return {
+    centers,
+    body,
+    footprint,
+    depth,
+    tileTop,
+    faceWidth: 2 * w,
+    faceHeight: 2 * h,
+  };
 }
 
 export function debugGrid(layout: BoardLayout) {
