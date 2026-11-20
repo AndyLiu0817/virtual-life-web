@@ -80,6 +80,8 @@ export function boardView(
     body,
     footprint,
     depth: thickness,
+    faceWidth,
+    faceHeight,
     tileTop,
   } = measureTrack(layout);
   const pawnWidth = (layout.pawnHeight * 116) / 197;
@@ -299,6 +301,8 @@ export function boardView(
         x: (100 * end.x) / layout.width,
         y: (100 * end.y) / layout.height,
         angle: (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
+        faceWidth: (100 * faceWidth) / layout.width,
+        lift: (50 * faceHeight) / layout.width,
       };
     },
     step(from: number, to: number, progress: number) {

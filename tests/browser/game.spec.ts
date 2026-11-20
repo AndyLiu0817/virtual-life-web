@@ -646,14 +646,27 @@ for (const [direction, width, height] of [
       for (const button of await buttons.all()) {
         await expect(button).toBeInViewport({ ratio: 0.99 });
         const box = (await button.boundingBox())!;
-        expect(box.width).toBeGreaterThanOrEqual(44);
-        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.width).toBeGreaterThanOrEqual(56);
+        expect(box.height).toBeGreaterThanOrEqual(56);
         const tile = await button.getAttribute("value");
         const face = (await page
           .locator(`.board-tile[data-tile="${tile}"] .paver-top`)
           .boundingBox())!;
         expect(box.x + box.width / 2).toBeCloseTo(face.x + face.width / 2, 0);
-        expect(box.y + box.height / 2).toBeCloseTo(face.y + face.height / 2, 0);
+        expect(box.y + box.height / 2).toBeCloseTo(face.y, 0);
+        const arrow = button.locator("img");
+        await expect(arrow).toBeInViewport({ ratio: 0.99 });
+        const arrowWidth = await arrow.evaluate((image) =>
+          parseFloat(getComputedStyle(image).width),
+        );
+        const zoom = await button.evaluate((node) =>
+          Number(getComputedStyle(node).getPropertyValue("--board-zoom")),
+        );
+        expect((arrowWidth * zoom) / face.width).toBeCloseTo(0.61, 2);
+        const map = (await page.locator(".board-map").boundingBox())!;
+        const art = (await arrow.boundingBox())!;
+        expect(art.y).toBeGreaterThanOrEqual(map.y);
+        expect(art.y + art.height).toBeLessThanOrEqual(map.y + map.height);
       }
       const directory = process.env.STEP_9A2_SHOP_ROUTE_SCREENSHOTS;
       if (directory) {

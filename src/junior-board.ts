@@ -69,6 +69,14 @@ export function showStageBoard(
     <div class="board-map" role="group" aria-label="${board.label}">
       <div class="board-world"><picture><source media="(orientation: portrait)" srcset="${portrait}"><img src="${landscape}" alt=""></picture>
       <svg class="board-track" preserveAspectRatio="none"></svg>
+      <svg class="route-filter" aria-hidden="true" width="0" height="0">
+        <filter id="route-arrow-outline" x="-25%" y="-35%" width="150%" height="170%" color-interpolation-filters="sRGB">
+          <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="stroke"/>
+          <feFlood flood-color="white"/>
+          <feComposite in2="stroke" operator="in" result="white-outline"/>
+          <feMerge><feMergeNode in="white-outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </svg>
       <div class="board-routes" role="group" hidden></div></div>
     </div>
     ${boardHudMarkup(debug)}
@@ -267,9 +275,14 @@ export function showStageBoard(
   function positionRoutes() {
     for (const button of routeOptions.querySelectorAll("button")) {
       const to = Number(button.value);
-      const { x, y, angle } = view.routePlacement(save.boardTile, to);
+      const { x, y, angle, faceWidth, lift } = view.routePlacement(
+        save.boardTile,
+        to,
+      );
       button.style.left = `${x}%`;
-      button.style.top = `${y}%`;
+      button.style.top = `calc(${y}% - ${lift}cqw)`;
+      button.style.setProperty("--route-face-width", `${faceWidth}cqw`);
+      button.style.setProperty("--route-lift", `${lift}cqw`);
       button.style.setProperty("--route-angle", `${angle}deg`);
     }
   }
