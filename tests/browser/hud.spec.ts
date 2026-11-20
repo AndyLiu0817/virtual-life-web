@@ -98,7 +98,16 @@ for (const layout of [
         .boundingBox())!;
       expect(box.width).toBeGreaterThanOrEqual(minimum);
       expect(box.height).toBeCloseTo(box.width, 1);
-      expect(ringBounds).toEqual(box);
+      expect(ringBounds.width).toBeCloseTo(box.width * 0.86, 0);
+      expect(ringBounds.height).toBeCloseTo(ringBounds.width, 1);
+      expect(ringBounds.x + ringBounds.width / 2).toBeCloseTo(
+        box.x + box.width / 2,
+        0,
+      );
+      expect(ringBounds.y + ringBounds.height / 2).toBeCloseTo(
+        box.y + box.height / 2,
+        0,
+      );
     }
     for (const [selector, minimum] of [
       ["#character-name", portrait ? 16 : 38],
@@ -161,38 +170,8 @@ for (const layout of [
       "src",
       /girl-junior-256\.webp/,
     );
-    const tone = !layout.deity
-      ? "normal"
-      : layout.deity.id === "empty-bag"
-        ? "bad"
-        : "good";
-    await expect(avatar).toHaveAttribute("data-tone", tone);
-    const ring =
-      tone === "good"
-        ? "avatar-halo"
-        : tone === "bad"
-          ? "avatar-ring-red"
-          : "avatar-ring";
-    await expect(avatar.locator(".hud-ring")).toHaveAttribute(
-      "src",
-      new RegExp(ring),
-    );
-
-    if (tone === "bad") {
-      const geometry = await avatar.evaluate(async (button) => {
-        const actual = button.querySelector<HTMLImageElement>(".hud-ring")!;
-        const normal = new Image();
-        normal.src = actual.src.replace("avatar-ring-red", "avatar-ring");
-        await Promise.all([normal.decode(), actual.decode()]);
-        return {
-          sameSize:
-            normal.naturalHeight === actual.naturalHeight &&
-            normal.naturalWidth === actual.naturalWidth,
-          radius: getComputedStyle(button).borderRadius,
-        };
-      });
-      expect(geometry).toEqual({ sameSize: true, radius: "50%" });
-    }
+    await expect(avatar).toHaveCSS("background-image", "none");
+    await expect(avatar.locator(".hud-ring")).toHaveCSS("border-radius", "50%");
 
     const assertLayout = async () => {
       const map = (await page.locator(".board-map").boundingBox())!;
@@ -259,7 +238,8 @@ for (const layout of [
     await expect(page.getByRole("region", { name: "棋盤選單" })).toBeVisible();
     await expect(page.locator(".hud-badges-drawer")).toContainText("人生經驗");
     if (layout.deity) {
-      const deity = tone === "bad" ? "空袋客・3 回合" : "晴空爺・4 回合";
+      const deity =
+        layout.deity.id === "empty-bag" ? "空袋客・3 回合" : "晴空爺・4 回合";
       await expect(page.locator(".hud-badges-drawer")).toContainText(deity);
       if (!portrait)
         await expect(page.locator(".hud-attached")).toHaveText(deity);
@@ -390,7 +370,12 @@ test("dice disables through pawn movement and the landing popup", async ({
   const roll = page.getByRole("button", { name: "擲骰" });
   await roll.click();
   await expect(roll).toBeDisabled();
-  await expect(page.locator(".hud-die-disabled")).toBeVisible();
+  await expect(roll.locator(".hud-die")).toHaveCSS("filter", "grayscale(1)");
+  expect(
+    await roll
+      .locator(".hud-ring")
+      .evaluate((ring) => getComputedStyle(ring, "::after").animationName),
+  ).toBe("none");
   await expect(page.locator(".board-pawn")).not.toHaveAttribute(
     "data-tile",
     "5",
@@ -406,6 +391,7 @@ test("dice disables through pawn movement and the landing popup", async ({
   }
   await dialog.getByRole("button", { name: "確定", exact: true }).click();
   await expect(roll).toBeEnabled();
+  await expect(roll.locator(".hud-die")).toHaveCSS("filter", "none");
   await expect(page.locator(".dice")).toHaveText("22");
 });
 
@@ -514,5 +500,73 @@ for (const [direction, width, height] of [
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(frames).toHaveCount(0);
     await expect(page.locator("#roll")).toBeVisible();
+  });
+}
+
+for (const [direction, width, height, count] of [
+  ["landscape", 1280, 800, 2],
+  ["portrait", 390, 844, 3],
+] as const) {
+  test(`頭像與骰子光圈 ${direction} 順時針循環，支援靜態環`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await loadBoard(page);
+
+    const rings = page.locator(".hud-ring:visible");
+    await expect(rings).toHaveCount(count);
+    for (const ring of await rings.all()) {
+      await expect(ring).toBeInViewport({ ratio: 1 });
+      await expect(ring).toHaveCSS("border-width", "1px");
+      const motion = await ring.evaluate((node) => {
+        const trail = getComputedStyle(node, "::after");
+        const [animation] = node.getAnimations({ subtree: true });
+        animation.pause();
+        animation.currentTime = 0;
+        const start = new DOMMatrix(trail.transform);
+        animation.currentTime = 1125;
+        const quarter = new DOMMatrix(trail.transform);
+        return {
+          name: trail.animationName,
+          duration: trail.animationDuration,
+          loop: trail.animationIterationCount,
+          start: start.a,
+          clockwise: quarter.b,
+        };
+      });
+      expect(motion).toEqual({
+        name: "hud-ring-circuit",
+        duration: "4.5s",
+        loop: "infinite",
+        start: 1,
+        clockwise: 1,
+      });
+    }
+    const directory = process.env.STEP_9A2_SCREENSHOTS;
+    if (directory) {
+      await page
+        .locator(".hud-hero:visible, .hud-die")
+        .evaluateAll((images) =>
+          Promise.all(
+            images.map((image) => (image as HTMLImageElement).decode()),
+          ),
+        );
+      await page.screenshot({
+        path: `${directory}/ring-lights-${direction}.jpg`,
+        quality: 93,
+      });
+    }
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(rings).toHaveCount(count);
+    for (const ring of await rings.all()) {
+      await expect(ring).toHaveCSS("border-width", "1px");
+      expect(
+        await ring.evaluate(
+          (node) => getComputedStyle(node, "::after").content,
+        ),
+      ).toBe("none");
+    }
   });
 }

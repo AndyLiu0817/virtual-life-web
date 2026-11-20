@@ -106,13 +106,42 @@
   border: 0;
   padding: 0;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    #effefa 45%,
-    #b4e8e9 58%,
-    transparent 59%
-  );
+  background: transparent;
 }
+
+.hud-ring {
+  position: absolute;
+  inset: var(--hud-ring-inset, 7%);
+  border-radius: 50%;
+  border: 1px solid var(--hud-ring-base, #78cdcf);
+  pointer-events: none;
+}
+.hud-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: clamp(2px, 0.32dvh, 3px);
+  background: conic-gradient(
+    from 0deg,
+    transparent 0turn,
+    var(--hud-ring-tail, #64e8e585) 0.15turn,
+    var(--hud-ring-head, #2fcacb) 0.21turn,
+    #e5fffd 0.224turn,
+    transparent 0.235turn
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: hud-ring-circuit 4.5s linear infinite;
+}
+@keyframes hud-ring-circuit {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 .hud-avatar img {
   position: absolute;
   width: 100%;
@@ -123,22 +152,6 @@
 }
 .hud-avatar .hud-hero {
   scale: 0.78;
-}
-.hud-avatar[data-tone="bad"] {
-  background: radial-gradient(
-    circle,
-    #fff0f3 45%,
-    #f79cb0 58%,
-    transparent 59%
-  );
-}
-.hud-avatar[data-tone="good"] {
-  background: radial-gradient(
-    circle,
-    #fff9dc 44%,
-    #e9ce8a 55%,
-    transparent 56%
-  );
 }
 .hud-avatar-compact,
 .hud-avatar-mobile {
@@ -332,35 +345,31 @@
   height: auto;
   grid-area: 1 / 1;
 }
-#roll img {
+#roll {
+  position: relative;
+  --hud-ring-inset: 4%;
+  --hud-ring-base: #8fdcde;
+  --hud-ring-tail: #86e9e7b3;
+  --hud-ring-head: #ffaac8;
+}
+#roll .hud-die {
+  width: 72%;
   pointer-events: none;
 }
-#roll .hud-die-pressed,
-#roll .hud-die-disabled,
-#roll:active .hud-die-ready,
-#roll:disabled .hud-die-ready {
-  display: none;
+#roll:active:not(:disabled) .hud-die {
+  transform: scale(0.9);
+  filter: brightness(1.1);
 }
-#roll:active:not(:disabled) .hud-die-pressed,
-#roll:disabled .hud-die-disabled {
-  display: block;
-}
-#roll:not(:disabled) .hud-die-ready {
-  animation: hud-die-breathe 2.35s ease-in-out infinite;
-}
-#roll .hud-die-disabled {
-  width: 72%;
+#roll:disabled .hud-die {
   filter: grayscale(1);
   opacity: 0.7;
 }
-@keyframes hud-die-breathe {
-  0%,
-  100% {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(1.14);
-  }
+#roll:disabled .hud-ring {
+  --hud-ring-base: #82999c;
+}
+#roll:disabled .hud-ring::after {
+  content: none;
+  animation: none;
 }
 .hud-roll-result {
   display: grid;
@@ -816,7 +825,8 @@
     display: none;
     animation: none;
   }
-  #roll:not(:disabled) .hud-die-ready {
+  .hud-ring::after {
+    content: none;
     animation: none;
   }
   .hud-meter span {
