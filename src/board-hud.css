@@ -23,6 +23,50 @@
   gap: clamp(3px, 1dvh, 10px);
 }
 
+@property --hud-travel {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.hud-frame-light {
+  --hud-light-inset: 1px;
+  display: none;
+  position: absolute;
+  inset: calc(var(--hud-light-inset) - var(--hud-frame-border));
+  width: calc(100% + 2 * (var(--hud-frame-border) - var(--hud-light-inset)));
+  height: calc(100% + 2 * (var(--hud-frame-border) - var(--hud-light-inset)));
+  pointer-events: none;
+  animation: hud-frame-circuit 5s linear infinite;
+}
+
+.hud-frame-light rect {
+  x: 2px;
+  y: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  rx: var(--hud-frame-corner);
+  fill: none;
+  stroke: #8ff9f3;
+  stroke-width: 3.5px;
+  stroke-linecap: round;
+  stroke-opacity: 0.14;
+  stroke-dasharray: calc(var(--trail-length) * 1px)
+    calc((100 - var(--trail-length)) * 1px);
+  stroke-dashoffset: calc((var(--hud-travel) + var(--trail-length)) * 1px);
+}
+.hud-frame-light rect:last-child {
+  stroke: #e4fffd;
+  stroke-width: 2px;
+  stroke-opacity: 0.9;
+}
+
+@keyframes hud-frame-circuit {
+  to {
+    --hud-travel: -100;
+  }
+}
+
 .board-controls dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
@@ -424,14 +468,19 @@
     margin: max(5px, env(safe-area-inset-top))
       max(8px, env(safe-area-inset-right)) 4px
       max(8px, env(safe-area-inset-left));
-    border-width: clamp(11px, 2.1dvh, 16px);
-    border-image-width: clamp(11px, 2.1dvh, 16px);
+    --hud-frame-border: clamp(11px, 2.1dvh, 16px);
+    --hud-frame-corner: 13px;
+    border-width: var(--hud-frame-border);
+    border-image-width: var(--hud-frame-border);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 1px clamp(6px, 1.3vw, 20px);
     padding: 0 4px;
     z-index: 2;
     filter: none;
+  }
+  .hud-frame-light-desktop {
+    display: block;
   }
   .board-status {
     grid-template:
@@ -591,12 +640,19 @@
   .board-status,
   .hud-bottom {
     color: #234550;
-    border: 14px solid #ece8e2;
-    border-image: url("../art/hud/frame-large.webp") 70 fill / 14px;
+    --hud-frame-border: 14px;
+    --hud-frame-corner: 11px;
+    position: relative;
+    border: var(--hud-frame-border) solid #ece8e2;
+    border-image: url("../art/hud/frame-large.webp") 70 fill /
+      var(--hud-frame-border);
     justify-self: center;
     width: min(calc(100% - 16px), 560px);
     min-width: 0;
     filter: drop-shadow(0 6px 10px #10263070);
+  }
+  .hud-frame-light-mobile {
+    display: block;
   }
   .board-status {
     grid-area: top;
@@ -755,6 +811,11 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hud-frame-light-desktop,
+  .hud-frame-light-mobile {
+    display: none;
+    animation: none;
+  }
   #roll:not(:disabled) .hud-die-ready {
     animation: none;
   }

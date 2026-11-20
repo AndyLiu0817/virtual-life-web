@@ -31,8 +31,11 @@ async function continueGame(page: Page) {
   await page.locator("#use-0").click();
 }
 
-async function capture(page: Page, name: string) {
-  const directory = process.env.ACTIVITY_SCREENSHOTS;
+async function capture(
+  page: Page,
+  name: string,
+  directory = process.env.ACTIVITY_SCREENSHOTS,
+) {
   if (!directory) return;
   await page
     .locator("dialog:modal img")
@@ -90,7 +93,20 @@ test("直向必選社團，橫向造訪領獎並更新存檔", async ({ page }) 
     "src",
     /event_clubroom/,
   );
+  const title = dialog.getByRole("heading", { name: "研習社" });
+  await expect(title).toBeFocused();
+  await expect(title).toHaveCSS("outline-style", "none");
   await capture(page, "club-visit-landscape");
+  if (process.env.STEP_9A_FRAME_SCREENSHOTS)
+    await capture(
+      page,
+      "event-title-without-outline",
+      process.env.STEP_9A_FRAME_SCREENSHOTS,
+    );
+  await page.keyboard.press("Tab");
+  const confirm = dialog.getByRole("button", { name: "確定" });
+  await expect(confirm).toBeFocused();
+  await expect(confirm).toHaveCSS("outline-width", "2px");
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(page.locator("#roll")).toBeEnabled();
   const save = await readSave(page);

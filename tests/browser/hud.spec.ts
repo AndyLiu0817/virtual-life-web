@@ -466,3 +466,53 @@ test("mounted HUD updates avatars, grade, targets and value motion", async ({
   }
   expect(results[0]).toMatchObject({ statDelta: "+9,826", cashDelta: "+300" });
 });
+
+for (const [direction, width, height] of [
+  ["landscape", 1280, 800],
+  ["portrait", 390, 844],
+] as const) {
+  test(`HUD 外框 ${direction} 順時針循環並支援減少動態效果`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await loadBoard(page);
+    const frames = page.locator(".hud-frame-light:visible");
+    await expect(frames).toHaveCount(direction === "landscape" ? 1 : 2);
+    for (const frame of await frames.all()) {
+      await expect(frame).toBeInViewport({ ratio: 1 });
+      const { start, later, duration, iterations } = await frame.evaluate(
+        (svg) => {
+          const animation = svg.getAnimations()[0];
+          animation.pause();
+          const { duration, iterations } = animation.effect!.getTiming();
+          const trail = svg.querySelector("rect")!;
+          animation.currentTime = 0;
+          const start = Number.parseFloat(
+            getComputedStyle(trail).strokeDashoffset,
+          );
+          animation.currentTime = 1250;
+          const later = Number.parseFloat(
+            getComputedStyle(trail).strokeDashoffset,
+          );
+          animation.currentTime = 2250;
+          return { start, later, duration, iterations: String(iterations) };
+        },
+      );
+      expect(start).toBeCloseTo(20);
+      expect(later).toBeCloseTo(-5);
+      expect(duration).toBe(5000);
+      expect(iterations).toBe("Infinity");
+    }
+    const directory = process.env.STEP_9A_FRAME_SCREENSHOTS;
+    if (directory)
+      await page.screenshot({
+        path: `${directory}/hud-light-${direction}.jpg`,
+        quality: 93,
+      });
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(frames).toHaveCount(0);
+    await expect(page.locator("#roll")).toBeVisible();
+  });
+}
