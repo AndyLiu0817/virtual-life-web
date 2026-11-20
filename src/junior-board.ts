@@ -335,7 +335,7 @@ export function showStageBoard(
     const { save: updated, outcome } = drawEvent(save);
     save = updated;
     status();
-    const presentation = eventPresentation(outcome);
+    const presentation = await eventPresentation(outcome, save.gender);
     const stage = eventDialog.querySelector<HTMLElement>(".event-stage")!;
     stage.dataset.tone = presentation.tone;
     stage.innerHTML = presentation.art;

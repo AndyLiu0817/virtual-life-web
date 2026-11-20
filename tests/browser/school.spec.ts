@@ -385,7 +385,9 @@ if (reviewPath) {
     );
     await seed(page, { ...schoolSave("university"), boardTile: target - 2 });
     await page.locator("#roll").click();
-    await expect(page.locator(".event-dialog[open] .event-npc")).toBeVisible();
+    await expect(
+      page.locator(".event-dialog[open] .event-illustration"),
+    ).toBeVisible();
     await capture(page, "university-event");
   });
 
