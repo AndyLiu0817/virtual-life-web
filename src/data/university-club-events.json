@@ -1,0 +1,790 @@
+[
+  {
+    "id": "university-club-01",
+    "title": "迎新宿營夜",
+    "text": "宿營的篝火旁，學長把麥克風遞給你。",
+    "scene": "field",
+    "choices": [
+      {
+        "name": "帶唱到半夜",
+        "result": "最後一首唱完，大家還會接副歌，你早上卻想不起課表放哪。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 20
+          },
+          {
+            "target": "fitness",
+            "amount": -10
+          },
+          {
+            "target": "intellect",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "幫忙顧營火跟宵夜",
+        "result": "你守住了營火和宵夜，只有一串棉花糖提前謝幕。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 16
+          },
+          {
+            "target": "fitness",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "提早回帳篷準備開學",
+        "result": "你把開學資料排整齊，帳篷外還在替下一首歌點名。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 18
+          },
+          {
+            "target": "charm",
+            "amount": -12
+          },
+          {
+            "target": "morality",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-02",
+    "title": "同一天兩場",
+    "text": "系烤和社團成果週撞在一起，兩則簡訊同時震動。",
+    "scene": "festival",
+    "choices": [
+      {
+        "name": "去系烤",
+        "result": "烤肉香留在外套上，錢包裡只多了一張沾醬的收據。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 16
+          },
+          {
+            "target": "morality",
+            "amount": 8
+          },
+          {
+            "target": "cash",
+            "amount": -400
+          },
+          {
+            "target": "intellect",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "name": "留守成果週",
+        "result": "你守到閉館，朋友特地留了一張烤焦吐司的照片給你。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": 10
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          },
+          {
+            "target": "morality",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-03",
+    "title": "工讀的晚上",
+    "text": "咖啡店請你平日晚上排班，剛好是固定社課時間。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "接班、跟社團請假",
+        "result": "你學會拉花，社團群組裡卻已經冒出三個新梗。",
+        "effects": [
+          {
+            "target": "cash",
+            "amount": 800
+          },
+          {
+            "target": "charm",
+            "amount": -12
+          },
+          {
+            "target": "morality",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "不接班",
+        "result": "社課準時到了，咖啡店老闆還是給你一張集點卡。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 12
+          },
+          {
+            "target": "charm",
+            "amount": 10
+          },
+          {
+            "target": "intellect",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "跟店長改排假日",
+        "result": "店長點頭，你的假日鬧鐘從此比平日更勤勞。",
+        "effects": [
+          {
+            "target": "cash",
+            "amount": 400
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          },
+          {
+            "target": "intellect",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "name": "社課改遠距、兩邊跑",
+        "result": "你一邊打奶泡一邊聽社課，差點把社長名字寫到杯子上。",
+        "effects": [
+          {
+            "target": "cash",
+            "amount": 400
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "fitness",
+            "amount": -14
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-04",
+    "title": "全國賽名額",
+    "text": "社團拿到一個全國賽名額，要自費北上。",
+    "scene": "auditorium",
+    "choices": [
+      {
+        "name": "報名衝一波",
+        "result": "全國賽順利上場，回程大家數著口袋零錢分買地瓜。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 24
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "cash",
+            "amount": -800
+          },
+          {
+            "target": "fitness",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "name": "把名額讓給更需要的人",
+        "result": "拿到名額的社員一直道謝，謝到你差點也跟著上車。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 20
+          },
+          {
+            "target": "charm",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "留下當後勤、遠端支援",
+        "result": "你遠端把問題一一解掉，頒獎照裡只看得到你的訊息通知。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "morality",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-05",
+    "title": "社辦考古層",
+    "text": "社辦堆成礦坑，下週要被系辦檢查。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "通宵大掃除",
+        "result": "社辦地板重見天日，大家還挖到上屆訂的值日表。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 16
+          },
+          {
+            "target": "morality",
+            "amount": 10
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          },
+          {
+            "target": "charm",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "先訂值日表再一起清",
+        "result": "每個人都照表清完，系辦來時還以為走錯社辦。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 14
+          },
+          {
+            "target": "morality",
+            "amount": 12
+          },
+          {
+            "target": "fitness",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "先把雜物搬去學長車廂應急",
+        "result": "學長打開後車廂，先問是誰把紙箱繫上安全帶。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 8
+          },
+          {
+            "target": "cash",
+            "amount": -200
+          },
+          {
+            "target": "morality",
+            "amount": -10
+          },
+          {
+            "target": "charm",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-06",
+    "title": "畢製撞巡演",
+    "text": "畢業製作口試跟社團巡演在同一週。",
+    "scene": "auditorium",
+    "choices": [
+      {
+        "name": "專心畢製",
+        "result": "口試順利結束，巡演群組只剩你還沒學會新手勢。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 22
+          },
+          {
+            "target": "charm",
+            "amount": -14
+          },
+          {
+            "target": "morality",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "兩邊都要",
+        "result": "你帶著簡報趕場，差點在台上請觀眾翻到第六頁。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 14
+          },
+          {
+            "target": "intellect",
+            "amount": 10
+          },
+          {
+            "target": "fitness",
+            "amount": -16
+          },
+          {
+            "target": "morality",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-07",
+    "title": "博覽會攤位",
+    "text": "社團博覽會，你們的攤位在轉角，人流全看你怎麼抓。",
+    "scene": "festival",
+    "choices": [
+      {
+        "name": "發傳單發到啞",
+        "result": "傳單全發完了，你用手勢跟下一批同學打招呼。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 14
+          },
+          {
+            "target": "charm",
+            "amount": 8
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "做精緻體驗活動",
+        "result": "體驗活動排了長隊，你用剩下的膠帶修好自己的名牌。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": 12
+          },
+          {
+            "target": "cash",
+            "amount": -400
+          },
+          {
+            "target": "fitness",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "擺甜點引誘",
+        "result": "甜點很快被吃光，大家報名時還在問有沒有第二輪。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 18
+          },
+          {
+            "target": "morality",
+            "amount": 6
+          },
+          {
+            "target": "cash",
+            "amount": -500
+          }
+        ]
+      },
+      {
+        "name": "安靜擺作品等人走進來",
+        "result": "同學被作品吸引進來，第一句話是問這裡能不能自習。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 10
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-08",
+    "title": "社辦的凌晨兩點",
+    "text": "期末週，社辦只剩你跟一盞燈。門外有人在敲門。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "開門一起趕企劃",
+        "result": "企劃總算趕完，兩人互相確認明天到底是不是今天。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 16
+          },
+          {
+            "target": "intellect",
+            "amount": 10
+          },
+          {
+            "target": "fitness",
+            "amount": -12
+          }
+        ]
+      },
+      {
+        "name": "假裝沒人、繼續做自己的",
+        "result": "企劃寫得很順，隔天你才知道門外的人只是來還筆。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 18
+          },
+          {
+            "target": "morality",
+            "amount": -10
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "收拾回家睡覺",
+        "result": "你睡飽回來，第一眼就發現昨晚把檔名打成了早餐。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 14
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          },
+          {
+            "target": "charm",
+            "amount": -4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-09",
+    "title": "經費砍半",
+    "text": "社費被砍半，巡演、器材、聚餐只能留一樣。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "留巡演",
+        "result": "巡演留住了，大家開會決定輪流用同一個行李箱。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 20
+          },
+          {
+            "target": "cash",
+            "amount": -200
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          },
+          {
+            "target": "intellect",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "留器材維修",
+        "result": "器材修好後音量很穩，大家還是忍不住抱怨少了一次聚餐。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 14
+          },
+          {
+            "target": "fitness",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -12
+          }
+        ]
+      },
+      {
+        "name": "留聚餐顧感情",
+        "result": "聚餐坐滿一桌，結帳時大家搶著掃的是集點碼。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 18
+          },
+          {
+            "target": "charm",
+            "amount": 8
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          },
+          {
+            "target": "cash",
+            "amount": -300
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-10",
+    "title": "校園歌手報名",
+    "text": "有人幫你填了校園歌手報名表。截止是今天中午。",
+    "scene": "auditorium",
+    "choices": [
+      {
+        "name": "真的去唱",
+        "result": "你唱完收穫掌聲，下台才發現手上一直捏著報告提綱。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 26
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "改成合音支援朋友",
+        "result": "朋友順利唱完，台下還有人問你們雙人組何時出道。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": 8
+          },
+          {
+            "target": "fitness",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "撤回報名、回去讀書",
+        "result": "你回圖書館翻開書，隔壁同學正用你的歌單讀書。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": -12
+          }
+        ]
+      },
+      {
+        "name": "唱一首就走去趕報告",
+        "result": "你在掌聲裡衝出門，主持人只好代替你跟觀眾揮手。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 12
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "fitness",
+            "amount": -10
+          },
+          {
+            "target": "morality",
+            "amount": -4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-11",
+    "title": "實習還是社員",
+    "text": "你錄取了平日實習，但白天剛好要帶迎新。",
+    "scene": "field",
+    "choices": [
+      {
+        "name": "去實習",
+        "result": "實習第一天你就領到門禁卡，社團群組則換了六次大頭貼。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 18
+          },
+          {
+            "target": "cash",
+            "amount": 1000
+          },
+          {
+            "target": "charm",
+            "amount": -12
+          },
+          {
+            "target": "morality",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "留下帶迎新",
+        "result": "迎新場場順利，學弟妹已經會用你的語氣提醒大家簽到。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 16
+          },
+          {
+            "target": "morality",
+            "amount": 14
+          },
+          {
+            "target": "intellect",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "university-club-12",
+    "title": "最後一次謝幕",
+    "text": "大學最後一次成果展，你要決定怎麼出場。",
+    "scene": "auditorium",
+    "choices": [
+      {
+        "name": "挑戰最難的節目",
+        "result": "你演完最難的一段，謝幕時腿比手還想揮。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 24
+          },
+          {
+            "target": "fitness",
+            "amount": -12
+          },
+          {
+            "target": "intellect",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "做穩健的壓軸串場",
+        "result": "串場讓大家準時收工，連燈控都趕上了末班車。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 14
+          },
+          {
+            "target": "charm",
+            "amount": 12
+          },
+          {
+            "target": "morality",
+            "amount": 6
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "把燈光讓給學弟妹",
+        "result": "學弟妹站在燈下揮手，你在台側替他們拍到一張沒閉眼的。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 22
+          },
+          {
+            "target": "intellect",
+            "amount": 6
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  }
+]

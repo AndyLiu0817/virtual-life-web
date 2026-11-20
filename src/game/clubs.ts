@@ -1,3 +1,6 @@
+import highClubEvents from "../data/high-club-events.json" with { type: "json" };
+import universityClubEvents from "../data/university-club-events.json" with { type: "json" };
+import { changeValue, pick, type ValueChange } from "./deities";
 import type { Stat } from "./opening";
 import type { Save } from "./saves";
 
@@ -160,6 +163,63 @@ export function visitClub(save: Save, random = Math.random) {
       cash: save.cash + cash,
       clubHistory: save.clubHistory.map((item) =>
         item === entry ? { ...item, visits: item.visits + 1 } : item,
+      ),
+    },
+  };
+}
+
+const clubEvents = {
+  high: highClubEvents,
+  university: universityClubEvents,
+} as Record<
+  "high" | "university",
+  {
+    id: string;
+    title: string;
+    text: string;
+    scene: string;
+    choices: { name: string; result: string; effects: ValueChange[] }[];
+  }[]
+>;
+
+export function drawClubEvent(save: Save, random = Math.random) {
+  if (save.stage !== "high" && save.stage !== "university") return;
+  const events = clubEvents[save.stage];
+  const recent = save.clubEventHistory.filter((id) =>
+    events.some((event) => event.id === id),
+  );
+  const used = recent.slice(
+    Math.floor(recent.length / events.length) * events.length,
+  );
+  const available = events.filter(
+    ({ id }) => id !== recent.at(-1) && !used.includes(id),
+  );
+  return pick(available, random);
+}
+
+export function settleClubEvent(
+  save: Save,
+  event: NonNullable<ReturnType<typeof drawClubEvent>>,
+  choice: number,
+) {
+  const selected = event.choices[choice];
+  if (!selected || !event.id.startsWith(`${save.stage}-club-`)) return;
+  const changes: ValueChange[] = [];
+  for (const { target, amount } of selected.effects) {
+    const applied = changeValue(save, target, amount);
+    save = applied.save;
+    changes.push(applied.change);
+  }
+  return {
+    changes,
+    text: selected.result,
+    save: {
+      ...save,
+      clubEventHistory: [...save.clubEventHistory, event.id],
+      clubHistory: save.clubHistory.map((entry) =>
+        entry.stage === save.stage
+          ? { ...entry, visits: entry.visits + 1 }
+          : entry,
       ),
     },
   };

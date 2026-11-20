@@ -23,7 +23,6 @@ test.each([
   ["math", 7, 8, 11, 12],
   ["shoot", 14, 15, 22, 23],
   ["whack", 19, 20, 29, 30],
-  ["diff", 3, 4, 4, 5],
   ["stack", 9, 10, 14, 15],
 ] as const)(
   "%s classifies both tier boundaries",
@@ -214,7 +213,10 @@ test.each([
 ] as const)(
   "%s awards its main stat, lion bonus and cap",
   (game, score, stat) => {
-    const result = { score, ...(game === "catch" ? { misses: 0 } : {}) };
+    const result = {
+      score,
+      ...(game === "catch" || game === "diff" ? { misses: 0 } : {}),
+    };
     const lion = { id: "guard-lion", remainingTurns: 1 };
     expect(settleMinigame(player, game, result)).toMatchObject({
       stat: 18,

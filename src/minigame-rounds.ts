@@ -1,6 +1,14 @@
 import { timedRound, type Round } from "./minigame-timing";
 import { secondRounds } from "./minigame-second-rounds";
-import { mathQuestion, memoryDeck, minigames } from "./game/minigames";
+import { roundFeedback } from "./minigame-feedback";
+import {
+  mathQuestion,
+  memoryDeck,
+  memoryMismatchMs,
+  minigames,
+  penalizeScore,
+  rhythmAccuracy,
+} from "./game/minigames";
 import {
   shootingFeedback,
   shootingSprite,
@@ -28,6 +36,7 @@ const memory: Round = async ({ field, score, clock }) => {
   const cards = Array.from(field.querySelectorAll<HTMLButtonElement>("button"));
   const opened: number[] = [];
   let pairs = 0;
+  let penalty = 0;
   let hideAt = Infinity;
   let finishRound: () => void;
   const start = performance.now();
@@ -36,11 +45,11 @@ const memory: Round = async ({ field, score, clock }) => {
   };
   paintScore();
   cards.forEach((card, index) => {
-    pointerClick(card, () => {
+    pointerClick(card, (event) => {
       if (
         opened.length === 2 ||
         card.disabled ||
-        performance.now() - start >= minigames.memory.normal * 1000
+        performance.now() - start + penalty >= minigames.memory.normal * 1000
       )
         return;
       card.disabled = true;
@@ -48,6 +57,8 @@ const memory: Round = async ({ field, score, clock }) => {
       opened.push(index);
       if (opened.length < 2) return;
       if (deck[opened[0]] !== deck[opened[1]]) {
+        penalty += memoryMismatchMs;
+        roundFeedback(field, "＋2 秒", event);
         hideAt = performance.now() + 650;
         return;
       }
@@ -70,6 +81,8 @@ const memory: Round = async ({ field, score, clock }) => {
       });
       hideAt = Infinity;
     },
+    undefined,
+    () => penalty,
   );
   return { score: pairs, elapsedMs };
 };
@@ -97,18 +110,22 @@ const math: Round = async ({ field, score, clock }) => {
   const duration = 45;
   const present = () => {
     prompt.textContent = question.prompt;
-    score.textContent = `答對 ${correct} 題`;
+    score.textContent = `得分 ${correct}`;
     buttons.forEach((button, i) => {
       button.lastElementChild!.textContent = String(question.options[i]);
     });
   };
   present();
   buttons.forEach((button, i) =>
-    pointerClick(button, () => {
+    pointerClick(button, (event) => {
       const now = performance.now();
       if (now < readyAt || now - start >= duration * 1000) return;
       const right = question.options[i] === question.answer;
       if (right) correct++;
+      else {
+        correct = penalizeScore(correct, 1);
+        roundFeedback(field, "−1", event);
+      }
       feedback.textContent = right ? "答對了！" : `正解是 ${question.answer}`;
       feedback.classList.toggle("wrong", !right);
       question = mathQuestion();
@@ -116,7 +133,7 @@ const math: Round = async ({ field, score, clock }) => {
       buttons.forEach((option) => {
         option.disabled = true;
       });
-      score.textContent = `答對 ${correct} 題`;
+      score.textContent = `得分 ${correct}`;
     }),
   );
   await timedRound(clock, duration, start, () => {
@@ -172,9 +189,12 @@ const shoot: Round = async ({ field, score, clock }) => {
     const hit = current !== undefined && event.target === current;
     if (hit) {
       hits++;
-      paintScore();
       hideTarget();
+    } else {
+      hits = penalizeScore(hits, 1);
+      roundFeedback(field, "−1", event);
     }
+    paintScore();
     const bounds = field.getBoundingClientRect();
     feedback.style.left = `${event.clientX - bounds.left}px`;
     feedback.style.top = `${event.clientY - bounds.top}px`;
@@ -263,10 +283,10 @@ const rhythm: Round = async ({ field, score, clock }) => {
   const audio = scheduleBeat(start);
   score.textContent = "準確率 0%";
   const paintScore = () => {
-    accuracy = Math.round((1000 * hit.size) / (beatCount + stray)) / 10;
+    accuracy = rhythmAccuracy(hit.size, beatCount, stray);
     score.textContent = `準確率 ${accuracy}%`;
   };
-  pointerClick(lane, () => {
+  pointerClick(lane, (event) => {
     const elapsed = performance.now() - start;
     if (elapsed > end) return;
     const index = Math.round(elapsed / beatMs);
@@ -280,6 +300,7 @@ const rhythm: Round = async ({ field, score, clock }) => {
       notes[index].hidden = true;
     } else {
       stray++;
+      roundFeedback(field, "亂點", event);
     }
     paintScore();
   });

@@ -68,6 +68,16 @@ const saveSchema = z
     clubHistory: z
       .array(z.object({ stage: school, clubId: z.string(), visits: count }))
       .default([]),
+    clubEventHistory: z.array(z.string()).default([]),
+    shopPurchases: z
+      .array(
+        z.object({
+          stage: z.enum(["high", "university"]),
+          itemId: z.string(),
+          count,
+        }),
+      )
+      .default([]),
     competitions: z
       .array(
         z.union([

@@ -323,3 +323,38 @@
     gap: 12px;
   }
 }
+
+.mg-mistake-flash,
+.mg-mistake-message {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+}
+.mg-mistake-flash {
+  inset: 0;
+  box-shadow: inset 0 0 2.5rem #e42738;
+  background: #d7223236;
+  animation: mg-mistake-fade 200ms ease-out forwards;
+}
+.mg-mistake-message {
+  z-index: 21;
+  transform: translate(-50%, -50%);
+  color: #a91227;
+  background: #fff2ee;
+  border: 2px solid #e75861;
+  border-radius: 1em;
+  padding: 0.14em 0.55em;
+  font-weight: 900;
+  white-space: nowrap;
+  animation: mg-mistake-float 480ms ease-out forwards;
+}
+@keyframes mg-mistake-fade {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes mg-mistake-float {
+  to {
+    transform: translate(-50%, -105%);
+  }
+}

@@ -1,0 +1,744 @@
+[
+  {
+    "id": "high-club-01",
+    "title": "幹部改選",
+    "text": "你被推去選社團幹部。學長把提名單放到你面前，說不簽也會被寫上去。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "接下社長",
+        "result": "提名單才傳到下一桌，你就收到第一份待辦清單。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 18
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          },
+          {
+            "target": "intellect",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "當文書",
+        "result": "你把會議記成三行，社長又補了三頁。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 14
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "堅決不當",
+        "result": "學長把你的名字劃掉，還請你幫忙傳提名單。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 12
+          },
+          {
+            "target": "charm",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-02",
+    "title": "教室還是練團室",
+    "text": "放學鈴響，左邊是模擬考檢討，右邊是社團要趕週五表演。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "留下來複習",
+        "result": "你把錯題訂正完，路過練團室時剛好聽見最後一拍。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 20
+          },
+          {
+            "target": "charm",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "name": "衝去練團",
+        "result": "你把副歌練到會背，模考解析仍停在第一頁。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 18
+          },
+          {
+            "target": "fitness",
+            "amount": 8
+          },
+          {
+            "target": "intellect",
+            "amount": -12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-03",
+    "title": "校慶擺攤日",
+    "text": "你們的攤位還沒決定賣什麼。社長問你：要穩、要帥，還是要實驗？",
+    "scene": "festival",
+    "choices": [
+      {
+        "name": "賣雞蛋糕",
+        "result": "雞蛋糕一出爐就排隊，連隔壁攤都來跟你借零錢。",
+        "effects": [
+          {
+            "target": "cash",
+            "amount": 600
+          },
+          {
+            "target": "morality",
+            "amount": 8
+          },
+          {
+            "target": "intellect",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "賣表演拍立得",
+        "result": "拍立得賣得很快，你舉相機舉到手開始抖。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 16
+          },
+          {
+            "target": "cash",
+            "amount": 300
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "賣自製桌遊",
+        "result": "第一桌玩到收攤還在辯規則，你決定回去改說明書。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": 6
+          },
+          {
+            "target": "cash",
+            "amount": -200
+          }
+        ]
+      },
+      {
+        "name": "整攤改成義賣",
+        "result": "義賣箱裝滿了，找錢盒倒是空得很快。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 20
+          },
+          {
+            "target": "charm",
+            "amount": 8
+          },
+          {
+            "target": "cash",
+            "amount": -400
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-04",
+    "title": "評鑑前一晚",
+    "text": "明天社團評鑑，作品還差最後一塊。大家都在看你。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "通宵趕完",
+        "result": "評鑑作品補好了，早上你差點把評審的名字也寫進作品。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": 6
+          },
+          {
+            "target": "fitness",
+            "amount": -12
+          }
+        ]
+      },
+      {
+        "name": "分配工作、早點睡",
+        "result": "工作分完後大家準時回家，群組第一次沒人半夜問進度。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 14
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "乾脆重做主題",
+        "result": "新主題很搶眼，全組靠著打呵欠輪流彩排。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 22
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-05",
+    "title": "體育館戰役",
+    "text": "體育社和熱音社同時要體育館。兩邊學長都站在門口等你一句話。",
+    "scene": "field",
+    "choices": [
+      {
+        "name": "幫體育社",
+        "result": "體育社讓你先投一球，熱音社在門口替你配了走音音效。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "name": "幫熱音社",
+        "result": "熱音社讓你客串開場，體育社改去操場跑圈。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 16
+          },
+          {
+            "target": "fitness",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "name": "協調輪流用",
+        "result": "你排好時段，兩社還一起花了十分鐘找體育館鑰匙。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 14
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "fitness",
+            "amount": -6
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-06",
+    "title": "模考週的社團",
+    "text": "模考週，有人建議停社課，有人說這時更要放鬆。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "贊成停課",
+        "result": "你多做了一回題本，團員私下把你叫作行走的模考鐘。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 18
+          },
+          {
+            "target": "morality",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "照常練習但提早結束",
+        "result": "練完還有時間訂正，團員只好把安可留到下週。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 10
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "改成讀書會",
+        "result": "大家真的坐下來讀書了，只是一翻頁就有人以為要換歌。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 14
+          },
+          {
+            "target": "morality",
+            "amount": 10
+          },
+          {
+            "target": "charm",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-07",
+    "title": "海報大戰",
+    "text": "迎新海報要你決定風格。學姊把四支麥克筆排成一排。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "資訊排版風",
+        "result": "每個人都找得到報名時間，只有社長問能不能把字放得更大。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 15
+          },
+          {
+            "target": "charm",
+            "amount": -7
+          }
+        ]
+      },
+      {
+        "name": "超大閃粉風",
+        "result": "海報掛完了，教室的掃把也跟著閃了一星期。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 18
+          },
+          {
+            "target": "intellect",
+            "amount": -6
+          },
+          {
+            "target": "morality",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "手繪溫馨風",
+        "result": "路過的同學說想加入，你才發現筆尖都被畫平了。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 14
+          },
+          {
+            "target": "charm",
+            "amount": 8
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "迷因搞笑風",
+        "result": "迷因在班群傳開，連教官都問圖上的人是不是他。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 12
+          },
+          {
+            "target": "morality",
+            "amount": 6
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-08",
+    "title": "兩張參加單",
+    "text": "同一天，一邊是免費校外教學，一邊是區域社團比賽。",
+    "scene": "field",
+    "choices": [
+      {
+        "name": "去校外教學",
+        "result": "導覽員請你示範走隊伍，回程你把比賽影片補看了三遍。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 12
+          },
+          {
+            "target": "fitness",
+            "amount": 10
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "去比賽",
+        "result": "你上台領到掌聲，午餐收據比獎狀先入袋。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 20
+          },
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "fitness",
+            "amount": -10
+          },
+          {
+            "target": "cash",
+            "amount": -300
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-09",
+    "title": "音響罷工",
+    "text": "社團唯一的音響在比賽前壞掉。",
+    "scene": "auditorium",
+    "choices": [
+      {
+        "name": "自己拆來修",
+        "result": "音響重新出聲時，全團先對螺絲起立鼓掌。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 18
+          },
+          {
+            "target": "cash",
+            "amount": -200
+          },
+          {
+            "target": "fitness",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "向外社低聲下氣去借",
+        "result": "隔壁社借了你們音響，還附贈一張寫著「下次請早」的便條。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "name": "改成不插電演出",
+        "result": "觀眾幫忙拍手打節奏，你們謝幕時才發現音響根本沒接電。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 14
+          },
+          {
+            "target": "fitness",
+            "amount": 8
+          },
+          {
+            "target": "intellect",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-10",
+    "title": "學弟的求救",
+    "text": "學弟考試炸掉，想來社團室坐一下，但你們正在趕進度。",
+    "scene": "clubroom",
+    "choices": [
+      {
+        "name": "停下來陪他",
+        "result": "學弟坐了一會兒就笑了，你們把剩下的排練改成加速版。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 20
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          },
+          {
+            "target": "charm",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "給他筆記、繼續練",
+        "result": "學弟帶走筆記，你一轉身才發現自己忘了夾答題頁。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 10
+          },
+          {
+            "target": "morality",
+            "amount": 8
+          },
+          {
+            "target": "charm",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "請他先去讀書",
+        "result": "學弟真的去讀書了，還把原本要分你的餅乾一起帶走。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 14
+          },
+          {
+            "target": "morality",
+            "amount": -12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-11",
+    "title": "寒訓要去哪",
+    "text": "寒假集訓地點還沒訂，預算只夠選一個。",
+    "scene": "field",
+    "choices": [
+      {
+        "name": "留在學校教室",
+        "result": "教室借到了，你用黑板畫地圖假裝大家出了遠門。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 12
+          },
+          {
+            "target": "charm",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "郊外營地",
+        "result": "你們扛裝備上山，晚餐時間還在找哪頂帳篷裝著鍋子。",
+        "effects": [
+          {
+            "target": "fitness",
+            "amount": 18
+          },
+          {
+            "target": "morality",
+            "amount": 8
+          },
+          {
+            "target": "cash",
+            "amount": -500
+          },
+          {
+            "target": "intellect",
+            "amount": -6
+          }
+        ]
+      },
+      {
+        "name": "租市區教室",
+        "result": "市區教室有白板和冷氣，租金也跟著很有存在感。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 16
+          },
+          {
+            "target": "charm",
+            "amount": 6
+          },
+          {
+            "target": "cash",
+            "amount": -400
+          }
+        ]
+      },
+      {
+        "name": "改成線上",
+        "result": "視訊準時開場，有人忘記關麥，整團一起聽他家洗衣機鼓掌。",
+        "effects": [
+          {
+            "target": "intellect",
+            "amount": 8
+          },
+          {
+            "target": "cash",
+            "amount": 200
+          },
+          {
+            "target": "fitness",
+            "amount": -10
+          },
+          {
+            "target": "charm",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "high-club-12",
+    "title": "誰站中間",
+    "text": "成果發表只剩一個中間位置。有人想讓你上，有人想推萌新。",
+    "scene": "auditorium",
+    "choices": [
+      {
+        "name": "自己上",
+        "result": "你站到中間，彩排照裡連你打噴嚏都特別清楚。",
+        "effects": [
+          {
+            "target": "charm",
+            "amount": 22
+          },
+          {
+            "target": "morality",
+            "amount": -8
+          },
+          {
+            "target": "intellect",
+            "amount": -4
+          }
+        ]
+      },
+      {
+        "name": "讓萌新上、你在旁邊撐場",
+        "result": "萌新一上台就忘詞，你在旁邊接得像原本就排好的。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 18
+          },
+          {
+            "target": "charm",
+            "amount": 6
+          },
+          {
+            "target": "fitness",
+            "amount": -8
+          }
+        ]
+      },
+      {
+        "name": "改成群像、沒有中間",
+        "result": "大家排成一排，攝影同學拿著相機默默往後退了五步。",
+        "effects": [
+          {
+            "target": "morality",
+            "amount": 14
+          },
+          {
+            "target": "charm",
+            "amount": 10
+          },
+          {
+            "target": "intellect",
+            "amount": -8
+          }
+        ]
+      }
+    ]
+  }
+]

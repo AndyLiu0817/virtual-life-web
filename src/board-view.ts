@@ -26,6 +26,7 @@ const claySides = {
   quiz: "#af8727",
   contest: "#af5e2e",
   love: "#af5857",
+  shop: "#7a4e8e",
   fork: "#a59e97",
 } satisfies Record<TileKind, string>;
 

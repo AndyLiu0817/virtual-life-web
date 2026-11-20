@@ -88,6 +88,7 @@ async function confirmResult(
   game: Minigame,
   score: number,
   tier: string,
+  extra: Record<string, number> = {},
 ) {
   await expect(dialog.getByRole("heading")).toHaveText(
     `${minigames[game].name}・${tier}`,
@@ -104,7 +105,7 @@ async function confirmResult(
   );
   expect(save.turn).toBe(1);
   expect(save.minigames).toEqual([
-    expect.objectContaining({ stage: "junior", game, score, tier }),
+    expect.objectContaining({ stage: "junior", game, score, tier, ...extra }),
   ]);
   expect(save.cash).toBe(player.cash + (tier === "優秀" ? 600 : 100));
 }
@@ -119,20 +120,24 @@ test("遊戲格節奏拍擊接受觸控，靜音可遊玩且鍵盤連按不計�
   await freeze(page);
   await begin(page, dialog, true);
   const lane = dialog.getByRole("button", { name: "拍擊" });
-  await page.clock.runFor(960);
+  await page.clock.runFor(480);
+  await tap(page, lane, true);
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("亂點");
+  await review(page, "rhythm-mistake");
+  await page.clock.runFor(480);
   await capture(page, "rhythm-portrait");
   await page.clock.runFor(240);
   await lane.focus();
   for (let i = 0; i < 20; i++) {
     await page.keyboard.press("Space");
     await page.keyboard.press("Enter");
-    if (i > 0) await tap(page, lane, true);
+    await tap(page, lane, true);
     if (i < 19) await page.clock.runFor(600);
   }
   await page.clock.runFor(160);
-  await expect(dialog.locator(".mg-result")).toHaveText("成績 95%");
+  await expect(dialog.locator(".mg-result")).toHaveText("成績 95.2%");
   await capture(page, "result-portrait");
-  await confirmResult(page, dialog, "rhythm", 95, "優秀");
+  await confirmResult(page, dialog, "rhythm", 95.2, "優秀");
 });
 
 test("記憶翻牌蓋回錯配，再配完八對", async ({ page }) => {
@@ -146,6 +151,8 @@ test("記憶翻牌蓋回錯配，再配完八對", async ({ page }) => {
   await tap(page, cards.nth(0));
   await tap(page, cards.nth(other));
   await expect(cards.nth(0)).toBeDisabled();
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("＋2 秒");
+  await review(page, "memory-mistake");
   await page.clock.runFor(700);
   await expect(cards.nth(0)).toBeEnabled();
   for (let face = 1; face <= 8; face++) {
@@ -153,7 +160,7 @@ test("記憶翻牌蓋回錯配，再配完八對", async ({ page }) => {
     await tap(page, cards.nth(deck.lastIndexOf(face)));
     if (face === 3) await capture(page, "memory-landscape");
   }
-  await confirmResult(page, dialog, "memory", 8, "優秀");
+  await confirmResult(page, dialog, "memory", 8, "優秀", { elapsedMs: 2700 });
 });
 
 test("數字快算四選一，45 秒後結算答對題數", async ({ page }) => {
@@ -166,6 +173,20 @@ test("數字快算四選一，45 秒後結算答對題數", async ({ page }) => 
     name: String(answer),
     exact: true,
   });
+  await tap(page, button, true);
+  await page.clock.runFor(400);
+  await tap(
+    page,
+    dialog
+      .locator(".mg-answer")
+      .filter({ hasNotText: new RegExp(`^${answer}$`) })
+      .first(),
+    true,
+  );
+  await expect(dialog.locator(".mg-score")).toHaveText("得分 0");
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("−1");
+  await review(page, "math-mistake");
+  await page.clock.runFor(400);
   for (let i = 0; i < 12; i++) {
     await tap(page, button, true);
     await page.clock.runFor(400);
@@ -267,15 +288,17 @@ test("準心射擊靶子會換位，每個靶只計一次，30 秒後結算", as
   await page.mouse.up();
   expect(await target.boundingBox()).not.toEqual(first);
   await page.mouse.click(first.x + first.width / 2, first.y + first.height / 2);
-  await expect(hud).toContainText("命中 1 個");
+  await expect(hud).toContainText("命中 0 個");
   await expect(feedback).toHaveAttribute("data-shot", "miss");
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("−1");
+  await review(page, "shoot-mistake");
   await expectTransparentCorners(feedback.locator("img:visible"));
 
-  for (let i = 1; i < 23; i++) {
+  for (let i = 1; i <= 23; i++) {
     if (i < 4) await expectTransparentCorners(target.locator("img"));
     await tap(page, target);
     await expect(target).toHaveCount(0);
-    if (i < 22) await page.clock.runFor(1250);
+    if (i < 23) await page.clock.runFor(1250);
   }
   await page.clock.fastForward(3000);
   await confirmResult(page, dialog, "shoot", 23, "優秀");
@@ -400,17 +423,19 @@ test("打地鼠 scores on real pointerdown and 30 hits earns 優秀", async ({
   ).toBeVisible();
   await expect(score).toHaveText("命中 1 隻");
 
-  for (let hit = 2; hit <= 30; hit++) {
+  let hits = 1;
+  for (let cycle = 1; cycle < 38; cycle++) {
     await page.clock.runFor(800);
-    if (hit === 14) {
-      await expect(sign.locator(".mg-sign-score")).toHaveText("命中 13 隻");
-      await expect(sign.locator(".mg-sign-clock")).toHaveText("20 秒");
-      await capture(page, "whack-landscape");
+    if ([4, 9, 13, 18, 22, 27, 31, 36].includes(cycle)) {
+      await expect(
+        dialog.getByRole("button", { name: "不要打這一隻" }),
+      ).toBeVisible();
+      continue;
     }
     await tap(page, target);
-    await expect(score).toHaveText(`命中 ${hit} 隻`);
+    await expect(score).toHaveText(`命中 ${++hits} 隻`);
   }
-  await page.clock.fastForward(8000);
+  await page.clock.fastForward(500);
   await capture(page, "whack-result");
   await confirmResult(page, dialog, "whack", 30, "優秀");
 });
@@ -440,6 +465,8 @@ test("找不同 marks both images, applies the wrong-tap lockout and saves 5/5",
     first.y + first.height * 0.4,
   );
   await expect(dialog.locator(".mg-tap-mark")).toHaveText("×");
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("點錯");
+  await review(page, "diff-mistake");
   await touchSpot(0);
   await page.clock.runFor(950);
   await touchSpot(0);
@@ -450,7 +477,7 @@ test("找不同 marks both images, applies the wrong-tap lockout and saves 5/5",
   await expect(dialog.locator(".mg-diff-ring.found")).toHaveCount(2);
   await capture(page, "diff-portrait");
   for (let i = 1; i < 5; i++) await touchSpot(i);
-  await confirmResult(page, dialog, "diff", 5, "優秀");
+  await confirmResult(page, dialog, "diff", 5, "優秀", { misses: 1 });
 });
 
 test("接水果 accepts a held mouse drag and records fruit and misses", async ({
@@ -485,7 +512,15 @@ test("接水果 accepts a held mouse drag and records fruit and misses", async (
     );
     if (i === 0) await page.clock.runFor(1390);
     if (i === 10) await capture(page, "catch-portrait");
-    await page.clock.runFor(790);
+    if (i % 4 === 3) {
+      await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.9);
+      await page.clock.runFor(425);
+      await page.mouse.move(
+        box.x + box.width * (0.1 + target * 0.2),
+        box.y + box.height * 0.9,
+      );
+      await page.clock.runFor(365);
+    } else await page.clock.runFor(790);
   }
   await page.mouse.up();
   await expect(score).toHaveText("接到 30・漏接 5");
@@ -548,6 +583,9 @@ for (const portrait of [false, true]) {
       await tap(page, field);
       await page.clock.runFor(160);
       await expect(score).toHaveText("疊好 16 層");
+      await expect(dialog.locator(".mg-mistake-message").last()).toHaveText(
+        "切掉了",
+      );
       await expect(
         await dialog
           .locator(".mg-stack-moving")
@@ -558,6 +596,11 @@ for (const portrait of [false, true]) {
       );
       await tap(page, field);
       await page.clock.runFor(160);
+      await expect(dialog.locator(".mg-mistake-message").last()).toHaveText(
+        "沒疊中",
+      );
+      await review(page, "stack-mistake");
+      await page.clock.runFor(500);
       await confirmResult(page, dialog, "stack", 16, "優秀");
     }
   });
@@ -663,3 +706,57 @@ for (const [name, roll, subject] of [
     }
   });
 }
+
+async function review(page: Page, name: string) {
+  const directory = process.env.STEP_9A_SCREENSHOTS;
+  if (!directory) return;
+  await page
+    .locator("dialog:modal img")
+    .evaluateAll((images) =>
+      Promise.all(images.map((image) => (image as HTMLImageElement).decode())),
+    );
+  await page.screenshot({ path: `${directory}/${name}.jpg`, quality: 90 });
+}
+
+test("打到老師扣兩分，顯示驚嚇圖與叉叉", async ({ page }) => {
+  const dialog = await openGame(page, 0.5625, false);
+  await freeze(page);
+  await begin(page, dialog);
+  for (let i = 0; i < 3; i++) {
+    await tap(page, dialog.getByRole("button", { name: "打小怪獸" }));
+    await page.clock.runFor(800);
+  }
+  await page.clock.runFor(800);
+  const teacher = dialog.getByRole("button", { name: "不要打這一隻" });
+  await tap(page, teacher);
+  await expect(dialog.locator(".mg-score")).toHaveText("命中 1 隻");
+  await expect(teacher.locator("img")).toHaveAttribute(
+    "src",
+    /teacher-shocked/,
+  );
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("−2");
+  await review(page, "whack-mistake");
+});
+
+test("接到炸彈扣兩分，漏接計數維持原值", async ({ page }) => {
+  const dialog = await openGame(page, 0.8125, true);
+  await freeze(page);
+  await begin(page, dialog, true);
+  const field = (await dialog.locator(".mg-field").boundingBox())!;
+  const y = field.y + field.height * 0.9;
+  const move = (lane: number) =>
+    page.mouse.move(field.x + field.width * lane, y);
+  await move(0.3);
+  await page.mouse.down();
+  await page.clock.runFor(2200);
+  await move(0.1);
+  await page.clock.runFor(790);
+  await move(0.9);
+  await page.clock.runFor(790);
+  await expect(dialog.locator(".mg-score")).toHaveText("接到 3・漏接 0");
+  await page.clock.runFor(400);
+  await expect(dialog.locator(".mg-mistake-message")).toHaveText("−2");
+  await expect(dialog.locator(".mg-score")).toHaveText("接到 1・漏接 0");
+  await review(page, "catch-mistake");
+  await page.mouse.up();
+});

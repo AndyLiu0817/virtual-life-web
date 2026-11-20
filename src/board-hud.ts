@@ -30,10 +30,20 @@ function avatar(size: 128 | 256, className: string, trigger = false) {
     : `<div class="hud-avatar ${className}">${art}</div>`;
 }
 
+// The overlapping dashes share a leading edge and taper toward the tail.
+const hudFrame = (position: "desktop" | "mobile") =>
+  `<svg class="hud-frame-light hud-frame-light-${position}" aria-hidden="true" focusable="false">${Array.from(
+    { length: 12 },
+    (_, index) =>
+      `<rect pathLength="100" style="--trail-length:${(200 - index * 16) / 10}"></rect>`,
+  ).join("")}</svg>`;
+
 export const boardHudMarkup = (
   debug: boolean,
 ) => `<section class="board-controls" aria-label="玩家儀表板">
+  ${hudFrame("desktop")}
   <div class="board-status">
+    ${hudFrame("mobile")}
     <header class="hud-identity">
       ${avatar(256, "hud-avatar-desktop", true)}
       ${avatar(128, "hud-avatar-compact", true)}
@@ -64,6 +74,7 @@ export const boardHudMarkup = (
     </div>
   </div>
   <div class="hud-bottom">
+    ${hudFrame("mobile")}
     ${avatar(256, "hud-avatar-mobile", true)}
     <div class="board-roll">
       <button id="roll" type="button" aria-label="擲骰">

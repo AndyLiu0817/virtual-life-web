@@ -30,7 +30,7 @@ export const highBoard: SchoolBoard = {
   tiles: schoolTiles([
     "start",
     "event",
-    "event",
+    "shop",
     "event",
     "game",
     "club",
@@ -47,7 +47,7 @@ export const highBoard: SchoolBoard = {
     "event",
     "club",
     "quiz",
-    "event",
+    "shop",
     "game",
     "club",
     "event",

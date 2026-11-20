@@ -9,6 +9,7 @@ export function timedRound(
   start: number,
   update: (elapsed: number, finish: () => void) => void,
   signClock?: HTMLElement,
+  penalty = () => 0,
 ) {
   return new Promise<number>((resolve) => {
     const duration = seconds * 1000;
@@ -16,10 +17,12 @@ export function timedRound(
     let remaining = -1;
     const finish = () => {
       clearInterval(interval);
-      resolve(Math.min(duration, Math.round(performance.now() - start)));
+      resolve(
+        Math.min(duration, Math.round(performance.now() - start + penalty())),
+      );
     };
     const tick = () => {
-      const elapsed = performance.now() - start;
+      const elapsed = performance.now() - start + penalty();
       const next = Math.max(0, Math.ceil((duration - elapsed) / 1000));
       if (next !== remaining) {
         clock.textContent = `${next} 秒`;

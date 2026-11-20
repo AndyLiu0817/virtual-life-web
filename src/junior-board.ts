@@ -1,6 +1,11 @@
-import { activityPrompt, promptForClub } from "./activity-view";
+import { activityPrompt, promptForClub, promptForShop } from "./activity-view";
 import { playContest } from "./contest-view";
-import { clubChoice, visitClub } from "./game/clubs";
+import {
+  clubChoice,
+  drawClubEvent,
+  settleClubEvent,
+  visitClub,
+} from "./game/clubs";
 import { nextMatch } from "./game/contests";
 import type { SchoolBoard } from "./data/school-board";
 import { handleLoveTile } from "./game/school";
@@ -345,6 +350,32 @@ export function showStageBoard(
   }
 
   async function playClubVisit() {
+    if (save.stage !== "junior") {
+      const event = drawClubEvent(save);
+      if (!event) return;
+      const art = sceneArt(event.scene, "senior-girl");
+      const choice = await activityPrompt(activityDialog, {
+        art,
+        speaker: "社團活動",
+        title: event.title,
+        text: event.text,
+        choices: event.choices.map(({ name }) => ({ name })),
+        choiceLayout: "club-event",
+      });
+      const result = settleClubEvent(save, event, choice);
+      if (!result) return;
+      save = result.save;
+      status();
+      await activityPrompt(activityDialog, {
+        art,
+        speaker: "社團活動",
+        title: event.title,
+        text: result.text,
+        details: [result.changes.map(changeText).join("・")],
+        choiceLayout: "club-event",
+      });
+      return;
+    }
     const visit = visitClub(save);
     if (!visit) return;
     save = visit.save;
@@ -458,6 +489,11 @@ export function showStageBoard(
     if (kind === "quiz") await playQuiz();
     if (kind === "club") await playClubVisit();
     if (kind === "contest") await contestTile();
+    if (kind === "shop")
+      await promptForShop(activityDialog, save, (updated) => {
+        save = updated;
+        status();
+      });
     if (kind === "love") await prompt("愛情", handleLoveTile(save));
     if (kind === "game") save = await playMinigame(activityDialog, save);
 
