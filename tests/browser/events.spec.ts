@@ -207,7 +207,7 @@ test("迷途使自選岔路並減一步，最後一回合結束時消失", async
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("研習社");
   await expect(page.locator(".board-pawn")).toHaveAttribute("data-tile", "39");
-  await expect(dialog.getByRole("button", { name: /沿外圈/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /沿外圈/ })).toHaveCount(0);
   await dialog.getByRole("button", { name: "確定" }).click();
   await expect(page.getByRole("status")).toContainText("已自動存檔");
   expect(await saved(page)).toMatchObject({ deity: null, boardTile: 39 });

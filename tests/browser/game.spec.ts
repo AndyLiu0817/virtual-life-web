@@ -503,7 +503,7 @@ for (const portrait of [false, true]) {
     const roll = page.locator("#roll");
     const dialog = page.getByRole("dialog");
     await roll.click();
-    await dialog.getByRole("button", { name: /走捷徑/ }).click();
+    await page.getByRole("button", { name: /走捷徑/ }).click();
     await roll.click();
     await page.clock.install();
     await skipMinigame(page);
