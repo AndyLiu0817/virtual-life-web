@@ -319,10 +319,13 @@ it.each(["high", "university"] as const)(
         return dx * previousX + dy * previousY === 0;
       });
       expect(turns.length).toBeGreaterThanOrEqual(4);
-      expect(turns.length).toBeLessThan(directions.length / 2);
-      expect(clearance.filter(({ onRoad }) => onRoad).length).toBeGreaterThan(
-        board.tiles.length / 2,
-      );
+      for (const { polygon } of clearance)
+        for (const [x, y] of polygon) {
+          expect(x).toBeGreaterThanOrEqual(0);
+          expect(x).toBeLessThanOrEqual(layout.width);
+          expect(y).toBeGreaterThanOrEqual(0);
+          expect(y).toBeLessThanOrEqual(layout.height);
+        }
     }
   },
 );

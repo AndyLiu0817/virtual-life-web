@@ -86,7 +86,9 @@ export function boardView(
   const walkWidth = (walkHeight * 104) / 192;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
   const { tiles } = board;
-  const scenery = board.scenery[orientation].map((object, id) => {
+  const objects =
+    mapArt === board.maps[orientation] ? board.scenery[orientation] : [];
+  const scenery = objects.map((object, id) => {
     const [x, y] = object.anchor;
     return { ...object, id, x, y };
   });

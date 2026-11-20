@@ -27,7 +27,7 @@
   /* At these aspect ratios the landscape art can cover the viewport by
      cropping only the sky above the track. */
   @container (min-aspect-ratio: 780 / 439) and (max-aspect-ratio: 12 / 5) {
-    .board-world {
+    [data-board-stage="junior"] .board-world {
       width: 100cqw;
       align-self: end;
     }

@@ -15,7 +15,8 @@ export interface BoardLayout {
   // the road, and subsequent outlines describe the enclosed islands.
   road?: {
     outlines: readonly (readonly MapPoint[])[];
-    // Ground footprints of major scenery, in the same source coordinates.
+    // Building and ground obstacles on the gameplay map. Raised vegetation
+    // and lights are handled separately by the foreground silhouettes.
     obstacles?: readonly (readonly MapPoint[])[];
   };
 }
