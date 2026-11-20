@@ -16,7 +16,7 @@ export const minigames = {
     normal: 60,
     excellent: 40,
     unit: " 秒",
-    instructions: "每次翻兩張牌。60 秒內找出全部 8 對相同圖案。",
+    instructions: "每次翻兩張牌。翻錯加 2 秒，60 秒內找出全部 8 對相同圖案。",
   },
   math: {
     name: "數字快算",
@@ -24,7 +24,7 @@ export const minigames = {
     normal: 8,
     excellent: 12,
     unit: " 題",
-    instructions: "點選正確答案。45 秒內盡量多答對幾題。",
+    instructions: "點選正確答案。答錯扣 1 分，45 秒內盡量多答對幾題。",
   },
   shoot: {
     name: "準心射擊",
@@ -32,7 +32,7 @@ export const minigames = {
     normal: 15,
     excellent: 23,
     unit: " 個",
-    instructions: "看到靶子就點它。30 秒內盡量多命中幾個。",
+    instructions: "看到靶子就點它。30 秒內盡量多命中，打空扣 1 分。",
   },
   whack: {
     name: "打地鼠",
@@ -40,7 +40,8 @@ export const minigames = {
     normal: 20,
     excellent: 30,
     unit: " 隻",
-    instructions: "小怪獸從洞口冒出時，立刻點牠。30 秒內盡量多打中幾隻。",
+    instructions:
+      "小怪獸從洞口冒出時，立刻點牠。不要打老師，打到扣 2 分。空洞不扣分。",
   },
   diff: {
     name: "找不同",
@@ -49,7 +50,7 @@ export const minigames = {
     excellent: 5,
     unit: " 處",
     instructions:
-      "60 秒內找出兩張圖的 5 處不同。點任一張圖都可以，點錯要等 1 秒。",
+      "60 秒內找出兩張圖的 5 處不同。點任一張圖都可以。點錯要等 1 秒，且會影響評級。",
   },
   catch: {
     name: "接水果",
@@ -58,7 +59,8 @@ export const minigames = {
     excellent: 30,
     unit: " 個",
     maxMisses: 5,
-    instructions: "左右拖動籃子接水果。30 秒內漏接最多 5 個，接到雜物不計分。",
+    instructions:
+      "左右拖動籃子接水果。30 秒內漏接最多 5 個，接到炸彈、腐爛水果或雜物會扣 2 分。",
   },
   stack: {
     name: "疊疊樂",
@@ -75,6 +77,22 @@ export type Minigame = keyof typeof minigames;
 export const minigameIds = Object.keys(minigames) as Minigame[];
 export const minigameTiers = ["未達", "普通", "優秀"] as const;
 export type RoundScore = { score: number; elapsedMs?: number; misses?: number };
+
+export const memoryMismatchMs = 2000;
+export const penalizeScore = (score: number, penalty: number) =>
+  Math.max(0, score - penalty);
+
+export function rhythmAccuracy(hits: number, beats: number, stray: number) {
+  return Math.round((1000 * hits) / (beats + stray)) / 10;
+}
+
+export function whackPoints(score: number, teacher: boolean) {
+  return teacher ? penalizeScore(score, 2) : score + 1;
+}
+
+export function catchPoints(score: number, junk: boolean) {
+  return junk ? penalizeScore(score, 2) : score + 1;
+}
 
 export function pickMinigame(random = Math.random) {
   return minigameIds[Math.floor(random() * minigameIds.length)];
@@ -95,6 +113,11 @@ export function minigameTier(
     (result.misses ?? Infinity) > minigames.catch.maxMisses
   )
     return "未達";
+  if (game === "diff") {
+    const misses = result.misses ?? Infinity;
+    if (result.score >= excellent && misses <= 1) return "優秀";
+    return result.score >= normal && misses <= 3 ? "普通" : "未達";
+  }
   if (result.score >= excellent) return "優秀";
   return result.score >= normal ? "普通" : "未達";
 }

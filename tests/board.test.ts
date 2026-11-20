@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import { juniorBoard as board } from "../src/data/junior";
 import { juniorLoop, juniorShortcut } from "../src/data/junior-routes";
+import { schoolBoards } from "../src/data/school-board";
 import {
   beforeRoll,
   diceCount,
@@ -219,4 +220,43 @@ it("越界位置回起點，失效的岔路連結清除，保留其餘存檔進�
     cash: 6400,
     turn: 9,
   });
+});
+
+it.each([
+  ["high", [2, 19]],
+  ["university", [3, 25]],
+] as const)("%s 福利社沿用原格子 ID，橫直共用路線", (stage, ids) => {
+  const school = schoolBoards[stage];
+  expect(
+    school.tiles.flatMap((tile, id) => (tile.kind === "shop" ? [id] : [])),
+  ).toEqual(ids);
+  for (const id of ids) {
+    expect(school.tiles[id].next).toEqual([id + 1]);
+    for (const { cells } of Object.values(school.layouts))
+      expect(cells[id]).toBeDefined();
+  }
+});
+
+it.each([
+  ["high", 19],
+  ["university", 25],
+] as const)("舊 %s 存檔沿用原位置並在福利社繼續遊玩", (stage, boardTile) => {
+  const { shopPurchases, clubEventHistory, ...oldSave } = opening;
+  const imported = importSave(
+    JSON.stringify({
+      ...oldSave,
+      stage,
+      boardTile,
+      previousTile: boardTile - 1,
+      nextTile: boardTile + 1,
+    }),
+  );
+  expect(imported).toMatchObject({
+    boardTile,
+    previousTile: boardTile - 1,
+    nextTile: boardTile + 1,
+    shopPurchases: [],
+    clubEventHistory: [],
+  });
+  expect(schoolBoards[stage].tiles[imported.boardTile].kind).toBe("shop");
 });

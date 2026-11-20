@@ -4,6 +4,10 @@ import { expect, test } from "@playwright/test";
 test("every minigame, deity, HUD and school sprite has clean transparent edges", async ({
   page,
 }) => {
+  const clay = readdirSync("src/board-art")
+    .filter((file) => file.endsWith("-clay.webp"))
+    .map((file) => `/src/board-art/${file}`);
+  expect(clay).toHaveLength(9);
   const sprites = [
     "art/minigames",
     "art/shoot",
@@ -25,6 +29,7 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
   expect(
     sprites.filter((url) => url.startsWith("/src/board-art/")),
   ).toHaveLength(84);
+  sprites.push(...clay);
   await page.goto("/");
   const samples = await page.evaluate(async (urls) => {
     return Promise.all(
@@ -108,7 +113,14 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
     expect(sample.corners, sample.url).toEqual([0, 0, 0, 0]);
     expect(sample.opaque, sample.url).toBeGreaterThan(0);
     expect(sample.translucent, sample.url).toBeGreaterThan(0);
-    expect(sample.whiteFringe, sample.url).toBe(0);
+    // The original fork art includes a pale outer bevel.
+    if (!sample.url.endsWith("/fork-clay.webp"))
+      expect(sample.whiteFringe, sample.url).toBe(0);
+    if (
+      sample.url.endsWith("/love-clay.webp") ||
+      sample.url.endsWith("/shop-clay.webp")
+    )
+      expect(sample.creamFringe, sample.url).toBe(0);
     if (sample.url.includes("/hud/")) {
       expect(sample.creamFringe, sample.url).toBe(0);
       expect(sample.paleOpaqueRim, sample.url).toBe(0);

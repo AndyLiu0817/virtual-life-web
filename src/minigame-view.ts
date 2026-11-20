@@ -80,11 +80,11 @@ export async function playMinigame(dialog: HTMLDialogElement, save: Save) {
   const target = (threshold: number) =>
     game === "memory"
       ? `${threshold} 秒內配完 8 對`
-      : `${threshold}${unit}以上${game === "catch" ? "・漏接最多 5 個" : ""}`;
+      : `${threshold}${unit}以上${game === "catch" ? "・漏接最多 5 個" : game === "diff" ? `・點錯最多 ${threshold === excellent ? 1 : 3} 次` : ""}`;
   const score =
     game === "memory"
       ? `${result.score} ／ 8 對・${((result.elapsedMs ?? 0) / 1000).toFixed(3)} 秒`
-      : `${result.score}${unit}${game === "catch" ? `・漏接 ${result.misses} 個` : ""}`;
+      : `${result.score}${unit}${game === "catch" ? `・漏接 ${result.misses} 個` : game === "diff" ? `・點錯 ${result.misses} 次` : ""}`;
   card(
     dialog,
     game,

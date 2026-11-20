@@ -77,18 +77,19 @@ async function seed(
   save: Save,
   debug: boolean | "road" = false,
   reducedMotion = true,
+  random = 0.45,
 ) {
   await page.emulateMedia({
     reducedMotion: reducedMotion ? "reduce" : "no-preference",
   });
   await page.addInitScript(
-    ({ key, save }) => {
+    ({ key, save, random }) => {
       if (!localStorage.getItem(key))
         localStorage.setItem(key, JSON.stringify(save));
       let calls = 0;
-      Math.random = () => (++calls <= 3 ? 0.08 : 0.45);
+      Math.random = () => (++calls <= 3 ? 0.08 : random);
     },
-    { key: slot, save },
+    { key: slot, save, random },
   );
   await page.goto(
     debug ? `/?debug=${debug === "road" ? "road" : "path"}` : "/",
@@ -173,7 +174,12 @@ for (const viewport of [landscape, portrait]) {
         }
         await capture(page, `step-8h-${stage}-overview-${direction}`);
         await page.locator("#roll").click();
-        await page.getByRole("button", { name: "確定", exact: true }).click();
+        await page
+          .getByRole("button", {
+            name: stage === "high" ? "離開" : "確定",
+            exact: true,
+          })
+          .click();
         await expect(page.locator(".hud-turn dd")).toHaveText(
           `2 ／ ${schoolBoards[stage].turns}`,
         );
@@ -210,6 +216,7 @@ for (const viewport of [landscape, portrait]) {
       await seed(page, {
         ...save,
         turn: 24,
+        boardTile: 1,
         stats: { ...save.stats, intellect: 320 },
       });
       await expect(page.locator(".hud-turn dd")).toHaveText("25 ／ 25");
@@ -709,5 +716,137 @@ for (const [stage, tile, tree] of [
       )
       .toBe(true);
     await capture(page, `step-8h-${stage}-occlusion-portrait`);
+  });
+}
+
+async function step9aReview(page: Page, name: string) {
+  const directory = process.env.STEP_9A_SCREENSHOTS;
+  if (!directory) return;
+  await page
+    .locator("img:visible")
+    .evaluateAll((images) =>
+      Promise.all(images.map((image) => (image as HTMLImageElement).decode())),
+    );
+  await page.screenshot({ path: `${directory}/${name}.jpg`, quality: 90 });
+}
+
+for (const [direction, viewport] of [
+  ["landscape", landscape],
+  ["portrait", portrait],
+] as const) {
+  test(`福利社 ${direction} 可購買、離開並存下限購`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await seed(page, { ...schoolSave("high"), cash: 2300 });
+    await page.locator("#roll").click();
+    const dialog = page.getByRole("dialog", { name: "福利社" });
+    const buy = dialog.getByRole("button", { name: /參考書套組/ });
+    const leave = dialog.getByRole("button", { name: "離開" });
+    await expect(dialog.getByText("現金 2,300 元")).toBeInViewport({
+      ratio: 1,
+    });
+    await expect(leave).toBeInViewport({ ratio: 1 });
+    await expect(
+      dialog.getByRole("button", { name: /校慶福袋/ }),
+    ).toBeEnabled();
+    expect((await buy.boundingBox())!.height).toBeGreaterThanOrEqual(72);
+    await buy.click();
+    await expect(dialog.getByRole("status")).toContainText("智力 ＋10");
+    await expect(buy).toContainText("剩餘限購 1 件");
+    await expect(
+      dialog.getByRole("button", { name: /校慶福袋/ }),
+    ).toBeDisabled();
+    await expect(dialog.getByText("現金 1,500 元")).toBeInViewport({
+      ratio: 1,
+    });
+    await step9aReview(page, `shop-${direction}`);
+    await buy.click();
+    await expect(buy).toBeDisabled();
+    await expect(buy).toContainText("剩餘限購 0 件");
+    await dialog.getByRole("button", { name: /運動飲料/ }).click();
+    await expect(dialog.getByRole("status")).toContainText("體能 ＋8");
+    if (direction === "portrait") {
+      await dialog
+        .getByRole("button", { name: /校慶福袋/ })
+        .scrollIntoViewIfNeeded();
+      await expect(leave).toBeInViewport({ ratio: 1 });
+      await expect(dialog.getByText("現金 200 元")).toBeInViewport({
+        ratio: 1,
+      });
+    }
+    await leave.click();
+    await expect(page.locator("#roll")).toBeEnabled();
+    const raw = await page.evaluate((key) => localStorage.getItem(key), slot);
+    expect(JSON.parse(raw!).shopPurchases).toEqual([
+      { stage: "high", itemId: "high-shop-notes", count: 2 },
+      { stage: "high", itemId: "high-shop-drink", count: 1 },
+    ]);
+  });
+
+  test(`社團選擇 ${direction} 先選擇才公布數字`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    const portraitMode = direction === "portrait";
+    const count = portraitMode ? 4 : 3;
+    const save = schoolSave("high");
+    await seed(
+      page,
+      {
+        ...save,
+        boardTile: 3,
+        clubEventHistory: portraitMode ? ["high-club-01", "high-club-02"] : [],
+      },
+      false,
+      true,
+      0,
+    );
+    await page.locator("#roll").click();
+    const dialog = page.getByRole("dialog", {
+      name: portraitMode ? "校慶擺攤日" : "幹部改選",
+    });
+    const buttons = dialog.getByRole("button");
+    await expect(buttons).toHaveCount(count);
+    for (const button of await buttons.all()) {
+      await expect(button).toBeInViewport({ ratio: 1 });
+      expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(72);
+      await expect(button.locator("img, span")).toHaveCount(0);
+      await expect(button).not.toHaveText(/[↑↓＋－\d]/);
+    }
+    await step9aReview(page, `club-${count}-choices`);
+    await buttons.first().click();
+    await expect(dialog.locator(".activity-details")).toContainText(
+      portraitMode ? "現金 ＋600" : "魅力 ＋18",
+    );
+    await step9aReview(page, `club-${count}-result`);
+    await dialog.getByRole("button", { name: "確定" }).click();
+    await expect(page.locator("#roll")).toBeEnabled();
+    const raw = await page.evaluate((key) => localStorage.getItem(key), slot);
+    expect(JSON.parse(raw!).clubHistory).toContainEqual(
+      expect.objectContaining({ stage: "high", visits: 1 }),
+    );
+  });
+}
+
+if (process.env.STEP_9A_SCREENSHOTS) {
+  test("愛情格近景", async ({ page }) => {
+    await page.setViewportSize(landscape);
+    await seed(page, schoolSave("university"));
+    await page.locator("#roll").click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("戀愛系統即將開放");
+    await dialog.getByRole("button", { name: "確定" }).click();
+    await expect(page.locator("#roll")).toBeEnabled();
+    const icon = page.locator('[data-tile="2"] .paver-top');
+    const box = (await icon.boundingBox())!;
+    await page.screenshot({
+      path: `${process.env.STEP_9A_SCREENSHOTS}/love-tile.jpg`,
+      quality: 95,
+      style: ".board-pawn { display: none; }",
+      clip: {
+        x: box.x - 35,
+        y: box.y - 25,
+        width: box.width + 70,
+        height: box.height + 50,
+      },
+      scale: "device",
+    });
   });
 }

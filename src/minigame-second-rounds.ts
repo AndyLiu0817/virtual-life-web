@@ -1,4 +1,5 @@
-import { minigames } from "./game/minigames";
+import { roundFeedback } from "./minigame-feedback";
+import { catchPoints, minigames, whackPoints } from "./game/minigames";
 import { differenceHotspots } from "./game/differences";
 import { minigameBackground, sprite, whackCritters } from "./minigame-art";
 import { differencePictures } from "./minigame-second-art";
@@ -59,7 +60,8 @@ const whack: Round = async ({ field, score, clock }) => {
   let hitAt = -Infinity;
   let puffUntil = 0;
   let struck = false;
-  let critterName: (typeof whackCritters)[number] = whackCritters[0];
+  let critterName: (typeof whackCritters)[number] | "teacher" =
+    whackCritters[0];
   const start = performance.now();
   score.textContent = signScore.textContent = "命中 0 隻";
   field.onpointerdown = (event) => {
@@ -72,10 +74,19 @@ const whack: Round = async ({ field, score, clock }) => {
       Math.floor(elapsed / period) === cycle &&
       elapsed % period < visible;
     if (hit) {
-      score.textContent = signScore.textContent = `命中 ${++hits} 隻`;
+      const teacher = critterName === "teacher";
+      hits = whackPoints(hits, teacher);
+      score.textContent = signScore.textContent = `命中 ${hits} 隻`;
+      if (teacher) roundFeedback(field, "−2", event);
       struck = true;
       hitAt = elapsed;
-      critter.innerHTML = sprite("whack", `${critterName}-dizzy`);
+      critter.innerHTML = sprite(
+        "whack",
+        teacher ? "teacher-shocked" : `${critterName}-dizzy`,
+      );
+      impact.innerHTML = teacher
+        ? sprite("whack", "cross")
+        : sprite("whack", "burst") + sprite("whack", "hammer-glow");
       critter.classList.add("struck");
     } else {
       puffUntil = elapsed + 260;
@@ -106,7 +117,14 @@ const whack: Round = async ({ field, score, clock }) => {
         const [x, y] = holes[hole];
         place(critter, x / 480, y / 270);
         struck = false;
-        critterName = whackCritters[cycle % whackCritters.length];
+        const teacher = cycle % 9 === 4 || (cycle % 9 === 0 && cycle > 0);
+        critterName = teacher
+          ? "teacher"
+          : whackCritters[cycle % whackCritters.length];
+        critter.setAttribute(
+          "aria-label",
+          teacher ? "不要打這一隻" : "打小怪獸",
+        );
         critter.classList.remove("struck");
         critter.innerHTML = sprite("whack", critterName);
         critter.hidden = false;
@@ -150,6 +168,7 @@ const diff: Round = async ({ field, score, clock }) => {
   );
   const mark = feedback("mg-tap-mark");
   const found = new Set<number>();
+  let misses = 0;
   const duration = 60;
   let lockedUntil = 0;
   let finishRound: () => void;
@@ -184,7 +203,9 @@ const diff: Round = async ({ field, score, clock }) => {
         }
       });
       if (match === -1) {
+        misses++;
         lockedUntil = elapsed + 1000;
+        roundFeedback(field, "點錯", event);
         picture.append(mark);
         place(mark, x / bounds.width, y / bounds.height);
         mark.textContent = "×";
@@ -205,7 +226,7 @@ const diff: Round = async ({ field, score, clock }) => {
   pictures.forEach((picture) => {
     picture.onpointerdown = null;
   });
-  return { score: found.size };
+  return { score: found.size, misses };
 };
 
 function animateRound(
@@ -293,6 +314,7 @@ const catchFruit: Round = async ({ field, score, clock }) => {
   );
 
   // 35 fruit arrive before the 30 s horn; junk lands between fruit.
+  const junkSprites = [7, 8, 9, "bomb", "rotten"];
   let previousLane = 2;
   for (let i = 0; i < 35; i++) {
     previousLane = (previousLane + 1 + Math.floor(Math.random() * 4)) % 5;
@@ -307,7 +329,9 @@ const catchFruit: Round = async ({ field, score, clock }) => {
     element.style.left = `${x * 100}%`;
     element.innerHTML = sprite(
       "catch",
-      junk ? 7 + Math.floor(Math.random() * 3) : Math.floor(Math.random() * 7),
+      junk
+        ? junkSprites[Math.floor(Math.random() * junkSprites.length)]
+        : Math.floor(Math.random() * 7),
     );
     items.push({ element, at, x, junk });
   }
@@ -332,9 +356,16 @@ const catchFruit: Round = async ({ field, score, clock }) => {
         }
         active.delete(item);
         item.element.remove();
-        if (item.junk) continue;
-        if (Math.abs(item.x - center) <= 0.135) caught++;
-        else misses++;
+        if (Math.abs(item.x - center) <= 0.135) {
+          caught = catchPoints(caught, item.junk);
+          if (item.junk) {
+            const bounds = basket.getBoundingClientRect();
+            roundFeedback(field, "−2", {
+              clientX: bounds.x + bounds.width / 2,
+              clientY: bounds.y,
+            });
+          }
+        } else if (!item.junk) misses++;
         paint();
       }
       return false;
@@ -362,6 +393,7 @@ const stack: Round = async ({ field, score, clock }) => {
   let elapsed = 0;
   let dropAt: number | undefined;
   let ended = false;
+  let dropPoint: PointerEvent | undefined;
 
   function block(element: HTMLElement, index: number) {
     element.innerHTML = sprite("stack", index % 9);
@@ -381,7 +413,10 @@ const stack: Round = async ({ field, score, clock }) => {
   paint();
 
   field.onpointerdown = (event) => {
-    if (primary(event) && dropAt === undefined) dropAt = elapsed;
+    if (primary(event) && dropAt === undefined) {
+      dropAt = elapsed;
+      dropPoint = event;
+    }
   };
 
   await animateRound(clock, 60, (now) => {
@@ -399,8 +434,12 @@ const stack: Round = async ({ field, score, clock }) => {
       if (Math.abs(x - top) < 0.025) x = top;
       const left = Math.max(top, x);
       const right = Math.min(top + width, x + width);
-      if (right <= left) ended = true;
-      else {
+      if (right <= left) {
+        ended = true;
+        roundFeedback(field, "沒疊中", dropPoint!);
+      } else {
+        if (right - left < width - 0.0001)
+          roundFeedback(field, "切掉了", dropPoint!, false);
         const layer = document.createElement("div");
         block(layer, layers + 1);
         layer.style.left = `${x * 100}%`;
@@ -421,6 +460,8 @@ const stack: Round = async ({ field, score, clock }) => {
     return ended;
   });
   field.onpointerdown = null;
+  if (ended)
+    await new Promise<void>((resolve) => window.setTimeout(resolve, 500));
   return { score: layers };
 };
 
