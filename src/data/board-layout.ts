@@ -11,13 +11,12 @@ export interface BoardLayout {
   halfWidth: number;
   halfHeight: number;
   cells: readonly Cell[];
-  // Outer edge of empty ground followed by enclosed scenery islands.
-  clearGround?: readonly (readonly MapPoint[])[];
   // Reference road outlines are in source pixels. The first outline bounds
   // the road, and subsequent outlines describe the enclosed islands.
   road?: {
     outlines: readonly (readonly MapPoint[])[];
-    // Ground footprints of major scenery, in the same source coordinates.
+    // Building and ground obstacles on the gameplay map. Raised vegetation
+    // and lights are handled separately by the foreground silhouettes.
     obstacles?: readonly (readonly MapPoint[])[];
   };
 }

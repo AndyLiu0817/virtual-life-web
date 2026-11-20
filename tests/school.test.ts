@@ -34,18 +34,22 @@ const player = chooseClub(
 
 describe("學段棋盤", () => {
   it.each([
-    ["high", 25, { start: 1, event: 5, game: 3, club: 2, quiz: 2, contest: 1 }],
+    [
+      "high",
+      25,
+      { start: 1, event: 13, game: 9, club: 6, quiz: 5, contest: 2 },
+    ],
     [
       "university",
       40,
       {
         start: 1,
-        event: 3,
-        game: 2,
-        club: 1,
-        quiz: 1,
-        contest: 1,
-        love: 3,
+        event: 11,
+        game: 7,
+        club: 4,
+        quiz: 5,
+        contest: 2,
+        love: 8,
       },
     ],
   ] as const)("%s 兩種方向共用完整外環及格子 ID", (stage, turns, expected) => {
@@ -255,7 +259,6 @@ it("跑道位置與景物重疊是獨立的檢查", () => {
   ] as const;
   const fixture = {
     ...layout,
-    clearGround: undefined,
     road: {
       outlines: [fakeGround[0]],
       obstacles: [fakeGround[1]],
@@ -288,10 +291,14 @@ it.each(["high", "university"] as const)(
     for (const orientation of ["landscape", "portrait"] as const) {
       const layout = board.layouts[orientation];
       const junior = schoolBoards.junior.layouts[orientation];
-      expect(layout.halfHeight / layout.halfWidth).toBeCloseTo(
-        junior.halfHeight / junior.halfWidth,
+      expect(layout.halfWidth / layout.width).toBeCloseTo(
+        junior.halfWidth / junior.width,
+        4,
       );
-      expect(layout.clearGround?.length).toBeGreaterThan(1);
+      expect(layout.halfHeight / layout.width).toBeCloseTo(
+        junior.halfHeight / junior.width,
+        4,
+      );
       const clearance = paverClearance(layout);
       expect(clearance).toHaveLength(board.tiles.length);
       expect(
@@ -312,6 +319,13 @@ it.each(["high", "university"] as const)(
         return dx * previousX + dy * previousY === 0;
       });
       expect(turns.length).toBeGreaterThanOrEqual(4);
+      for (const { polygon } of clearance)
+        for (const [x, y] of polygon) {
+          expect(x).toBeGreaterThanOrEqual(0);
+          expect(x).toBeLessThanOrEqual(layout.width);
+          expect(y).toBeGreaterThanOrEqual(0);
+          expect(y).toBeLessThanOrEqual(layout.height);
+        }
     }
   },
 );
