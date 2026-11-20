@@ -346,3 +346,24 @@ progress {
     width: 65px;
   }
 }
+
+@media (orientation: landscape) {
+  .title-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 186px));
+  }
+  .title-actions #notice {
+    grid-column: 1 / -1;
+  }
+  .title-actions .action {
+    width: 100%;
+  }
+  .title-actions #gallery {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .title-actions #import {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}

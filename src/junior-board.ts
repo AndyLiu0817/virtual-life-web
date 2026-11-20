@@ -1,3 +1,5 @@
+import { collectStory } from "./game/main-story";
+import { rememberStory, showStoryFragment } from "./story-view";
 import { activityPrompt, promptForClub, promptForShop } from "./activity-view";
 import { playContest } from "./contest-view";
 import {
@@ -50,6 +52,7 @@ interface BoardActions {
   exportSave: (save: Save) => void;
   home: () => void;
   complete: (save: Save) => void;
+  gallery: (save: Save) => Promise<boolean>;
 }
 
 export function showStageBoard(
@@ -205,6 +208,10 @@ export function showStageBoard(
     hud.closeMenu(false);
     orientationChange.disconnect();
     actions.manualSave(save);
+  };
+  find<HTMLButtonElement>("#board-gallery").onclick = async () => {
+    hud.closeMenu();
+    if (await actions.gallery(save)) orientationChange.disconnect();
   };
   find<HTMLButtonElement>("#export").onclick = () => {
     hud.closeMenu();
@@ -536,6 +543,17 @@ export function showStageBoard(
     syncOverview();
     const kind = board.tiles[save.boardTile].kind;
     const deityJustArrived = kind === "event" && (await playEvent());
+    if (kind === "story") {
+      const result = collectStory(save, board.stage, save.boardTile);
+      save = result.save;
+      status();
+      if (result.fragment) {
+        rememberStory(save);
+        await showStoryFragment(result.fragment, save.gender);
+      } else {
+        await prompt("這段記憶你已經拼過了", "人生經驗 ＋3");
+      }
+    }
     if (kind === "quiz") await playQuiz();
     if (kind === "club") await playClubVisit();
     if (kind === "contest") await contestTile();
@@ -587,7 +605,7 @@ export function showStageBoard(
     if (needsClub) {
       save = await promptForClub(activityDialog, save, board.stage);
       status();
-      persist();
+      persist(!message);
     }
     await automaticContest();
     roll.disabled = false;

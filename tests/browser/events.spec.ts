@@ -95,7 +95,10 @@ for (const scene of [
 ] as const) {
   test(`${scene.label}畫面、素材與自動存檔`, async ({ page }) => {
     await page.setViewportSize({ width: scene.width, height: scene.height });
-    await loadBoard(page, [0.3, 0.1, 0.1, ...scene.random]);
+    await loadBoard(page, [0.3, 0.1, 0.1, ...scene.random], {
+      boardTile: 29,
+      previousTile: 28,
+    });
     await page.getByRole("button", { name: "擲骰" }).click();
     const dialog = page.getByRole("dialog");
     await expect(
@@ -162,7 +165,7 @@ for (const scene of [
     expect(await saved(page)).toMatchObject({
       experience: 5,
       turn: 1,
-      boardTile: 18,
+      boardTile: 31,
     });
     if (scene.label === "神祇登場") {
       await page.reload();
@@ -217,7 +220,10 @@ test("護心獅 uses a transparent portrait in the deity scene", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1080, height: 664 });
-  await loadBoard(page, [0.3, 0.1, 0.1, 0.1, 0.1, 0.9]);
+  await loadBoard(page, [0.3, 0.1, 0.1, 0.1, 0.1, 0.9], {
+    boardTile: 29,
+    previousTile: 28,
+  });
   await page.getByRole("button", { name: "擲骰" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("heading", { name: "護心獅" })).toBeVisible();

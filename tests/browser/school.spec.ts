@@ -226,6 +226,7 @@ for (const viewport of [landscape, portrait]) {
       ).toBeVisible();
       if (pass) await capture(page, "high-event");
       await page.getByRole("button", { name: "確定", exact: true }).click();
+      await page.getByRole("button", { name: "繼續前進" }).click();
       await expect(
         page.getByRole("heading", { name: "大學聯考", exact: true }),
       ).toBeVisible();
@@ -296,11 +297,16 @@ for (const viewport of [landscape, portrait]) {
       await expect(page.getByRole("dialog")).toContainText("戀愛系統即將開放");
       if (viewport === portrait) await capture(page, "university-love");
       await page.getByRole("button", { name: "確定", exact: true }).click();
+      await page.getByRole("button", { name: "繼續前進" }).click();
       await expect(
         page.getByRole("heading", { name: "大學畢業", exact: true }),
       ).toBeVisible();
       if (viewport === landscape) await capture(page, "graduation");
       await page.getByRole("button", { name: "查看結算" }).click();
+      await page
+        .getByRole("dialog")
+        .getByRole("button", { name: "繼續", exact: true })
+        .click();
       await expect(
         page.getByRole("heading", { name: "大學畢業結算" }),
       ).toBeVisible();

@@ -32,6 +32,7 @@ test("手機直向開局、重新整理讀檔，旋轉後轉移存檔", async ({
   await page.getByRole("button", { name: "查看開局結果" }).click();
   await expect(page.getByText("140", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "確認開局" }).click();
+  await page.getByRole("button", { name: "略過" }).click();
   await page.getByRole("button", { name: /研習社/ }).click();
   await expect(page.getByRole("heading", { name: "國中棋盤" })).toBeVisible();
   await expect
@@ -92,6 +93,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
   await page.getByLabel("名字").fill("小宇");
   await page.getByRole("button", { name: "查看開局結果" }).click();
   await page.getByRole("button", { name: "確認開局" }).click();
+  await page.getByRole("button", { name: "略過" }).click();
   await page.getByRole("button", { name: /研習社/ }).click();
 
   const tile = page.locator(".board-tile");
@@ -141,6 +143,9 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
     while (true) {
       // A turn can include a reward, a route choice and a landing notice.
       const confirm = dialog.getByRole("button", { name: "確定" });
+      const storyNext = dialog.getByRole("button", {
+        name: /^(繼續|繼續前進)$/,
+      });
       const outer = map.getByRole("button", { name: /沿外圈/ });
       await expect(
         page
@@ -161,6 +166,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
       if (await option.isVisible()) await option.click();
       else if (await event.isVisible()) await event.click();
       else if (await confirm.isVisible()) await confirm.click();
+      else if (await storyNext.isVisible()) await storyNext.click();
       else if (
         await dialog
           .getByRole("button", { name: "開始", exact: true })
@@ -188,6 +194,7 @@ test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) 
   await page.getByLabel("名字").fill("小宇");
   await page.getByRole("button", { name: "查看開局結果" }).click();
   await page.getByRole("button", { name: "確認開局" }).click();
+  await page.getByRole("button", { name: "略過" }).click();
   await page.getByRole("button", { name: /研習社/ }).click();
 
   const track = page.locator(".board-track");
@@ -310,6 +317,7 @@ test("橫直版均可切換全圖且鏡頭移動時不露出地圖外緣", async
   await page.getByLabel("名字").fill("小宇");
   await page.getByRole("button", { name: "查看開局結果" }).click();
   await page.getByRole("button", { name: "確認開局" }).click();
+  await page.getByRole("button", { name: "略過" }).click();
   await page.getByRole("button", { name: /研習社/ }).click();
 
   const map = page.locator(".board-map");
@@ -396,6 +404,7 @@ test("前景依接地點遮擋棋子，兩版圖示仍可辨認並可檢查錨�
   await page.getByLabel("名字").fill("小宇");
   await page.getByRole("button", { name: "查看開局結果" }).click();
   await page.getByRole("button", { name: "確認開局" }).click();
+  await page.getByRole("button", { name: "略過" }).click();
   await page.getByRole("button", { name: /研習社/ }).click();
 
   const track = page.locator(".board-track");
@@ -502,6 +511,7 @@ for (const portrait of [false, true]) {
     await page.getByLabel("名字").fill("小宇");
     await page.getByRole("button", { name: "查看開局結果" }).click();
     await page.getByRole("button", { name: "確認開局" }).click();
+    await page.getByRole("button", { name: "略過" }).click();
     await page.getByRole("button", { name: /研習社/ }).click();
     const roll = page.locator("#roll");
     const dialog = page.getByRole("dialog");

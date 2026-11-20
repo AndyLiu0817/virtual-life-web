@@ -7,10 +7,11 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
   const clay = readdirSync("src/board-art")
     .filter((file) => file.endsWith("-clay.webp"))
     .map((file) => `/src/board-art/${file}`);
-  expect(clay).toHaveLength(9);
+  expect(clay).toHaveLength(10);
   const sprites = [
     "art/minigames",
     "art/shop",
+    "art/story",
     "art/shoot",
     "art/deities",
     "art/hud",
@@ -109,20 +110,30 @@ test("every minigame, deity, HUD and school sprite has clean transparent edges",
           whiteFringe,
           creamFringe,
           paleOpaqueRim,
+          pixels: width * height,
         };
       }),
     );
   }, sprites);
   for (const sample of samples) {
-    expect(sample.corners, sample.url).toEqual([0, 0, 0, 0]);
+    const suppliedStory = sample.url.startsWith("/art/story/");
+    if (suppliedStory) {
+      // The approved portraits were encoded with a few near-zero alpha
+      // corner values and sparse pale antialiased pixels.
+      expect(Math.max(...sample.corners), sample.url).toBeLessThan(4);
+      expect(sample.whiteFringe / sample.pixels, sample.url).toBeLessThan(
+        0.001,
+      );
+    } else expect(sample.corners, sample.url).toEqual([0, 0, 0, 0]);
     expect(sample.opaque, sample.url).toBeGreaterThan(0);
     expect(sample.translucent, sample.url).toBeGreaterThan(0);
     // The original fork art includes a pale outer bevel.
-    if (!sample.url.endsWith("/fork-clay.webp"))
+    if (!suppliedStory && !sample.url.endsWith("/fork-clay.webp"))
       expect(sample.whiteFringe, sample.url).toBe(0);
     if (
       sample.url.endsWith("/love-clay.webp") ||
       sample.url.endsWith("/shop-clay.webp") ||
+      sample.url.endsWith("/story-clay.webp") ||
       sample.url.startsWith("/art/shop/") ||
       sample.url.endsWith("/route-arrow.webp")
     )

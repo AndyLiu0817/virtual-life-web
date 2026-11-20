@@ -107,6 +107,7 @@ test("橫式升學考輔助只排除錯誤選項，重整後接續並可錄取",
     stats: { ...player.stats, intellect: 220 },
     seenQuestionIds,
   });
+  await page.getByRole("button", { name: "繼續前進" }).click();
   await expect(page.locator(".assessment-help")).toContainText("剩餘 2 次");
   const attempt = (await readSave(page)).entranceAttempt!;
   expect(attempt.items.every(({ id }) => !seenQuestionIds.includes(id))).toBe(
@@ -150,6 +151,7 @@ test("升學考未錄取，回標題後讀檔仍是提前出社會結局", async
     turn: 15,
     stats: { ...player.stats, intellect: 99 },
   });
+  await page.getByRole("button", { name: "繼續前進" }).click();
   await expect(page.getByRole("button", { name: "智力輔助" })).toBeDisabled();
   for (let index = 0; index < 10; index++) await answer(page, index < 5);
   await expect(page.getByRole("heading", { name: "未錄取" })).toBeVisible();
