@@ -117,6 +117,38 @@ for (const viewport of [
     page,
   }) => {
     await page.setViewportSize(viewport);
+    const started: string[] = [];
+    await page.exposeFunction("recordExamAudio", (name: string) =>
+      started.push(name),
+    );
+    await page.addInitScript(() => {
+      const encoded = new WeakMap<ArrayBuffer, string>();
+      const decoded = new WeakMap<AudioBuffer, string>();
+      const arrayBuffer = Response.prototype.arrayBuffer;
+      const decode = AudioContext.prototype.decodeAudioData;
+      const start = AudioBufferSourceNode.prototype.start;
+      Response.prototype.arrayBuffer = async function () {
+        const data = await arrayBuffer.call(this);
+        if (/\/audio\//.test(this.url)) encoded.set(data, this.url);
+        return data;
+      };
+      AudioContext.prototype.decodeAudioData = async function (...args) {
+        const name = encoded.get(args[0]);
+        const buffer = await decode.apply(this, args);
+        if (name) decoded.set(buffer, name);
+        return buffer;
+      };
+      AudioBufferSourceNode.prototype.start = function (...args) {
+        start.apply(this, args);
+        const url = this.buffer && decoded.get(this.buffer);
+        if (
+          url &&
+          "recordExamAudio" in window &&
+          typeof window.recordExamAudio === "function"
+        )
+          window.recordExamAudio(url.split("/").at(-1)!);
+      };
+    });
     await seed(page, {
       ...high,
       turn: 16,
@@ -125,9 +157,11 @@ for (const viewport of [
     await expect(
       page.getByRole("heading", { name: "高中學測", exact: true }),
     ).toBeVisible();
+    await expect.poll(() => started).toContain("bgm_mg_memory.mp3");
     const original = (await readSave(page)).entranceAttempt!;
     expect(original.items.every(({ id }) => id.startsWith("gsat-"))).toBe(true);
     await answer(page, true);
+    await expect.poll(() => started).toContain("sfx_answer_right.mp3");
     await page.getByRole("button", { name: "智力輔助" }).click();
     await page.reload();
     await load(page);
@@ -163,6 +197,7 @@ for (const viewport of [
       exams: [{ id: "gsat", correct }],
     });
 
+    const previousStarts = started.length;
     await seed(page, { ...after, turn: 25 });
     await page.getByRole("button", { name: "繼續前進" }).click();
     await expect(
@@ -173,8 +208,14 @@ for (const viewport of [
         id.startsWith("joint-"),
       ),
     ).toBe(true);
+    await expect
+      .poll(() => started.slice(previousStarts))
+      .toContain("bgm_mg_memory.mp3");
     for (let index = 0; index < 10; index++)
       await answer(page, index < correct);
+    await expect
+      .poll(() => started.slice(previousStarts))
+      .toContain("sfx_answer_wrong.mp3");
     await expect(
       page.getByRole("heading", { name: "大學聯考放榜" }),
     ).toBeVisible();

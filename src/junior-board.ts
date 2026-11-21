@@ -1,3 +1,5 @@
+import { openAudioDialog, playEffect } from "./audio";
+import { openAudioSettings } from "./audio-settings";
 import { collectStory } from "./game/main-story";
 import { rememberStory, showStoryFragment } from "./story-view";
 import { activityPrompt, promptForClub, promptForShop } from "./activity-view";
@@ -204,6 +206,8 @@ export function showStageBoard(
   };
 
   notice.textContent = message;
+  find<HTMLButtonElement>("#board-audio").onclick = openAudioSettings;
+  find("#board-gallery").dataset.audioAction = "";
   find<HTMLButtonElement>("#save").onclick = () => {
     hud.closeMenu(false);
     orientationChange.disconnect();
@@ -237,6 +241,7 @@ export function showStageBoard(
   }
 
   async function animateStep(from: number, to: number) {
+    playEffect("pawn_step");
     if (!reducedMotion) {
       await new Promise<void>((resolve) => {
         const started = performance.now();
@@ -275,7 +280,7 @@ export function showStageBoard(
       .join("");
     return new Promise<number>((resolve) => {
       dialog.onclose = () => resolve(Number(dialog.returnValue));
-      dialog.showModal();
+      openAudioDialog(dialog);
     });
   }
 
@@ -355,10 +360,19 @@ export function showStageBoard(
     }
     await new Promise<void>((resolve) => {
       eventDialog.onclose = () => resolve();
-      eventDialog.showModal();
+      const effect =
+        outcome.kind === "good"
+          ? "event_good"
+          : outcome.kind === "bad"
+            ? "event_bad"
+            : "id" in outcome
+              ? "deity"
+              : "dialog_open";
+      openAudioDialog(eventDialog, effect);
     });
     if (outcome.kind === "offering" && eventDialog.returnValue === "offer") {
       save = payOffering(save);
+      status();
     }
     stage.replaceChildren();
     return outcome.kind === "deity";
@@ -378,7 +392,7 @@ export function showStageBoard(
         undefined,
         resolve,
       );
-      quizDialog.showModal();
+      openAudioDialog(quizDialog, "dialog_open", "mg_memory");
       find(".assessment-question").focus();
     });
     quizDialog.close();
@@ -476,6 +490,7 @@ export function showStageBoard(
   async function playTurn() {
     if (roll.disabled || stageFinished(board, save)) return;
     hud.closeMenu(false);
+    playEffect("dice_roll");
     roll.disabled = true;
     navigation.forEach((button) => (button.disabled = true));
     notice.textContent = "";
@@ -567,6 +582,7 @@ export function showStageBoard(
 
     const finished = finishTurn(save, deityJustArrived);
     save = finished.save;
+    playEffect("turn");
     status();
     persist();
     if (finished.turnaroundStarted)

@@ -1,3 +1,4 @@
+import { playBeat, playEffect } from "./audio";
 import { timedRound, type Round } from "./minigame-timing";
 import { secondRounds } from "./minigame-second-rounds";
 import { roundFeedback } from "./minigame-feedback";
@@ -57,12 +58,14 @@ const memory: Round = async ({ field, score, clock }) => {
       opened.push(index);
       if (opened.length < 2) return;
       if (deck[opened[0]] !== deck[opened[1]]) {
+        playEffect("mg_miss");
         penalty += memoryMismatchMs;
         roundFeedback(field, "＋2 秒", event);
         hideAt = performance.now() + 650;
         return;
       }
       opened.splice(0).forEach((i) => cards[i].classList.add("matched"));
+      playEffect("mg_hit");
       pairs++;
       paintScore();
       if (pairs === 8) finishRound();
@@ -121,6 +124,7 @@ const math: Round = async ({ field, score, clock }) => {
       const now = performance.now();
       if (now < readyAt || now - start >= duration * 1000) return;
       const right = question.options[i] === question.answer;
+      playEffect(right ? "mg_hit" : "mg_miss");
       if (right) correct++;
       else {
         correct = penalizeScore(correct, 1);
@@ -187,6 +191,7 @@ const shoot: Round = async ({ field, score, clock }) => {
       return;
 
     const hit = current !== undefined && event.target === current;
+    playEffect(hit ? "mg_hit" : "mg_miss");
     if (hit) {
       hits++;
       hideTarget();
@@ -228,41 +233,6 @@ const beatMs = 600;
 const leadMs = 1200;
 const hitWindow = 125;
 
-function scheduleBeat(start: number) {
-  if (!window.AudioContext) return;
-  let audio: AudioContext;
-  try {
-    audio = new AudioContext();
-  } catch {
-    return;
-  }
-  void audio
-    .resume()
-    .then(() => {
-      const first = audio.currentTime + (start - performance.now()) / 1000;
-      for (let i = 0; i < beatCount; i++) {
-        const at = first + (i * beatMs) / 1000;
-        if (at < audio.currentTime || audio.state !== "running") continue;
-        const tone = audio.createOscillator();
-        const gain = audio.createGain();
-        tone.frequency.value = i % 4 === 0 ? 740 : 520;
-        gain.gain.setValueAtTime(0.15, at);
-        gain.gain.exponentialRampToValueAtTime(0.001, at + 0.075);
-        tone.connect(gain).connect(audio.destination);
-        tone.start(at);
-        tone.stop(at + 0.08);
-        tone.onended = () => {
-          tone.disconnect();
-          gain.disconnect();
-        };
-      }
-    })
-    .catch(() => {
-      /* Visual cues work without audio. */
-    });
-  return audio;
-}
-
 const rhythm: Round = async ({ field, score, clock }) => {
   field.innerHTML = `<button class="mg-lane" type="button" aria-label="拍擊">
     <span class="mg-zone"></span>
@@ -280,7 +250,8 @@ const rhythm: Round = async ({ field, score, clock }) => {
   let active = -1;
   const start = performance.now() + leadMs;
   const end = (beatCount - 1) * beatMs + hitWindow;
-  const audio = scheduleBeat(start);
+  for (let i = 0; i < beatCount; i++)
+    playBeat(start + i * beatMs, i % 4 === 0 ? 740 : 520);
   score.textContent = "準確率 0%";
   const paintScore = () => {
     accuracy = rhythmAccuracy(hit.size, beatCount, stray);
@@ -296,9 +267,11 @@ const rhythm: Round = async ({ field, score, clock }) => {
       Math.abs(elapsed - index * beatMs) <= hitWindow &&
       !hit.has(index)
     ) {
+      playEffect("mg_hit");
       hit.add(index);
       notes[index].hidden = true;
     } else {
+      playEffect("mg_miss");
       stray++;
       roundFeedback(field, "亂點", event);
     }
@@ -335,7 +308,6 @@ const rhythm: Round = async ({ field, score, clock }) => {
     };
     requestAnimationFrame(frame);
   });
-  if (audio) void audio.close().catch(() => {});
   return { score: accuracy };
 };
 

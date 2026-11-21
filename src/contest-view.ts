@@ -1,3 +1,4 @@
+import { openAudioDialog, playEffect } from "./audio";
 import { isBoardStage } from "./data/school-board";
 import { activityPrompt } from "./activity-view";
 import { changeText, sceneArt } from "./event-view";
@@ -31,7 +32,7 @@ async function playTrivia(dialog: HTMLDialogElement, save: Save) {
     showAssessment(dialog, attempt, 0, undefined, () =>
       resolve(Math.round(performance.now() - start)),
     );
-    dialog.showModal();
+    openAudioDialog(dialog, "dialog_open", "mg_memory");
     dialog.querySelector<HTMLElement>(".assessment-question")!.focus();
     const start = performance.now();
   });
@@ -96,6 +97,7 @@ export async function playContest(
   }
   const reward = settleContest(save, match, event, performance, line);
   if (!reward) return save;
+  playEffect(reward.rank < 4 ? "mg_clear" : "mg_fail");
   const { name, unit } = contestEvents[event];
   await activityPrompt(activityDialog, {
     art: event === "rhythm" ? rhythmArt : auditorium(),

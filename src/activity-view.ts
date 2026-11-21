@@ -1,3 +1,4 @@
+import { openAudioDialog } from "./audio";
 import { changeText, sceneArt } from "./event-view";
 import {
   chooseClub,
@@ -63,7 +64,7 @@ export function activityPrompt(
       dialog.replaceChildren();
     };
   });
-  dialog.showModal();
+  openAudioDialog(dialog);
   if (scene.defaultChoice === undefined) dialog.querySelector("h2")!.focus();
   return result;
 }
@@ -172,6 +173,6 @@ export function promptForShop(
       resolve();
     };
   });
-  dialog.showModal();
+  openAudioDialog(dialog, "shop");
   return closed;
 }

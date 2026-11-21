@@ -1,3 +1,4 @@
+import { playEffect } from "./audio";
 import examResult from "../art/cg_exam_result_final.jpg";
 import { sceneArt } from "./event-view";
 import {
@@ -56,6 +57,11 @@ export function showAssessment(
         choice.disabled = item.removed === optionIndex;
         choice.textContent = `${"ABCD"[optionIndex]}  ${choice.disabled ? "已排除" : text}`;
         choice.onclick = () => {
+          playEffect(
+            question.options[optionIndex].correct
+              ? "answer_right"
+              : "answer_wrong",
+          );
           item.answer = optionIndex;
           if (index === attempt.items.length - 1) onComplete();
           else {

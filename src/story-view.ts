@@ -1,3 +1,4 @@
+import { openAudioDialog } from "./audio";
 import { sceneArt } from "./event-view";
 import {
   elementaryIds,
@@ -83,7 +84,12 @@ function dialogPage(markup: string, classes = "", cancel = false) {
       resolve(result);
     };
     document.body.append(dialog);
-    dialog.showModal();
+    const reminder = classes === "story-reminder";
+    openAudioDialog(
+      dialog,
+      reminder || classes === "story-gallery" ? "dialog_open" : "story",
+      reminder ? undefined : "story",
+    );
     dialog.querySelector<HTMLElement>("#story-heading")?.focus();
   });
 }
@@ -368,7 +374,7 @@ export async function playTrueStoryEnding(gender: Gender, reread = false) {
       <text x="46" y="21" font-size="7" fill="#63481e">317024</text></svg></div>`;
   teaser.oncancel = (event) => event.preventDefault();
   document.body.append(teaser);
-  teaser.showModal();
+  openAudioDialog(teaser, "story", "story");
   await new Promise((resolve) => window.setTimeout(resolve, 3000));
   teaser.close();
   teaser.remove();
