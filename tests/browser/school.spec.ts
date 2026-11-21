@@ -176,7 +176,7 @@ for (const viewport of [landscape, portrait]) {
         await page.locator("#roll").click();
         await page
           .getByRole("button", {
-            name: stage === "high" ? "離開" : "確定",
+            name: stage === "high" ? "離開" : "先不要",
             exact: true,
           })
           .click();
