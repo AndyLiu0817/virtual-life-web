@@ -108,7 +108,9 @@ try {
   await game.getByLabel("名字").fill("安安");
   await game.getByRole("button", { name: "查看開局結果" }).click();
   await game.getByRole("button", { name: "確認開局" }).click();
-  await game.getByRole("button", { name: "略過" }).click();
+  const opening = game.getByRole("dialog", { name: "失蹤人口" });
+  await expect(opening.getByText("主線故事・國中 1／5")).toBeVisible();
+  await opening.getByRole("button", { name: "繼續", exact: true }).click();
   await game.getByRole("button", { name: /研習社/ }).click();
   await expect(game.getByRole("heading", { name: "國中棋盤" })).toBeVisible();
   await expect(game.locator(".board-tile")).toHaveCount(42);

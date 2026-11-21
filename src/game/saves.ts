@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { elementaryIds, snapshotStage } from "./main-story";
+import { snapshotStage } from "./main-story";
 import { isBoardStage, schoolBoards } from "../data/school-board";
 import {
   BLOOD_TYPES,
@@ -117,7 +117,10 @@ const saveFields = z.object({
   retrogradeTurns: count,
   turnaroundTurns: count,
   retrogradeRepeated: z.boolean().default(false),
-  storyFragments: z.array(z.string()).default(elementaryIds),
+  storyFragments: z
+    .array(z.string())
+    .default([])
+    .transform((ids) => ids.filter((id) => !/^elem-[123]$/.test(id))),
   storyTilesUsed: z
     .array(
       z.object({
@@ -130,19 +133,31 @@ const saveFields = z.object({
   previousTile: count.nullable().default(null),
   nextTile: count.nullable().default(null),
 });
-const saveSchema = saveFields
-  .extend({
-    stageSnapshots: z
-      .object({
-        junior: saveFields.extend({ stage: z.literal("junior") }).optional(),
-        high: saveFields.extend({ stage: z.literal("high") }).optional(),
-        university: saveFields
-          .extend({ stage: z.literal("university") })
-          .optional(),
-      })
-      .default({}),
-  })
-  .transform((save) => {
+const saveWithSnapshots = saveFields.extend({
+  stageSnapshots: z
+    .object({
+      junior: saveFields.extend({ stage: z.literal("junior") }).optional(),
+      high: saveFields.extend({ stage: z.literal("high") }).optional(),
+      university: saveFields
+        .extend({ stage: z.literal("university") })
+        .optional(),
+    })
+    .default({}),
+});
+const saveSchema = saveWithSnapshots
+  .transform((save): z.output<typeof saveWithSnapshots> => {
+    if (save.stage === "elementary")
+      return snapshotStage({
+        ...save,
+        stage: "junior",
+        turn: 0,
+        ending: null,
+        entranceAttempt: null,
+        examResultPending: false,
+        boardTile: schoolBoards.junior.start,
+        previousTile: null,
+        nextTile: null,
+      });
     if (!isBoardStage(save.stage)) return save;
     const board = schoolBoards[save.stage];
     const tile = board.tiles[save.boardTile];

@@ -1,8 +1,8 @@
 import { openAudioDialog } from "./audio";
 import { sceneArt } from "./event-view";
 import {
-  elementaryIds,
   galleryRecord,
+  juniorOpening,
   stageStory,
   stampYear,
   story,
@@ -17,8 +17,6 @@ import worldmap from "../art/story/cg_world_map_1280.jpg";
 import male from "../art/story/cg_graduation_male_1280.jpg";
 import female from "../art/story/cg_graduation_female_1280.jpg";
 import father from "../art/story/father_memory.jpg";
-import boy from "../art/hero_boy_elem_final.jpg";
-import girl from "../art/hero_girl_elem_final.jpg";
 import "./story-view.css";
 
 const people = import.meta.glob<string>("../art/story/*.webp", {
@@ -44,12 +42,7 @@ const background = (scene: string, gender: Gender) =>
 const img = (url: string, css: string) =>
   `<img class="${css}" src="${url}" alt="">`;
 
-function art(
-  scene: string,
-  figure: string | null,
-  gender: Gender,
-  childhood = false,
-) {
+function art(scene: string, figure: string | null, gender: Gender) {
   if (figure?.startsWith("npc:")) return sceneArt(scene, figure.slice(4));
   const person =
     figure === "father"
@@ -57,13 +50,7 @@ function art(
       : figure
         ? img(people[`../art/story/${figure}.webp`], "event-npc")
         : "";
-  return (
-    img(background(scene, gender), "event-background") +
-    person +
-    (childhood
-      ? `<span class="portrait story-child">${img(gender === "boy" ? boy : girl, "story-child-art")}</span>`
-      : "")
-  );
+  return img(background(scene, gender), "event-background") + person;
 }
 
 const option = (value: string, label: string, disabled = false) =>
@@ -115,23 +102,28 @@ export function showStoryFragment(
   gender: Gender,
   controls = option("next", "繼續"),
   reread = false,
-  skip = false,
 ) {
   const label = `主線故事・${storyStageNames[fragment.stage]} ${fragment.order}／${stageStory(fragment.stage).length}`;
+  const classes = [
+    reread && "story-reread",
+    fragment.id === juniorOpening.id && "story-junior-opening",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return dialogPage(
     sceneMarkup(
       fragment.title,
-      `<p>${fragment.text}</p><p class="story-hook">${fragment.hook}</p>
-    ${fragment.stage !== "elementary" && !reread ? '<p class="story-note">已收入記憶畫廊</p>' : ""}`,
+      `${fragment.text
+        .split("\n")
+        .map((paragraph) => `<p>${paragraph}</p>`)
+        .join("")}<p class="story-hook">${fragment.hook}</p>
+    ${!reread ? '<p class="story-note">已收入記憶畫廊</p>' : ""}`,
       controls,
-      art(fragment.scene, fragment.figure, gender, fragment.id === "elem-1"),
+      art(fragment.scene, fragment.figure, gender),
       fragment.scene,
       label,
-      skip
-        ? '<button class="story-skip action" type="submit" value="skip">略過</button>'
-        : "",
     ),
-    reread ? "story-reread" : "",
+    classes,
     reread,
   );
 }
@@ -140,30 +132,11 @@ export function rememberStory(save: Save, ending = false) {
   galleryRecord(() => window.localStorage, save.storyFragments, true, ending);
 }
 
-export async function playElementaryStory(save: Save) {
-  for (const fragment of stageStory("elementary")) {
-    if (
-      (await showStoryFragment(
-        fragment,
-        save.gender,
-        undefined,
-        false,
-        fragment.order === 1,
-      )) === "skip"
-    )
-      break;
-  }
-  const updated = { ...save, storyFragments: elementaryIds };
-  rememberStory(updated);
-  return updated;
-}
-
 function pin() {
   return `<span class="story-pin">${img(worldmap, "story-map-thumb")}<i aria-hidden="true"></i></span>`;
 }
 
 const closure: Record<StoryStage, string> = {
-  elementary: "你開始學會等待。",
   junior: "你開始懷疑，也開始長大。",
   high: "最痛的那幾年，你沒有放手。",
   university: "所有的明信片，都寄到了。",
@@ -209,10 +182,7 @@ function isLocked(stage: StoryStage, save?: Save) {
 
 export const replayButtons = (save: Save) =>
   storyStages
-    .filter(
-      (stage): stage is BoardStage =>
-        stage !== "elementary" && Boolean(save.stageSnapshots[stage]),
-    )
+    .filter((stage) => Boolean(save.stageSnapshots[stage]))
     .map((stage) =>
       option(`restart:${stage}`, `從${storyStageNames[stage]}起點重玩`),
     )
@@ -253,7 +223,7 @@ export async function openStoryGallery(
             ? `<button class="story-postcard" value="true-ending">${img(graduationStoryArt(gender), "story-card-art")}<strong>第十八張明信片</strong></button>`
             : "";
         return `<section class="story-shelf"><header><h3>${storyStageNames[stage]} ${count}／${total}</h3>
-        ${stage !== "elementary" && save?.stageSnapshots[stage] ? option(`restart:${stage}`, `從${storyStageNames[stage]}起點重玩`) : ""}</header>
+        ${save?.stageSnapshots[stage] ? option(`restart:${stage}`, `從${storyStageNames[stage]}起點重玩`) : ""}</header>
         <div class="story-cards">${cards}${special}</div>
         ${count === total ? `<div class="story-closure">${pin()}<p>${closure[stage]}</p></div>` : ""}</section>`;
       })
@@ -292,10 +262,11 @@ export async function openStoryGallery(
 export const bittersweetCopy =
   "畢業典禮後，阿公把第十八張明信片交給你，卡片卻被雨水暈開，只看得清『謝謝你』三個字。阿公一直叫你阿誠，你沒有糾正他，只是握著他的手回家。";
 export function showBittersweet(save: Save) {
+  const { count, total } = storyProgress(save.storyFragments);
   return dialogPage(
     sceneMarkup(
       "第十八張明信片",
-      `<p>${bittersweetCopy}</p><p class="story-note">主線故事 ${storyProgress(save.storyFragments).count}／19。從學段起點重玩補齊碎片，可以看見真正的結局。</p>`,
+      `<p>${bittersweetCopy}</p><p class="story-note">主線故事 ${count}／${total}。從學段起點重玩補齊碎片，可以看見真正的結局。</p>`,
       option("next", "繼續") +
         option("gallery", "記憶畫廊") +
         replayButtons(save),

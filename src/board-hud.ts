@@ -1,3 +1,4 @@
+import { isBoardStage } from "./data/school-board";
 import { playEffect } from "./audio";
 import { storyProgress } from "./game/main-story";
 import { diceCount } from "./game/board";
@@ -11,7 +12,7 @@ import "./board-hud.css";
 
 const sprites = import.meta.glob<string>(
   [
-    "../art/hud/avatar-{boy,girl}-*.webp",
+    "../art/hud/avatar-{boy,girl}-{junior,high,uni}-*.webp",
     "../art/hud/deity-*.webp",
     "../art/hud/{intellect,morality,charm,fitness,dice-disabled-1,close-normal-1}.webp",
   ],
@@ -19,7 +20,6 @@ const sprites = import.meta.glob<string>(
 );
 const sprite = (name: string) => sprites[`../art/hud/${name}.webp`];
 const schools = {
-  elementary: { title: "小學", art: "elem", target: 100 },
   junior: { title: "國中", art: "junior", target: 200 },
   high: { title: "高中", art: "high", target: 350 },
   university: { title: "大學", art: "uni", target: 500 },
@@ -217,10 +217,11 @@ export function boardHud(root: HTMLElement, turns: number) {
   }
 
   function update(save: Save) {
-    const school =
-      save.stage in schools
-        ? (save.stage as keyof typeof schools)
-        : (save.education ?? "junior");
+    const school = isBoardStage(save.stage)
+      ? save.stage
+      : save.education && isBoardStage(save.education)
+        ? save.education
+        : "junior";
     const { title, art, target } = schools[school];
     const deity = activeDeity(save);
     const partner = currentPartner(save.partner);
