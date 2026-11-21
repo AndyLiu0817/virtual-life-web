@@ -1,13 +1,19 @@
 import { playEffect, setMusic } from "./audio";
 import { openAudioSettings } from "./audio-settings";
-import { restartStage, snapshotStage, storyEnding } from "./game/main-story";
+import {
+  juniorOpening,
+  restartStage,
+  snapshotStage,
+  storyEnding,
+  storyProgress,
+} from "./game/main-story";
 import {
   confirmStoryRestart,
   openStoryGallery,
-  playElementaryStory,
   playTrueStoryEnding,
   rememberStory,
   showBittersweet,
+  showStoryFragment,
   stageStoryReminder,
 } from "./story-view";
 import { showStageBoard } from "./junior-board";
@@ -162,8 +168,8 @@ const numbers = (length: number) =>
 const birthdays = numbers(12).flatMap((month) =>
   numbers(daysInMonth(month)).map((day) => ({ month, day })),
 );
-const portrait = (gender: Profile["gender"], stage: "elem" | "junior") =>
-  `<span class="portrait"><img src="${assets.heroes[stage][gender]}" alt=""></span>`;
+const portrait = (gender: Profile["gender"]) =>
+  `<span class="portrait"><img src="${assets.heroes.junior[gender]}" alt=""></span>`;
 
 function setup(profile = initialProfile) {
   panel(
@@ -172,8 +178,8 @@ function setup(profile = initialProfile) {
     <div class="setup-grid">
       <fieldset class="characters"><legend>選擇主角</legend>
         <div class="hero-options">
-          <label><input type="radio" name="gender" value="boy">${portrait("boy", "elem")}男主角</label>
-          <label><input type="radio" name="gender" value="girl">${portrait("girl", "elem")}女主角</label>
+          <label><input type="radio" name="gender" value="boy">${portrait("boy")}男主角</label>
+          <label><input type="radio" name="gender" value="girl">${portrait("girl")}女主角</label>
         </div>
       </fieldset>
       <div class="fields">
@@ -259,8 +265,8 @@ function setup(profile = initialProfile) {
   action("back", title);
 }
 
-function character(save: Save, stage: "elem" | "junior") {
-  return `<div class="character">${portrait(save.gender, stage)}<div>
+function character(save: Save) {
+  return `<div class="character">${portrait(save.gender)}<div>
       <h2 id="character-name"></h2>
       <p>${save.gender === "boy" ? "男主角" : "女主角"} · ${save.birthday.month} 月 ${save.birthday.day} 日</p>
       <p>${save.zodiac}座 · ${save.bloodType} 型 · ${save.season}</p>
@@ -279,7 +285,7 @@ function confirmOpening(profile: Profile) {
   const { bonuses } = calculateOpening(profile.birthday, profile.bloodType);
   panel(
     "確認開局結果",
-    `${character(save, "elem")}
+    `${character(save)}
     <h2>開局加成</h2>
     <ul class="bonuses">${bonuses
       .map(
@@ -291,6 +297,7 @@ function confirmOpening(profile: Profile) {
   );
   element("#character-name").textContent = save.name;
   action("edit", () => setup(profile));
+  const confirm = element<HTMLButtonElement>("#confirm");
   action("confirm", async () => {
     try {
       if (
@@ -298,16 +305,24 @@ function confirmOpening(profile: Profile) {
         !window.confirm("開始新人生將覆蓋自動存檔。確定開始嗎？")
       )
         return;
-      const updated = snapshotStage(await playElementaryStory(save));
+      confirm.disabled = true;
+      await showStoryFragment(juniorOpening, save.gender);
+      const updated = snapshotStage({
+        ...save,
+        storyFragments: [juniorOpening.id],
+      });
+      const { count, total } = storyProgress(updated.storyFragments, "junior");
       const warning = persistExam(updated);
       board(
         updated,
-        ["已收集主線故事・國小 3／3，可在記憶畫廊重看", warning]
+        [`已收集主線故事・國中 ${count}／${total}，可在記憶畫廊重看`, warning]
           .filter(Boolean)
           .join(" "),
       );
     } catch {
       notice(new Error("無法自動存檔，請確認瀏覽器允許儲存網站資料。"));
+    } finally {
+      confirm.disabled = false;
     }
   });
 }
@@ -320,7 +335,7 @@ function board(save: Save, message = ""): void {
   if (!isBoardStage(save.stage)) {
     panel(
       "國中棋盤（下一步製作中）",
-      `${character(save, "junior")}${endingActions()}`,
+      `${character(save)}${endingActions()}`,
       "junior",
     );
     element("#character-name").textContent = save.name;

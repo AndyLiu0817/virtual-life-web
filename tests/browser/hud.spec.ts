@@ -437,7 +437,7 @@ test("mounted HUD updates avatars, grade, targets and value motion", async ({
     );
   }, boardSave);
   for (const [index, [stage, label, target]] of [
-    ["boy-elem", "小學", "100"],
+    ["boy-junior", "國中 2 年級", "200"],
     ["girl-junior", "國中 2 年級", "200"],
     ["boy-high", "高中 1 年級", "350"],
     ["girl-uni", "大學 1 年級", "500"],

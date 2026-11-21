@@ -34,13 +34,6 @@ dialog.story-dialog {
   font-size: 0.9rem;
   color: #4c6863;
 }
-.story-skip {
-  position: absolute;
-  top: 0.65rem;
-  right: 0.65rem;
-  min-height: 38px;
-  min-width: 64px;
-}
 .story-photo {
   position: absolute;
   left: 18%;
@@ -52,15 +45,6 @@ dialog.story-dialog {
   padding: 5px;
   background: #fff8e7;
   box-shadow: 0 6px 12px #31261a6e;
-}
-.portrait.story-child {
-  position: absolute;
-  right: 7%;
-  bottom: 5%;
-  width: auto;
-  height: 58%;
-  max-width: 35%;
-  border-radius: 0.5rem;
 }
 .story-reminder {
   max-width: 650px;
@@ -319,6 +303,9 @@ dialog.story-black {
   }
 }
 @media (orientation: portrait) {
+  .story-junior-opening .story-stage {
+    height: clamp(150px, 29dvh, 275px);
+  }
   .story-stage,
   .story-stage[data-scene="graduation"] {
     height: clamp(180px, 33dvh, 300px);

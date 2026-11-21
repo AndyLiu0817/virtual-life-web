@@ -4,7 +4,6 @@ import { schoolBoards } from "../src/data/school-board";
 import { juniorLoop, juniorShortcut } from "../src/data/junior-routes";
 import {
   collectStory,
-  elementaryIds,
   galleryRecord,
   restartStage,
   snapshotStage,
@@ -21,11 +20,10 @@ const player = createSave({
   bloodType: "A",
 });
 
-it("十九個碎片都有唯一 ID、指定學段順序與本文", () => {
-  expect(story).toHaveLength(19);
-  expect(new Set(story.map(({ id }) => id)).size).toBe(19);
+it("十六個碎片都有唯一 ID、指定學段順序與本文", () => {
+  expect(story).toHaveLength(16);
+  expect(new Set(story.map(({ id }) => id)).size).toBe(16);
   for (const [stage, count] of [
-    ["elementary", 3],
     ["junior", 5],
     ["high", 6],
     ["university", 5],
@@ -88,11 +86,11 @@ it("故事格依序收集，同格與集滿只增加經驗，不動四維、現�
 });
 
 it("快照維持非巢狀，重玩還原資源與起點、清空該學段碎片並保留考試", () => {
-  const initial = snapshotStage({ ...player, storyFragments: elementaryIds });
+  const initial = snapshotStage({ ...player, storyFragments: [] });
   const high = snapshotStage({
     ...initial,
     stage: "high",
-    storyFragments: [...elementaryIds, "junior-1"],
+    storyFragments: ["junior-1"],
   });
   const moved = collectStory(
     { ...high, turn: 18, boardTile: 7, cash: 1234 },
@@ -109,7 +107,7 @@ it("快照維持非巢狀，重玩還原資源與起點、清空該學段碎片�
     cash: high.cash,
     stats: high.stats,
     storyTilesUsed: [],
-    storyFragments: [...elementaryIds, "junior-1"],
+    storyFragments: ["junior-1"],
     exams: late.exams,
   });
   expect(replay.stageSnapshots).toEqual(high.stageSnapshots);
@@ -117,19 +115,71 @@ it("快照維持非巢狀，重玩還原資源與起點、清空該學段碎片�
   expect(restartStage(replay, "university")).toBeUndefined();
 });
 
-it("舊版存檔自動補國小而保留版本 1，畫廊遇到讀寫失敗仍使用本局資料", () => {
+it("舊版存檔缺少主線欄位時使用空陣列", () => {
   const { stageSnapshots, storyFragments, storyTilesUsed, ...old } = player;
   expect(importSave(JSON.stringify(old))).toMatchObject({
     version: 1,
-    storyFragments: elementaryIds,
+    storyFragments: [],
     storyTilesUsed: [],
     stageSnapshots: {},
   });
+});
+
+it("讀檔移除舊碎片，包含學段快照，並將國小進度移到國中起點", () => {
+  const legacyIds = ["elem-1", "elem-2", "elem-3"];
+  const original = snapshotStage({ ...player, storyFragments: ["junior-1"] });
+  const junior = {
+    ...original.stageSnapshots.junior!,
+    storyFragments: [...legacyIds, "junior-1"],
+  };
+  const old = {
+    ...original,
+    storyFragments: [...legacyIds, "junior-1"],
+    stageSnapshots: { junior },
+  };
+  const restored = importSave(JSON.stringify(old));
+  expect(restored.storyFragments).toEqual(["junior-1"]);
+  expect(restored.stageSnapshots.junior?.storyFragments).toEqual(["junior-1"]);
+  const migrated = importSave(
+    JSON.stringify({
+      ...old,
+      stage: "elementary",
+      turn: 5,
+      boardTile: 9,
+      previousTile: 8,
+      nextTile: 10,
+      storyFragments: legacyIds,
+    }),
+  );
+  expect(migrated).toMatchObject({
+    stage: "junior",
+    turn: 0,
+    boardTile: schoolBoards.junior.start,
+    previousTile: null,
+    nextTile: null,
+    storyFragments: [],
+    stageSnapshots: {
+      junior: { stage: "junior", turn: 0, storyFragments: [] },
+    },
+  });
+});
+
+it("開局碎片隨國中快照保留，第一個故事格給下一段", () => {
+  expect(player.storyFragments).toEqual([]);
+  const opening = snapshotStage({ ...player, storyFragments: ["junior-1"] });
+  const landed = collectStory(opening, "junior", 1);
+  expect(landed.fragment?.id).toBe("junior-2");
+  expect(restartStage(landed.save, "junior")?.storyFragments).toEqual([
+    "junior-1",
+  ]);
+});
+
+it("畫廊遇到讀寫失敗仍使用本局資料，並移除全域舊碎片", () => {
   expect(
     galleryRecord(() => {
       throw Error();
-    }, elementaryIds),
-  ).toMatchObject({ seen: elementaryIds, unavailable: true });
+    }, ["junior-2"]),
+  ).toMatchObject({ seen: ["junior-2"], unavailable: true });
   expect(
     galleryRecord(
       () => ({
@@ -138,11 +188,11 @@ it("舊版存檔自動補國小而保留版本 1，畫廊遇到讀寫失敗仍�
           throw Error();
         },
       }),
-      elementaryIds,
+      ["junior-2"],
       true,
     ),
-  ).toMatchObject({ seen: elementaryIds, unavailable: true });
-  let record = "";
+  ).toMatchObject({ seen: ["junior-2"], unavailable: true });
+  let record = JSON.stringify({ seen: ["elem-1", "elem-2", "elem-3"] });
   const storage = () => ({
     getItem: () => record || null,
     setItem: (_key: string, value: string) => {
@@ -150,11 +200,11 @@ it("舊版存檔自動補國小而保留版本 1，畫廊遇到讀寫失敗仍�
     },
   });
   galleryRecord(storage, ["junior-1"], true);
-  galleryRecord(storage, elementaryIds, true);
-  expect(galleryRecord(storage).seen).toEqual([...elementaryIds, "junior-1"]);
+  galleryRecord(storage, ["junior-2"], true);
+  expect(galleryRecord(storage).seen).toEqual(["junior-1", "junior-2"]);
 });
 
-it("只有畢業且 19 片齊全才是真結局，其餘結局使用各自的故事加句", () => {
+it("只有畢業且 16 片齊全才是真結局，其餘結局使用各自的故事加句", () => {
   const graduate = {
     ...player,
     stage: "graduated",
@@ -165,7 +215,7 @@ it("只有畢業且 19 片齊全才是真結局，其餘結局使用各自的故
   expect(
     storyEnding({
       ...graduate,
-      storyFragments: graduate.storyFragments.slice(0, 18),
+      storyFragments: graduate.storyFragments.slice(0, -1),
     }),
   ).toBe("bittersweet");
   expect(

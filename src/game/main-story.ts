@@ -3,7 +3,6 @@ import type { BoardStage } from "../data/school-board";
 import type { Save } from "./saves";
 
 export const storyStageNames = {
-  elementary: "國小",
   junior: "國中",
   high: "高中",
   university: "大學",
@@ -16,7 +15,7 @@ export const story = data.fragments as ((typeof data.fragments)[number] & {
 export const stampYear = data.stampYear;
 export const stageStory = (stage: StoryStage) =>
   story.filter((fragment) => fragment.stage === stage);
-export const elementaryIds = stageStory("elementary").map(({ id }) => id);
+export const juniorOpening = stageStory("junior")[0];
 export const storyProgress = (ids: readonly string[], stage?: StoryStage) => {
   const fragments = stage ? stageStory(stage) : story;
   return {
@@ -65,7 +64,9 @@ export function restartStage(save: Save, stage: BoardStage): Save | undefined {
   return {
     ...snapshot,
     storyFragments: snapshot.storyFragments.filter(
-      (id) => !currentIds.includes(id),
+      (id) =>
+        !currentIds.includes(id) ||
+        (stage === "junior" && id === juniorOpening.id),
     ),
     storyTilesUsed: snapshot.storyTilesUsed.filter(
       (entry) => entry.stage !== stage,
