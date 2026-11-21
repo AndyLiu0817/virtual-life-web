@@ -3,8 +3,8 @@ import titleLandscape from "../art/title_kv_landscape_final.jpg";
 import titlePortrait from "../art/title_kv_portrait_final.jpg";
 import logo from "../art/logo_final.jpg";
 import button from "../art/button_states_final.jpg";
-import boyJunior from "../art/hero_boy_junior_final.jpg";
-import girlJunior from "../art/hero_girl_junior_final.jpg";
+import boyJunior from "../art/hero_boy_junior_final-portrait.jpg";
+import girlJunior from "../art/hero_girl_junior_final-portrait.jpg";
 
 export const assets = {
   title: { landscape: titleLandscape, portrait: titlePortrait },

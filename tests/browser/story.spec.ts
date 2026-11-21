@@ -96,17 +96,19 @@ for (const [direction, width, height] of [
       await page.getByLabel("名字").fill("安安");
       await expect(page.locator(".hero-options img").nth(0)).toHaveAttribute(
         "src",
-        /hero_boy_junior_final/,
+        /hero_boy_junior_final-portrait/,
       );
       await expect(page.locator(".hero-options img").nth(1)).toHaveAttribute(
         "src",
-        /hero_girl_junior_final/,
+        /hero_girl_junior_final-portrait/,
       );
+      const gender = direction === "portrait" ? "girl" : "boy";
+      await page.locator(`[name="gender"][value="${gender}"]`).check();
       await capture(page, "setup", direction);
       await page.getByRole("button", { name: "查看開局結果" }).click();
       await expect(page.locator(".character .portrait img")).toHaveAttribute(
         "src",
-        /hero_boy_junior_final/,
+        new RegExp(`hero_${gender}_junior_final-portrait`),
       );
       await capture(page, "confirm-opening", direction);
       await page.getByRole("button", { name: "確認開局" }).click();
