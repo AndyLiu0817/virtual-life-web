@@ -1,3 +1,4 @@
+import { openAudioDialog, playEffect, setDialogMusic } from "./audio";
 import {
   minigames,
   pickMinigame,
@@ -42,10 +43,15 @@ export async function playMinigameRound(
     game,
     `<h2 id="activity-title">${title}</h2>
     <p>${definition.instructions}</p>
-    <button class="action mg-confirm" type="button">開始</button>`,
+    <button class="action mg-confirm" type="button" data-audio-action>開始</button>`,
   );
-  dialog.showModal();
+  openAudioDialog(
+    dialog,
+    title === definition.name ? "game_start" : "dialog_open",
+  );
   await confirmation(dialog);
+  playEffect("game_start");
+  setDialogMusic(dialog, `mg_${game}`);
   dialog.innerHTML = `<section class="mg-play" data-game="${game}">
     ${game === "diff" || game === "whack" || game === "catch" ? "" : minigameBackground(game)}
     <header class="mg-hud">
@@ -76,6 +82,7 @@ export async function playMinigame(dialog: HTMLDialogElement, save: Save) {
   const game = pickMinigame();
   const result = await playMinigameRound(dialog, game);
   const reward = settleMinigame(save, game, result);
+  playEffect(reward.tier === "未達" ? "mg_fail" : "mg_clear");
   const { name, normal, excellent, unit, stat } = minigames[game];
   const target = (threshold: number) =>
     game === "memory"
@@ -93,7 +100,7 @@ export async function playMinigame(dialog: HTMLDialogElement, save: Save) {
     <dl class="mg-goals"><div><dt>普通</dt><dd>${target(normal)}</dd></div>
     <div><dt>優秀</dt><dd>${target(excellent)}</dd></div></dl>
     <p class="mg-reward">${STAT_LABELS[stat]} ＋${reward.stat}・現金 ＋${reward.cash} 元</p>
-    <button class="action mg-confirm" type="button">確定</button>`,
+    <button class="action mg-confirm" type="button" data-audio-action>確定</button>`,
   );
   await confirmation(dialog);
   await closeMinigame(dialog);

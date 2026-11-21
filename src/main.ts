@@ -1,3 +1,5 @@
+import { playEffect, setMusic } from "./audio";
+import { openAudioSettings } from "./audio-settings";
 import { restartStage, snapshotStage, storyEnding } from "./game/main-story";
 import {
   confirmStoryRestart,
@@ -97,6 +99,7 @@ function readSlots() {
 }
 
 function title() {
+  setMusic("title");
   const records = readSlots();
   show(`<div class="stage title">${backdrop("title")}
     <h1 class="brand"><img alt="${gameName}" src="${assets.logo}"></h1>
@@ -105,13 +108,16 @@ function title() {
       ${button("continue", "繼續遊戲", !records.some((record) => record.save))}
       ${button("gallery", "記憶畫廊")}
       ${button("import", "匯入存檔")}
+      <button id="title-audio" class="action" type="button" data-audio-action>音訊設定</button>
       <input type="file" id="file" accept=".json,application/json" hidden>
       <p id="notice" role="status"></p>
     </nav>
   </div>`);
+  action("title-audio", openAudioSettings);
   action("start", () => setup());
   action("continue", () => selectSlot("load"));
   const file = element<HTMLInputElement>("#file");
+  element("#gallery").dataset.audioAction = "";
   action("gallery", () =>
     openStoryGallery(undefined, records.find(({ save }) => save)?.save?.gender),
   );
@@ -312,6 +318,7 @@ function board(save: Save, message = "") {
   }
 
   const school = schoolBoards[save.stage];
+  setMusic(`board_${school.stage}`);
   if (stageFinished(school, save)) return completeSchool(save);
   if (school.stage === "junior") return openBoard(save, school, message);
   return loadSchool(save, school, message);
@@ -359,6 +366,7 @@ async function loadSchool(save: Save, school: SchoolBoard, message: string) {
   }
 
   if (!needsIntro) return openBoard(save, school, message);
+  playEffect("turn");
   const heading = stage === "high" ? "升上高中" : "進入大學";
   const dialogue =
     stage === "high"
@@ -427,6 +435,7 @@ function persistExam(save: Save) {
 }
 
 function entranceExam(save: Save) {
+  setMusic("mg_memory");
   const attempt =
     save.entranceAttempt ??
     startAssessment(
@@ -464,6 +473,7 @@ function schoolResult(save: Save, message: string) {
       ({ id }) => id === (university ? "universityEntrance" : "highEntrance"),
     );
   const passed = save.stage === (university ? "university" : "high");
+  setMusic(passed ? (university ? "board_high" : "board_junior") : "story");
   show(
     resultScene(
       university ? "大學聯考放榜" : "升高中考試放榜",
@@ -473,7 +483,9 @@ function schoolResult(save: Save, message: string) {
       passed,
     ),
   );
+  element("#continue-result").dataset.audioAction = "";
   action("continue-result", () => {
+    playEffect("turn");
     const acknowledged = {
       ...save,
       examResultPending: false,
@@ -486,6 +498,7 @@ function schoolResult(save: Save, message: string) {
 }
 
 function showEnding(save: Save, message: string) {
+  setMusic("story");
   const graduated =
     save.ending === "universityGraduate" || save.stage === "graduated";
   const high = save.ending === "universityExamFail";
@@ -607,6 +620,7 @@ function download(save: Save) {
 }
 
 function selectSlot(mode: SlotMode, pending?: Save) {
+  setMusic("title");
   const records = readSlots();
   const heading = { load: "繼續遊戲", write: "儲存遊戲", import: "匯入存檔" }[
     mode

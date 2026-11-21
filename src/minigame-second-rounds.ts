@@ -1,3 +1,4 @@
+import { playEffect } from "./audio";
 import { roundFeedback } from "./minigame-feedback";
 import { catchPoints, minigames, whackPoints } from "./game/minigames";
 import { differenceHotspots } from "./game/differences";
@@ -75,6 +76,7 @@ const whack: Round = async ({ field, score, clock }) => {
       elapsed % period < visible;
     if (hit) {
       const teacher = critterName === "teacher";
+      playEffect(teacher ? "mg_miss" : "mg_hit");
       hits = whackPoints(hits, teacher);
       score.textContent = signScore.textContent = `命中 ${hits} 隻`;
       if (teacher) roundFeedback(field, "−2", event);
@@ -89,6 +91,7 @@ const whack: Round = async ({ field, score, clock }) => {
         : sprite("whack", "burst") + sprite("whack", "hammer-glow");
       critter.classList.add("struck");
     } else {
+      playEffect("mg_miss");
       puffUntil = elapsed + 260;
     }
     const effect = hit ? impact : puff;
@@ -203,6 +206,7 @@ const diff: Round = async ({ field, score, clock }) => {
         }
       });
       if (match === -1) {
+        playEffect("mg_miss");
         misses++;
         lockedUntil = elapsed + 1000;
         roundFeedback(field, "點錯", event);
@@ -211,6 +215,7 @@ const diff: Round = async ({ field, score, clock }) => {
         mark.textContent = "×";
         mark.hidden = false;
       } else if (!found.has(match)) {
+        playEffect("mg_hit");
         found.add(match);
         rings.forEach((side) => side[match].classList.add("found"));
         score.textContent = `找到 ${found.size} ／ 5 處`;
@@ -357,6 +362,7 @@ const catchFruit: Round = async ({ field, score, clock }) => {
         active.delete(item);
         item.element.remove();
         if (Math.abs(item.x - center) <= 0.135) {
+          playEffect(item.junk ? "mg_miss" : "mg_hit");
           caught = catchPoints(caught, item.junk);
           if (item.junk) {
             const bounds = basket.getBoundingClientRect();
@@ -365,7 +371,10 @@ const catchFruit: Round = async ({ field, score, clock }) => {
               clientY: bounds.y,
             });
           }
-        } else if (!item.junk) misses++;
+        } else if (!item.junk) {
+          playEffect("mg_miss");
+          misses++;
+        }
         paint();
       }
       return false;
@@ -435,11 +444,13 @@ const stack: Round = async ({ field, score, clock }) => {
       const left = Math.max(top, x);
       const right = Math.min(top + width, x + width);
       if (right <= left) {
+        playEffect("mg_miss");
         ended = true;
         roundFeedback(field, "沒疊中", dropPoint!);
       } else {
         if (right - left < width - 0.0001)
           roundFeedback(field, "切掉了", dropPoint!, false);
+        playEffect("mg_hit");
         const layer = document.createElement("div");
         block(layer, layers + 1);
         layer.style.left = `${x * 100}%`;

@@ -1,3 +1,4 @@
+import { playEffect } from "./audio";
 import { storyProgress } from "./game/main-story";
 import { diceCount } from "./game/board";
 import { clubs, isClubId } from "./game/clubs";
@@ -99,6 +100,7 @@ export const boardHudMarkup = (
         <button class="hud-clay" id="save" type="button">儲存到存檔格</button>
         <button class="hud-clay" id="board-gallery" type="button">記憶畫廊</button>
         <button class="hud-clay" id="export" type="button">匯出存檔</button>
+        <button class="hud-clay" id="board-audio" type="button" data-audio-action>音訊設定</button>
         <button class="hud-clay" id="home" type="button">回標題</button>
       </div>
     </section>
@@ -159,6 +161,7 @@ export function boardHud(root: HTMLElement, turns: number) {
       !menu.hidden &&
       event.relatedTarget instanceof HTMLElement &&
       !menu.contains(event.relatedTarget) &&
+      !event.relatedTarget.closest(".audio-settings") &&
       !event.relatedTarget.matches("[aria-controls=hud-menu]")
     )
       closeMenu(false);
@@ -261,7 +264,19 @@ export function boardHud(root: HTMLElement, turns: number) {
     }
     cash.querySelector(".hud-value")!.textContent =
       `${save.cash.toLocaleString("zh-TW")} 元`;
-    if (previous) delta(cash, save.cash - previous.cash);
+    if (previous) {
+      const old = previous;
+      const changes = [
+        save.cash - previous.cash,
+        ...Array.from(
+          statRows.keys(),
+          (key) => save.stats[key] - old.stats[key],
+        ),
+      ];
+      delta(cash, changes[0]);
+      if (changes.some((change) => change > 0)) playEffect("gain");
+      if (changes.some((change) => change < 0)) playEffect("loss");
+    }
     previous = { stats: { ...save.stats }, cash: save.cash };
 
     const clubId = save.clubHistory.find(
