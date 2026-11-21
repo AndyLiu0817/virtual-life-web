@@ -12,7 +12,8 @@ import {
 } from "./game/clubs";
 import { nextMatch } from "./game/contests";
 import type { SchoolBoard } from "./data/school-board";
-import { gsatDue, handleLoveTile } from "./game/school";
+import { gsatDue } from "./game/school";
+import { playLoveTile } from "./love-view";
 import { tileLabels } from "./data/junior";
 import routeArrow from "../art/route-arrow.webp";
 import { boardCamera } from "./board-camera";
@@ -66,6 +67,8 @@ export function showStageBoard(
 ) {
   let save = initial;
   const debugMode = new URLSearchParams(location.search).get("debug");
+  const debugLove =
+    import.meta.env.DEV && debugMode === "love" && board.stage === "university";
   const showRoadArt = debugMode === "road" && !!board.roadMaps;
   const debug = debugMode === "path" || showRoadArt;
   const maps = showRoadArt ? board.roadMaps! : board.maps;
@@ -84,7 +87,8 @@ export function showStageBoard(
       </svg>
       <div class="board-routes" role="group" hidden></div></div>
     </div>
-    ${boardHudMarkup(debug)}
+    ${boardHudMarkup(debug, debugLove)}
+    <dialog class="love-dialog" aria-labelledby="love-title"></dialog>
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
       <h2 id="board-prompt"></h2><p class="board-detail"></p><div class="actions"></div>
     </form></dialog>
@@ -187,6 +191,7 @@ export function showStageBoard(
   const eventDialog = find<HTMLDialogElement>(
     ".event-dialog:not(.activity-dialog)",
   );
+  const loveDialog = find<HTMLDialogElement>(".love-dialog");
   const activityDialog = find<HTMLDialogElement>(".activity-dialog");
   const roll = find<HTMLButtonElement>("#roll");
   const dice = find(".dice");
@@ -577,7 +582,7 @@ export function showStageBoard(
         save = updated;
         status();
       });
-    if (kind === "love") await prompt("愛情", handleLoveTile(save));
+    if (kind === "love") save = await playLoveTile(loveDialog, save);
     if (kind === "game") save = await playMinigame(activityDialog, save);
 
     const finished = finishTurn(save, deityJustArrived);
@@ -610,6 +615,23 @@ export function showStageBoard(
   status();
   placePawn("stand");
   roll.onclick = () => void playTurn();
+  if (debugLove) {
+    find<HTMLButtonElement>("#debug-love").onclick = async () => {
+      if (roll.disabled || stageFinished(board, save)) return;
+      hud.closeMenu(false);
+      roll.disabled = true;
+      navigation.forEach((button) => (button.disabled = true));
+      const tile = board.tiles.findIndex(({ kind }) => kind === "love");
+      save = { ...save, boardTile: tile, previousTile: null, nextTile: null };
+      placePawn("stand");
+      save = await playLoveTile(loveDialog, save);
+      status();
+      persist();
+      navigation.forEach((button) => (button.disabled = false));
+      roll.disabled = false;
+      roll.focus();
+    };
+  }
   find("h1").focus({ preventScroll: true });
 
   async function startBoard() {

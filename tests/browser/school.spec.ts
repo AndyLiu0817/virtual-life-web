@@ -176,7 +176,7 @@ for (const viewport of [landscape, portrait]) {
         await page.locator("#roll").click();
         await page
           .getByRole("button", {
-            name: stage === "high" ? "離開" : "確定",
+            name: stage === "high" ? "離開" : "先不要",
             exact: true,
           })
           .click();
@@ -290,15 +290,19 @@ for (const viewport of [landscape, portrait]) {
       await seed(page, {
         ...save,
         turn: 39,
+        partner: "chen_boyu",
+        metPartners: ["chen_boyu"],
+        dating: true,
+        affection: 82,
         stats: { ...save.stats, intellect: 9999 },
       });
       await expect(page.locator(".hud-stage")).toHaveText("大學 4 年級");
       await expect(page.locator(".hud-turn dd")).toHaveText("40 ／ 40");
       await capture(page, `university-hud-${direction}`);
       await page.locator("#roll").click();
-      await expect(page.getByRole("dialog")).toContainText("戀愛系統即將開放");
+      await expect(page.getByRole("dialog")).toContainText("陳柏宇");
       if (viewport === portrait) await capture(page, "university-love");
-      await page.getByRole("button", { name: "確定", exact: true }).click();
+      await page.getByRole("button", { name: "先不要", exact: true }).click();
       await page.getByRole("button", { name: "繼續前進" }).click();
       await expect(
         page.getByRole("heading", { name: "大學畢業", exact: true }),
@@ -312,7 +316,9 @@ for (const viewport of [landscape, portrait]) {
       await expect(
         page.getByRole("heading", { name: "大學畢業結算" }),
       ).toBeVisible();
-      await expect(page.getByText("交往對象 —")).toBeVisible();
+      await expect(
+        page.getByText("交往對象 陳柏宇・愛情度 82 ／ 99"),
+      ).toBeVisible();
       await expect(page.getByText("9999", { exact: true })).toBeVisible();
       await capture(page, `graduation-summary-${direction}`);
       await page.getByRole("button", { name: "下一章預告" }).click();
@@ -846,8 +852,8 @@ if (process.env.STEP_9A_SCREENSHOTS) {
     await seed(page, schoolSave("university"));
     await page.locator("#roll").click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog).toContainText("戀愛系統即將開放");
-    await dialog.getByRole("button", { name: "確定" }).click();
+    await expect(dialog).toContainText("想認識誰？");
+    await dialog.getByRole("button", { name: "先不要" }).click();
     await expect(page.locator("#roll")).toBeEnabled();
     const icon = page.locator('[data-tile="2"] .paver-top');
     const box = (await icon.boundingBox())!;

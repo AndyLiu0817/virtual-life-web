@@ -5,6 +5,8 @@ import { clubs, isClubId } from "./game/clubs";
 import { activeDeity, deities } from "./game/deities";
 import { STAT_LABELS, type Stat } from "./game/opening";
 import type { Save } from "./game/saves";
+import { currentPartner } from "./data/love-partners";
+import { portraitUrl } from "./love-art";
 import "./board-hud.css";
 
 const sprites = import.meta.glob<string>(
@@ -43,6 +45,7 @@ const hudFrame = (position: "desktop" | "mobile") =>
 
 export const boardHudMarkup = (
   debug: boolean,
+  debugLove = false,
 ) => `<section class="board-controls" aria-label="玩家儀表板">
   ${hudFrame("desktop")}
   <div class="board-status">
@@ -94,8 +97,10 @@ export const boardHudMarkup = (
       <button class="hud-close" type="button" aria-label="關閉選單">
         <img src="${sprite("close-normal-1")}" alt="">
       </button>
+      <p class="hud-love" hidden><img alt=""><span></span></p>
       <dl class="hud-badges hud-badges-drawer"></dl>
       <div class="actions">
+        ${debugLove ? '<button class="hud-clay" id="debug-love" type="button">除錯：跳到愛情格</button>' : ""}
         <button class="hud-clay" id="overview" type="button" aria-pressed="false">看全圖</button>
         <button class="hud-clay" id="save" type="button">儲存到存檔格</button>
         <button class="hud-clay" id="board-gallery" type="button">記憶畫廊</button>
@@ -116,6 +121,7 @@ export function boardHud(root: HTMLElement, turns: number) {
   const triggers = root.querySelectorAll<HTMLButtonElement>(
     "[aria-controls=hud-menu]",
   );
+  const love = menu.querySelector<HTMLElement>(".hud-love")!;
   let opener: HTMLButtonElement | undefined;
 
   function closeMenu(restoreFocus = true) {
@@ -217,6 +223,13 @@ export function boardHud(root: HTMLElement, turns: number) {
         : (save.education ?? "junior");
     const { title, art, target } = schools[school];
     const deity = activeDeity(save);
+    const partner = currentPartner(save.partner);
+    love.hidden = !partner;
+    if (partner) {
+      love.querySelector("img")!.src = portraitUrl(partner.id);
+      love.querySelector("span")!.textContent =
+        `${partner.name} ・ ${save.dating ? "交往中" : "已認識"} ・ 愛情度 ${save.affection} ／ ${save.dating ? 99 : 60}`;
+    }
     name.textContent = save.name;
     date.textContent = `生日 ${save.birthday.month}/${save.birthday.day}`;
     heading.textContent = `${title}棋盤`;

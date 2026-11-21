@@ -83,7 +83,3 @@ export function graduate(save: Save): Save {
     updatedAt: new Date().toISOString(),
   };
 }
-
-export function handleLoveTile(_save: Readonly<Save>) {
-  return "有人朝你揮手，你也揮了回去。走近才發現，你們都在跟同一隻校貓打招呼。戀愛系統即將開放。";
-}
