@@ -1,3 +1,4 @@
+import { currentPartner } from "./data/love-partners";
 import { clubs, isClubId } from "./game/clubs";
 import { activeDeity, deities } from "./game/deities";
 import { contestEvents, contestRanks } from "./game/contests";
@@ -70,6 +71,7 @@ export function graduationDetails(save: Save) {
     [...save.exams].reverse().find((entry) => entry.id === id)?.correct;
   const quizCount = save.exams.filter((entry) => entry.id === "quiz").length;
   const deity = activeDeity(save);
+  const partner = save.dating ? currentPartner(save.partner) : null;
   const games = ["優秀", "普通", "未達"]
     .map(
       (tier) =>
@@ -84,6 +86,6 @@ export function graduationDetails(save: Save) {
     <section><h2>虛擬城大賽</h2><ul>${contests || "<li>—</li>"}</ul></section>
     <section><h2>考試</h2><p>高中學測 ${exam("gsat") ?? "—"} ／ 10</p><p>大學聯考 ${exam("universityEntrance") ?? "—"} ／ 10</p><p>小考 ${quizCount} 次</p></section>
     <section><h2>小遊戲</h2><p>${games}</p></section>
-    <section><h2>其他紀錄</h2><p>收集卡 ${save.cards.length} 張・人生經驗 ${save.experience}</p><p>附身神祇 ${deity ? deities[deity.id].name : "—"}</p><p>交往對象 —</p></section>
+    <section><h2>其他紀錄</h2><p>收集卡 ${save.cards.length} 張・人生經驗 ${save.experience}</p><p>附身神祇 ${deity ? deities[deity.id].name : "—"}</p><p>交往對象 ${partner ? `${partner.name}・愛情度 ${save.affection} ／ 99` : "—"}</p></section>
   </div>`;
 }

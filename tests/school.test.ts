@@ -18,7 +18,6 @@ import {
   enterSchool,
   finishEntrance,
   graduate,
-  handleLoveTile,
   settleGsat,
   gsatDue,
 } from "../src/game/school";
@@ -158,7 +157,7 @@ it.each([5, 6])("聯考答對 %i 題，寫入學歷、考試與結局", (correct
   }
 });
 
-it("畢業保存原始紀錄，愛情格暫時只回傳訊息", () => {
+it("畢業保存原始紀錄", () => {
   const university = {
     ...enterSchool(player, "university"),
     turn: 40,
@@ -170,7 +169,6 @@ it("畢業保存原始紀錄，愛情格暫時只回傳訊息", () => {
     deity: { id: "sky-elder", remainingTurns: 2 },
   };
   const copy = structuredClone(university);
-  expect(handleLoveTile(university)).toContain("戀愛系統即將開放");
   expect(university).toEqual(copy);
   expect(graduate(university)).toEqual({
     ...university,

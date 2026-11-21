@@ -1,0 +1,200 @@
+.love-dialog {
+  width: min(740px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid #e9cbd1;
+  border-radius: 24px;
+  background: #fff9f6;
+  color: #442d38;
+  box-shadow: 0 20px 80px #29132d66;
+}
+
+.love-dialog::backdrop {
+  background: #241b3ab5;
+}
+
+.love-copy {
+  padding: 22px 28px 24px;
+}
+
+.love-copy h2 {
+  margin: 4px 0 10px;
+  font-size: clamp(1.3rem, 3.3vw, 1.85rem);
+  color: #442d38;
+  outline: none;
+}
+
+.love-label,
+.love-result {
+  margin: 0;
+  color: #823e59;
+  font-weight: 700;
+}
+
+.love-label {
+  font-size: 0.84rem;
+  letter-spacing: 0.07em;
+}
+
+.love-dialogue {
+  margin: 10px 0;
+  line-height: 1.65;
+}
+
+.love-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.love-actions button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid #dbaebf;
+  border-radius: 12px;
+  background: #f9e4ed;
+  color: #54273c;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.love-actions button:hover:not(:disabled),
+.love-actions button:focus-visible {
+  background: #f4c9dc;
+}
+
+.love-candidates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.love-actions .love-candidate {
+  display: grid;
+  grid-template-columns: clamp(60px, 20vw, 110px) 1fr;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+.love-candidate:disabled {
+  filter: grayscale(1);
+  cursor: default;
+}
+
+.love-candidate-art {
+  display: block;
+  position: relative;
+  min-height: 94px;
+  overflow: hidden;
+  background: #e4f2f4;
+}
+
+.love-candidate-art img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 19%;
+}
+
+.love-candidate-info {
+  align-self: center;
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.love-candidate-info strong {
+  font-size: 1.08rem;
+}
+
+.love-art {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: min(42dvh, 335px);
+  background: #f1d8e1;
+}
+
+.love-art :is(.event-background, .love-confession-bg) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.love-expression {
+  position: absolute;
+  height: 78%;
+  max-width: 44%;
+  object-fit: contain;
+  inset: auto auto 5% 50%;
+  transform: translateX(-50%);
+  border: 3px solid #fff9f6;
+  border-radius: 24px;
+  box-shadow: 0 8px 22px #281a3655;
+}
+
+.love-couple {
+  position: absolute;
+  inset: 8% 8% 0;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 6%;
+}
+
+.love-couple img {
+  width: 43%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 5px 10px #25163380);
+}
+
+.hud-love {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+}
+
+.hud-love[hidden] {
+  display: none;
+}
+
+.hud-love img {
+  width: 40px;
+  height: 44px;
+  border-radius: 9px;
+  object-fit: cover;
+  object-position: top;
+}
+
+@media (max-width: 550px) {
+  .love-copy {
+    padding: 16px;
+  }
+
+  .love-candidates {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .love-candidate-art {
+    min-height: 74px;
+  }
+
+  .love-scene .love-actions button {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}
