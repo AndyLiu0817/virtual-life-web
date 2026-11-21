@@ -1,0 +1,44 @@
+{
+  "name": "future-life-march",
+  "version": "0.1.0",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "build:game": "npm --prefix .. run build -- --outDir desktop/dist/game && node stage-game.mjs",
+    "build": "npm run build:game && electron-builder --win portable --x64 --publish never"
+  },
+  "devDependencies": {
+    "@fontsource-variable/noto-sans-tc": "5.3.1",
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.andyliu0817.virtuallife",
+    "productName": "未來人生・進行曲",
+    "artifactName": "FutureLifeMarch.exe",
+    "directories": {
+      "output": "dist/release"
+    },
+    "files": [
+      "main.cjs",
+      "shell.html",
+      "shell.js",
+      "dist/game/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../art",
+        "to": "art"
+      },
+      {
+        "from": "../audio",
+        "to": "audio"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.png",
+      "signAndEditExecutable": true
+    }
+  }
+}
