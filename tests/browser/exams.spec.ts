@@ -210,6 +210,9 @@ test("高中第 16 回踩到故事格會先讀故事，再進學測", async ({ p
     retrogradeTurns: 1,
     boardTile: tile - 1,
     previousTile: null,
+    competitions: [
+      { stage: "high", matchNumber: 1, event: "style", score: 300, rank: 1 },
+    ],
   });
   await page.locator("#roll").click();
   const story = page
