@@ -150,7 +150,7 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
       await expect(
         page
           .locator(
-            "dialog:modal, .board-routes:visible, #roll:enabled:visible, .assessment-screen:visible",
+            "dialog:modal, .board-routes:visible, #roll:enabled:visible, .assessment-screen:visible, .school-ending:visible",
           )
           .first(),
       ).toBeVisible();
@@ -176,12 +176,12 @@ test("岔路選擇、跨回合自動存檔、旋轉與結束畫面", async ({ pa
       else break;
     }
   }
-  await expect(page.getByRole("heading", { name: "升高中考試" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "升上高中" })).toBeVisible();
   await expect(roll).toHaveCount(0);
   await page.reload();
   await page.getByRole("button", { name: "繼續遊戲" }).click();
   await page.locator("#use-0").click();
-  await expect(page.getByRole("heading", { name: "升高中考試" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "升上高中" })).toBeVisible();
 });
 
 test("路徑除錯標示與逐格落點在旋轉後仍對齊", async ({ page }) => {
@@ -559,7 +559,8 @@ for (const portrait of [false, true]) {
     const withArt = await map.screenshot({ scale: "css" });
     const withoutArt = await map.screenshot({
       scale: "css",
-      style: ".paver-top { visibility: hidden !important; }",
+      style:
+        ".paver-top, .story-tile-postcard { visibility: hidden !important; }",
     });
     const bounds = (await map.boundingBox())!;
     const missing = await faces.evaluateAll(

@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { chooseClub } from "../../src/game/clubs";
 import { createSave, type Save } from "../../src/game/saves";
-import { questionBank } from "../../src/game/questions";
+import { schoolBoards } from "../../src/data/school-board";
+import { questionsById, startAssessment } from "../../src/game/questions";
 
 const slot = "virtual-life-web:v3:slot:0";
 const player = chooseClub(
@@ -15,7 +16,7 @@ const player = chooseClub(
   "study",
 );
 
-async function seed(page: Page, save: Save) {
+async function seed(page: Page, save: unknown) {
   await page.goto("/");
   await page.evaluate(
     ([key, data]) => localStorage.setItem(key, JSON.stringify(data)),
@@ -36,7 +37,9 @@ async function readSave(page: Page): Promise<Save> {
 
 async function answer(page: Page, correct: boolean) {
   const prompt = await page.locator(".assessment-question").textContent();
-  const question = questionBank.find((item) => item.prompt === prompt)!;
+  const question = [...questionsById.values()].find(
+    (item) => item.prompt === prompt,
+  )!;
   const index = question.options.findIndex(
     (option) => option.correct === correct,
   );
@@ -95,78 +98,165 @@ test("直式小考可觸控作答，結算獎勵和已出題目會存檔", async
   expect(save.cash).toBe(player.cash + 500);
 });
 
-test("橫式升學考輔助只排除錯誤選項，重整後接續並可錄取", async ({ page }) => {
-  await page.setViewportSize({ width: 1100, height: 650 });
-  await page.addInitScript(() => {
-    Math.random = () => 0.4;
-  });
-  const seenQuestionIds = questionBank.slice(0, 5).map(({ id }) => id);
-  await seed(page, {
+const high = chooseClub(
+  {
     ...player,
-    turn: 15,
-    stats: { ...player.stats, intellect: 220 },
-    seenQuestionIds,
-  });
-  await page.getByRole("button", { name: "繼續前進" }).click();
-  await expect(page.locator(".assessment-help")).toContainText("剩餘 2 次");
-  const attempt = (await readSave(page)).entranceAttempt!;
-  expect(attempt.items.every(({ id }) => !seenQuestionIds.includes(id))).toBe(
-    true,
-  );
-  await page.getByRole("button", { name: "智力輔助" }).click();
-  const removed = page.getByRole("button", { name: /已排除/ });
-  await expect(removed).toBeDisabled();
-  await expect(page.locator(".assessment-help")).toContainText("剩餘 1 次");
-  await capture(page, "exam-assist-landscape");
-  await page.reload();
-  await load(page);
-  await expect(removed).toBeDisabled();
-  await expect(page.locator(".assessment-help")).toContainText("剩餘 1 次");
-  for (let index = 0; index < 10; index++) await answer(page, index < 6);
-  await expect(page.getByRole("heading", { name: "錄取！" })).toBeVisible();
-  await expect(page.getByText("答對 6 ／ 10 題・錄取門檻 6 題")).toBeVisible();
-  await capture(page, "exam-pass");
-  await page.reload();
-  await load(page);
-  await page.getByRole("button", { name: "前往高中篇" }).click();
-  await expect(page.getByRole("heading", { name: "升上高中" })).toBeVisible();
-  const save = await readSave(page);
-  expect(save).toMatchObject({
     stage: "high",
     education: "junior",
-    entranceAttempt: null,
-    examResultPending: false,
+    stageIntroSeen: ["high"],
+  },
+  "high",
+  "study",
+);
+
+for (const viewport of [
+  { width: 1280, height: 800 },
+  { width: 390, height: 844 },
+]) {
+  test(`高中學測可存讀檔，放榜後續讀高三並參加聯考（${viewport.width}）`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await seed(page, {
+      ...high,
+      turn: 16,
+      stats: { ...high.stats, intellect: 220 },
+    });
+    await expect(
+      page.getByRole("heading", { name: "高中學測", exact: true }),
+    ).toBeVisible();
+    const original = (await readSave(page)).entranceAttempt!;
+    expect(original.items.every(({ id }) => id.startsWith("gsat-"))).toBe(true);
+    await answer(page, true);
+    await page.getByRole("button", { name: "智力輔助" }).click();
+    await page.reload();
+    await load(page);
+    await expect(page.locator(".assessment-meta")).toContainText(
+      "第 2 ／ 10 題",
+    );
+    await expect(page.getByRole("button", { name: /已排除/ })).toBeDisabled();
+    const resumed = (await readSave(page)).entranceAttempt!;
+    expect(resumed.items.map(({ id }) => id)).toEqual(
+      original.items.map(({ id }) => id),
+    );
+    const correct = viewport.width === 390 ? 5 : 6;
+    for (let index = 1; index < 10; index++)
+      await answer(page, index < correct);
+    await expect(
+      page.getByRole("heading", { name: "高中學測放榜" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`答對 ${correct} ／ 10 題・通過門檻 6 題`),
+    ).toBeVisible();
+    await page.reload();
+    await load(page);
+    await page
+      .getByRole("button", { name: "繼續前往高三、仍須參加大學聯考" })
+      .click();
+    await expect(page.locator(".hud-turn")).toContainText("17 ／ 25");
+    const after = await readSave(page);
+    expect(after).toMatchObject({
+      stage: "high",
+      turn: 16,
+      ending: null,
+      examResultPending: false,
+      exams: [{ id: "gsat", correct }],
+    });
+
+    await seed(page, { ...after, turn: 25 });
+    await page.getByRole("button", { name: "繼續前進" }).click();
+    await expect(
+      page.getByRole("heading", { name: "大學聯考", exact: true }),
+    ).toBeVisible();
+    expect(
+      (await readSave(page)).entranceAttempt!.items.every(({ id }) =>
+        id.startsWith("joint-"),
+      ),
+    ).toBe(true);
+    for (let index = 0; index < 10; index++)
+      await answer(page, index < correct);
+    await expect(
+      page.getByRole("heading", { name: "大學聯考放榜" }),
+    ).toBeVisible();
+    if (correct === 5) {
+      await page.getByRole("button", { name: "查看結局" }).click();
+      await expect(
+        page.getByRole("heading", { name: "聯考落榜" }),
+      ).toBeVisible();
+      expect(await readSave(page)).toMatchObject({
+        ending: "universityExamFail",
+        hiddenJobUnlock: true,
+      });
+    } else {
+      await page.getByRole("button", { name: "前往大學篇" }).click();
+      await expect(
+        page.getByRole("heading", { name: "進入大學" }),
+      ).toBeVisible();
+    }
   });
-  expect(save.exams).toEqual([{ id: "highEntrance", correct: 6 }]);
-  expect(save.seenQuestionIds).toHaveLength(15);
+}
+
+test("高中第 16 回踩到故事格會先讀故事，再進學測", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    Math.random = () => 0.1;
+  });
+  const tile = schoolBoards.high.tiles.findIndex(
+    ({ kind }) => kind === "story",
+  );
+  await seed(page, {
+    ...high,
+    turn: 15,
+    retrogradeTurns: 1,
+    boardTile: tile - 1,
+    previousTile: null,
+  });
+  await page.locator("#roll").click();
+  const story = page
+    .getByRole("dialog")
+    .filter({ hasText: "主線故事・高中 1／6" });
+  await expect(story).toBeVisible();
+  await story.getByRole("button", { name: "繼續" }).click();
+  await expect(
+    page.getByRole("heading", { name: "高中學測", exact: true }),
+  ).toBeVisible();
+  expect(await readSave(page)).toMatchObject({
+    turn: 16,
+    storyTilesUsed: [{ stage: "high", tile }],
+    entranceAttempt: { kind: "gsat" },
+  });
 });
 
-test("升學考未錄取，回標題後讀檔仍是提前出社會結局", async ({ page }) => {
-  await page.setViewportSize({ width: 1100, height: 650 });
-  await page.addInitScript(() => {
-    Math.random = () => 0.4;
-  });
-  await seed(page, {
+test("讀取舊國中落榜存檔會接到高中第 1 回", async ({ page }) => {
+  const old = {
     ...player,
-    turn: 15,
-    stats: { ...player.stats, intellect: 99 },
-  });
-  await page.getByRole("button", { name: "繼續前進" }).click();
-  await expect(page.getByRole("button", { name: "智力輔助" })).toBeDisabled();
-  for (let index = 0; index < 10; index++) await answer(page, index < 5);
-  await expect(page.getByRole("heading", { name: "未錄取" })).toBeVisible();
-  await expect(page.getByText("答對 5 ／ 10 題・錄取門檻 6 題")).toBeVisible();
-  await page.getByRole("button", { name: "查看結局" }).click();
-  const ending = page.getByRole("heading", { name: "提前出社會" });
-  await expect(ending).toBeVisible();
-  await capture(page, "early-exit");
-  await page.getByRole("button", { name: "回標題" }).click();
-  await load(page);
-  await expect(ending).toBeVisible();
-  expect(await readSave(page)).toMatchObject({
     stage: "earlyExit",
+    ending: "juniorEarlyExit",
+    turn: 15,
     education: "junior",
-    hiddenJobUnlock: false,
-    exams: [{ id: "highEntrance", correct: 5 }],
+    examResultPending: true,
+  };
+  await seed(page, old);
+  await expect(page.getByRole("heading", { name: "升上高中" })).toBeVisible();
+  await page.getByRole("button", { name: "開始", exact: true }).click();
+  await page.getByRole("button", { name: /研習社/ }).click();
+  await expect(page.locator(".hud-turn")).toContainText("1 ／ 25");
+  expect(await readSave(page)).toMatchObject({
+    stage: "high",
+    turn: 0,
+    ending: null,
+    examResultPending: false,
+    entranceAttempt: null,
   });
+});
+
+test("既有聯考作答可保留國中舊題及答案", async ({ page }) => {
+  const entranceAttempt = {
+    ...startAssessment("contestTrivia", []),
+    kind: "universityEntrance" as const,
+  };
+  entranceAttempt.items[0].answer = 1;
+  await seed(page, { ...high, turn: 25, entranceAttempt });
+  await expect(page.locator(".assessment-meta")).toContainText("第 2 ／ 10 題");
+  expect((await readSave(page)).entranceAttempt).toEqual(entranceAttempt);
 });

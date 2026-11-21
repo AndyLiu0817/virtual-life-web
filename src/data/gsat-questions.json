@@ -1,0 +1,1442 @@
+[
+  {
+    "id": "gsat-life-01",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "走在沒有人行道的路段時，哪種走法通常比較能及早看見來車？",
+    "options": [
+      {
+        "text": "背對來車、靠路肩前進",
+        "correct": false
+      },
+      {
+        "text": "面向來車、靠路邊行走",
+        "correct": true
+      },
+      {
+        "text": "走在車道正中央比較顯眼",
+        "correct": false
+      },
+      {
+        "text": "邊走邊聽耳機並低著頭",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-02",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "發現電線掉落在地面，最先應該做什麼？",
+    "options": [
+      {
+        "text": "直接用手把電線撥開",
+        "correct": false
+      },
+      {
+        "text": "踩住斷線以免它移動",
+        "correct": false
+      },
+      {
+        "text": "保持距離並通報臺電或 119",
+        "correct": true
+      },
+      {
+        "text": "先用雨傘把電線掛回電線杆",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-03",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "用微波爐加熱尚未剝殼、也未戳洞的整顆雞蛋，最可能發生什麼？",
+    "options": [
+      {
+        "text": "蛋會均勻變熟且殼保持完整",
+        "correct": false
+      },
+      {
+        "text": "蛋殼可能因內部壓力而爆裂",
+        "correct": true
+      },
+      {
+        "text": "蛋會立刻結成冰塊",
+        "correct": false
+      },
+      {
+        "text": "微波爐會把蛋變成水蒸氣後消失",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-04",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "信用卡帳單若只繳「最低應繳金額」，最主要的影響是什麼？",
+    "options": [
+      {
+        "text": "剩餘未繳的金額通常會繼續計息",
+        "correct": true
+      },
+      {
+        "text": "銀行會自動免除當期全部利息",
+        "correct": false
+      },
+      {
+        "text": "信用額度會立刻加倍",
+        "correct": false
+      },
+      {
+        "text": "這張卡會立刻被註銷",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-05",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "颱風警報發布後，陽臺上的盆栽較妥當的處理是什麼？",
+    "options": [
+      {
+        "text": "全部堆到陽臺欄杆外側透氣",
+        "correct": false
+      },
+      {
+        "text": "移入室內或固定，以免掉落傷人",
+        "correct": true
+      },
+      {
+        "text": "澆更多水增加重量就好",
+        "correct": false
+      },
+      {
+        "text": "打開窗戶讓盆栽自然風乾",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-06",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "發現同行的人皮膚乾熱、意識混亂，疑似中暑，哪項處理較適當？",
+    "options": [
+      {
+        "text": "圍上厚外套讓他繼續流汗",
+        "correct": false
+      },
+      {
+        "text": "立刻灌下大量冰咖啡提神",
+        "correct": false
+      },
+      {
+        "text": "移到陰涼處、鬆開衣物並補充水分，必要時送醫",
+        "correct": true
+      },
+      {
+        "text": "先做激烈伸展再跑步散熱",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-07",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "在臺灣騎機車採「兩段式左轉」，主要是為了什麼？",
+    "options": [
+      {
+        "text": "讓騎士有更多時間滑手機",
+        "correct": false
+      },
+      {
+        "text": "減少左轉車輛與直行車流動線衝突",
+        "correct": true
+      },
+      {
+        "text": "讓機車可以在快車道加速",
+        "correct": false
+      },
+      {
+        "text": "方便在路口中間臨時停車聊天",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-08",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "家中過期的處方藥，哪種處理較妥當？",
+    "options": [
+      {
+        "text": "全部倒進水槽沖走最省事",
+        "correct": false
+      },
+      {
+        "text": "送給有同樣症狀的親戚吃完",
+        "correct": false
+      },
+      {
+        "text": "依藥局或環保單位的回收方式處理",
+        "correct": true
+      },
+      {
+        "text": "混在一般廚餘裡一起丟",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-09",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "網路賣家要你先把錢轉進個人帳戶，才能「解鎖超低價限時商品」，較妥當的做法是？",
+    "options": [
+      {
+        "text": "先轉帳一半表示誠意",
+        "correct": false
+      },
+      {
+        "text": "要求對方再提供另一個私人帳戶",
+        "correct": false
+      },
+      {
+        "text": "不要轉帳，改走平台官方付款或放棄購買",
+        "correct": true
+      },
+      {
+        "text": "先告知身份證字號方便對帳",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-10",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "一只標示 100 瓦的燈泡，每天使用 4 小時，連續使用 30 天，耗電約幾度？",
+    "options": [
+      {
+        "text": "1.2 度",
+        "correct": false
+      },
+      {
+        "text": "12 度",
+        "correct": true
+      },
+      {
+        "text": "120 度",
+        "correct": false
+      },
+      {
+        "text": "400 度",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-11",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "要調製 300 克、鹽濃度 2% 的鹽水，需要放入幾克鹽？",
+    "options": [
+      {
+        "text": "2 克",
+        "correct": false
+      },
+      {
+        "text": "6 克",
+        "correct": true
+      },
+      {
+        "text": "15 克",
+        "correct": false
+      },
+      {
+        "text": "60 克",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-life-12",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "一份保險的自負額是 3,000 元。若這次屬於理賠範圍的損失是 20,000 元，保險給付通常是多少？",
+    "options": [
+      {
+        "text": "3,000 元",
+        "correct": false
+      },
+      {
+        "text": "17,000 元",
+        "correct": true
+      },
+      {
+        "text": "20,000 元",
+        "correct": false
+      },
+      {
+        "text": "23,000 元",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-01",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "臺灣本島最長的河流是哪一條？",
+    "options": [
+      {
+        "text": "淡水河",
+        "correct": false
+      },
+      {
+        "text": "濁水溪",
+        "correct": true
+      },
+      {
+        "text": "高屏溪",
+        "correct": false
+      },
+      {
+        "text": "立霧溪",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-02",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "太魯閣國家公園主要位於哪個縣市？",
+    "options": [
+      {
+        "text": "花蓮縣",
+        "correct": true
+      },
+      {
+        "text": "臺南市",
+        "correct": false
+      },
+      {
+        "text": "澎湖縣",
+        "correct": false
+      },
+      {
+        "text": "基隆市",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-03",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "日本的首都是哪一座城市？",
+    "options": [
+      {
+        "text": "大阪",
+        "correct": false
+      },
+      {
+        "text": "京都",
+        "correct": false
+      },
+      {
+        "text": "東京",
+        "correct": true
+      },
+      {
+        "text": "名古屋",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-04",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "北迴歸線有穿過臺灣哪個縣的陸地？",
+    "options": [
+      {
+        "text": "臺北市",
+        "correct": false
+      },
+      {
+        "text": "基隆市",
+        "correct": false
+      },
+      {
+        "text": "嘉義縣",
+        "correct": true
+      },
+      {
+        "text": "屏東縣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-05",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "臺灣冬季常出現較強的東北季風，這種氣流主要從哪個方向吹來？",
+    "options": [
+      {
+        "text": "由西南吹向東北",
+        "correct": false
+      },
+      {
+        "text": "由東北吹向西南",
+        "correct": true
+      },
+      {
+        "text": "由正南吹向正北",
+        "correct": false
+      },
+      {
+        "text": "由正西吹向正東",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-06",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "鄭成功擊敗荷蘭東印度公司、進入臺灣，大約是在哪個時期？",
+    "options": [
+      {
+        "text": "12 世紀初",
+        "correct": false
+      },
+      {
+        "text": "17 世紀中葉",
+        "correct": true
+      },
+      {
+        "text": "19 世紀末",
+        "correct": false
+      },
+      {
+        "text": "第二次世界大戰期間",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-07",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "墾丁國家公園位於哪個縣市？",
+    "options": [
+      {
+        "text": "宜蘭縣",
+        "correct": false
+      },
+      {
+        "text": "新竹縣",
+        "correct": false
+      },
+      {
+        "text": "屏東縣",
+        "correct": true
+      },
+      {
+        "text": "苗栗縣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-08",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "中央山脈在臺灣本島的走向與角色，哪項敘述最恰當？",
+    "options": [
+      {
+        "text": "大致呈東西走向，分隔南北氣候",
+        "correct": false
+      },
+      {
+        "text": "大致呈南北走向，是主要的分水嶺",
+        "correct": true
+      },
+      {
+        "text": "只出現在西部海岸，高度很低",
+        "correct": false
+      },
+      {
+        "text": "位於澎湖群島中央",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-09",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "第一次世界大戰爆發的年份是哪一年？",
+    "options": [
+      {
+        "text": "1840 年",
+        "correct": false
+      },
+      {
+        "text": "1914 年",
+        "correct": true
+      },
+      {
+        "text": "1939 年",
+        "correct": false
+      },
+      {
+        "text": "1960 年",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-10",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "哪一項條約使清廷把臺灣割讓給日本，臺灣因而進入日治時期？",
+    "options": [
+      {
+        "text": "南京條約",
+        "correct": false
+      },
+      {
+        "text": "馬關條約",
+        "correct": true
+      },
+      {
+        "text": "辛丑和約",
+        "correct": false
+      },
+      {
+        "text": "凡爾賽條約",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-11",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "嘉南平原能成為重要農業區，和下列哪個水利工程的關係最直接？",
+    "options": [
+      {
+        "text": "嘉南大圳",
+        "correct": true
+      },
+      {
+        "text": "蘇花公路",
+        "correct": false
+      },
+      {
+        "text": "臺北捷運",
+        "correct": false
+      },
+      {
+        "text": "雪山隧道",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-geo-12",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "若某地的經緯度大約是東經 121 度、北緯 25 度，它最接近哪裡？",
+    "options": [
+      {
+        "text": "臺灣北部",
+        "correct": true
+      },
+      {
+        "text": "澳洲南部",
+        "correct": false
+      },
+      {
+        "text": "北歐內陸",
+        "correct": false
+      },
+      {
+        "text": "南極大陸",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-01",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "在標準大氣壓下，純水開始沸騰的溫度約是多少？",
+    "options": [
+      {
+        "text": "攝氏 0 度",
+        "correct": false
+      },
+      {
+        "text": "攝氏 37 度",
+        "correct": false
+      },
+      {
+        "text": "攝氏 100 度",
+        "correct": true
+      },
+      {
+        "text": "攝氏 200 度",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-02",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "植物葉子呈現綠色，主要是因為哪種色素？",
+    "options": [
+      {
+        "text": "血紅素",
+        "correct": false
+      },
+      {
+        "text": "葉綠素",
+        "correct": true
+      },
+      {
+        "text": "黑色素",
+        "correct": false
+      },
+      {
+        "text": "胡蘿蔔素完全取代其他色素",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-03",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "在真空中聽不到平常的說話聲，最主要的原因是什麼？",
+    "options": [
+      {
+        "text": "真空裡光線太亮",
+        "correct": false
+      },
+      {
+        "text": "真空沒有可以傳遞聲波的介質",
+        "correct": true
+      },
+      {
+        "text": "真空會把聲音變成電",
+        "correct": false
+      },
+      {
+        "text": "人的耳朵在真空會自動關閉",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-04",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "地球會有四季變化，最主要是因為什麼？",
+    "options": [
+      {
+        "text": "月亮每月繞地球一圈",
+        "correct": false
+      },
+      {
+        "text": "地球公轉且地軸傾斜",
+        "correct": true
+      },
+      {
+        "text": "太陽本身每天大幅改變溫度",
+        "correct": false
+      },
+      {
+        "text": "地球磁場每隔一季就對調",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-05",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "歐姆定律描述的是哪一組關係？",
+    "options": [
+      {
+        "text": "電壓等於電流乘以電阻",
+        "correct": true
+      },
+      {
+        "text": "電壓等於電流除以電阻",
+        "correct": false
+      },
+      {
+        "text": "功率等於電阻減去電流",
+        "correct": false
+      },
+      {
+        "text": "電阻等於電壓加上電流",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-06",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "下列哪一項是哺乳類動物共有的重要特徵？",
+    "options": [
+      {
+        "text": "都會飛",
+        "correct": false
+      },
+      {
+        "text": "用乳汁哺育幼體",
+        "correct": true
+      },
+      {
+        "text": "全部生活在海里",
+        "correct": false
+      },
+      {
+        "text": "體表都有羽毛",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-07",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "討論全球暖化時，最常被提到、且濃度上升會加強温室效應的氣體是哪一種？",
+    "options": [
+      {
+        "text": "氮氣",
+        "correct": false
+      },
+      {
+        "text": "二氧化碳",
+        "correct": true
+      },
+      {
+        "text": "惰性氦氣",
+        "correct": false
+      },
+      {
+        "text": "水銀蒸氣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-08",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "凸透鏡對平行入射的光線，通常會產生什麼作用？",
+    "options": [
+      {
+        "text": "使光線會聚",
+        "correct": true
+      },
+      {
+        "text": "使光線完全消失",
+        "correct": false
+      },
+      {
+        "text": "把光線全部反射回原路",
+        "correct": false
+      },
+      {
+        "text": "把白光變成只有紫外線",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-09",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "酸與鹼發生中和反應時，通常會生成什麼？",
+    "options": [
+      {
+        "text": "只有氧氣",
+        "correct": false
+      },
+      {
+        "text": "鹽與水",
+        "correct": true
+      },
+      {
+        "text": "純金屬與煤炭",
+        "correct": false
+      },
+      {
+        "text": "只有臭氧",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-10",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "一塊物質的質量是 200 克，體積是 50 立方公分，它的密度是多少？",
+    "options": [
+      {
+        "text": "0.25 克／立方公分",
+        "correct": false
+      },
+      {
+        "text": "4 克／立方公分",
+        "correct": true
+      },
+      {
+        "text": "150 克／立方公分",
+        "correct": false
+      },
+      {
+        "text": "10,000 克／立方公分",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-11",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "在「草→兔→蛇→鷹」這條食物鏈中，誰是初級消費者？",
+    "options": [
+      {
+        "text": "草",
+        "correct": false
+      },
+      {
+        "text": "兔",
+        "correct": true
+      },
+      {
+        "text": "蛇",
+        "correct": false
+      },
+      {
+        "text": "鷹",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-nature-12",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "相同質量的銅塊與水吸收相同熱量時，銅塊溫度上升得比較多。這主要是因為銅的哪一項性質較小？",
+    "options": [
+      {
+        "text": "密度",
+        "correct": false
+      },
+      {
+        "text": "比熱",
+        "correct": true
+      },
+      {
+        "text": "熔點必然為零",
+        "correct": false
+      },
+      {
+        "text": "體積一定比較大",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-01",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "若 3x＋5＝20，x 的值是多少？",
+    "options": [
+      {
+        "text": "3",
+        "correct": false
+      },
+      {
+        "text": "5",
+        "correct": true
+      },
+      {
+        "text": "15",
+        "correct": false
+      },
+      {
+        "text": "25",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-02",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "一個數的 30% 是 18，這個數是多少？",
+    "options": [
+      {
+        "text": "48",
+        "correct": false
+      },
+      {
+        "text": "54",
+        "correct": false
+      },
+      {
+        "text": "60",
+        "correct": true
+      },
+      {
+        "text": "90",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-03",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "直角三角形的兩股長分別是 6 與 8，斜邊長是多少？",
+    "options": [
+      {
+        "text": "7",
+        "correct": false
+      },
+      {
+        "text": "10",
+        "correct": true
+      },
+      {
+        "text": "14",
+        "correct": false
+      },
+      {
+        "text": "48",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-04",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "一條直線通過 (0, 2) 與 (4, 10) 兩點，這條直線的斜率是多少？",
+    "options": [
+      {
+        "text": "1",
+        "correct": false
+      },
+      {
+        "text": "2",
+        "correct": true
+      },
+      {
+        "text": "4",
+        "correct": false
+      },
+      {
+        "text": "8",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-05",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "等差數列 3、7、11、15……的第 8 項是多少？",
+    "options": [
+      {
+        "text": "27",
+        "correct": false
+      },
+      {
+        "text": "31",
+        "correct": true
+      },
+      {
+        "text": "35",
+        "correct": false
+      },
+      {
+        "text": "43",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-06",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "一個圓的半徑是 7，面積是多少？（用 π 表示）",
+    "options": [
+      {
+        "text": "14π",
+        "correct": false
+      },
+      {
+        "text": "21π",
+        "correct": false
+      },
+      {
+        "text": "49π",
+        "correct": true
+      },
+      {
+        "text": "154π",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-07",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "一件商品原價 1,600 元，先漲價 25%，再打八折，現在售價是多少？",
+    "options": [
+      {
+        "text": "1,280 元",
+        "correct": false
+      },
+      {
+        "text": "1,440 元",
+        "correct": false
+      },
+      {
+        "text": "1,600 元",
+        "correct": true
+      },
+      {
+        "text": "1,800 元",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-08",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "袋中有 4 顆紅球、6 顆白球，球除了顏色都一樣。連抽兩顆都不放回，兩次都抽到紅球的機率是多少？",
+    "options": [
+      {
+        "text": "2／15",
+        "correct": true
+      },
+      {
+        "text": "4／25",
+        "correct": false
+      },
+      {
+        "text": "2／5",
+        "correct": false
+      },
+      {
+        "text": "7／15",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-09",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "不等式 2x－3＞7 的解是什麼？",
+    "options": [
+      {
+        "text": "x＞2",
+        "correct": false
+      },
+      {
+        "text": "x＞5",
+        "correct": true
+      },
+      {
+        "text": "x＜5",
+        "correct": false
+      },
+      {
+        "text": "x＝5",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-10",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "前五次測驗平均 72 分，第六次考 90 分。六次的新平均是多少？",
+    "options": [
+      {
+        "text": "74 分",
+        "correct": false
+      },
+      {
+        "text": "75 分",
+        "correct": true
+      },
+      {
+        "text": "81 分",
+        "correct": false
+      },
+      {
+        "text": "84 分",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-11",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "兩個不同正整數相差 5，乘積是 84。較大的那個數是多少？",
+    "options": [
+      {
+        "text": "7",
+        "correct": false
+      },
+      {
+        "text": "12",
+        "correct": true
+      },
+      {
+        "text": "14",
+        "correct": false
+      },
+      {
+        "text": "21",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-math-12",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "兩個相似三角形的對應邊比是 2：3。若較小那個三角形的面積是 20，較大那個的面積是多少？",
+    "options": [
+      {
+        "text": "30",
+        "correct": false
+      },
+      {
+        "text": "45",
+        "correct": true
+      },
+      {
+        "text": "60",
+        "correct": false
+      },
+      {
+        "text": "90",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-01",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "在中華民國的法律體系中，效力最高的是哪一部？",
+    "options": [
+      {
+        "text": "學校校規",
+        "correct": false
+      },
+      {
+        "text": "中華民國憲法",
+        "correct": true
+      },
+      {
+        "text": "商店會員條款",
+        "correct": false
+      },
+      {
+        "text": "班級生活公約",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-02",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "在臺灣，遇到竊盜、車禍糾紛或需要警察到場處理時，應撥哪個專線？",
+    "options": [
+      {
+        "text": "110",
+        "correct": true
+      },
+      {
+        "text": "113",
+        "correct": false
+      },
+      {
+        "text": "165",
+        "correct": false
+      },
+      {
+        "text": "1919",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-03",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "消費者在購買商品時，最應該被保障的基本權利之一是什麼？",
+    "options": [
+      {
+        "text": "可以任意不付款把商品帶回家",
+        "correct": false
+      },
+      {
+        "text": "獲得真實、充分的商品資訊",
+        "correct": true
+      },
+      {
+        "text": "要求店家取消所有標價",
+        "correct": false
+      },
+      {
+        "text": "強迫其他顧客一起購買",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-04",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "在中央政府體制中，最高行政機關是哪個？",
+    "options": [
+      {
+        "text": "行政院",
+        "correct": true
+      },
+      {
+        "text": "縣政府的民政課",
+        "correct": false
+      },
+      {
+        "text": "村里辦公室",
+        "correct": false
+      },
+      {
+        "text": "地方法院的書記處",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-05",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "依現行規定，在臺灣參加公職人員選舉投票，選民原則上需年滿幾歲？",
+    "options": [
+      {
+        "text": "16 歲",
+        "correct": false
+      },
+      {
+        "text": "18 歲",
+        "correct": true
+      },
+      {
+        "text": "20 歲",
+        "correct": false
+      },
+      {
+        "text": "21 歲",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-06",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "通貨膨脹最常被用來描述哪種現象？",
+    "options": [
+      {
+        "text": "只有單一商品當天降價",
+        "correct": false
+      },
+      {
+        "text": "物價普遍持續上漲，貨幣購買力下降",
+        "correct": true
+      },
+      {
+        "text": "失業立刻降到零",
+        "correct": false
+      },
+      {
+        "text": "匯率永遠固定不變",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-07",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "在社群平臺看到尚未查證的聳動新聞，較妥當的做法是什麼？",
+    "options": [
+      {
+        "text": "先大量轉發再來確認",
+        "correct": false
+      },
+      {
+        "text": "查證來源與事實後再決定是否分享",
+        "correct": true
+      },
+      {
+        "text": "只要標題夠驚人就當作真的",
+        "correct": false
+      },
+      {
+        "text": "把未經證實的內容改得更誇張",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-08",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "下列哪一項是中華民國憲法規定的人民義務之一？",
+    "options": [
+      {
+        "text": "依法納稅",
+        "correct": true
+      },
+      {
+        "text": "每天必須發文分享政治立場",
+        "correct": false
+      },
+      {
+        "text": "不得加入任何民間社團",
+        "correct": false
+      },
+      {
+        "text": "放棄所有財產繼承",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-09",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "法院在國家權力運作中，最主要的功能是什麼？",
+    "options": [
+      {
+        "text": "代替行政機關決定預算額度",
+        "correct": false
+      },
+      {
+        "text": "依法審判並解決爭端",
+        "correct": true
+      },
+      {
+        "text": "負責發行貨幣",
+        "correct": false
+      },
+      {
+        "text": "編寫中小學所有教科書",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-10",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "在其他條件不變時，若某商品的需求增加、供給不變，均衡價格通常會如何變化？",
+    "options": [
+      {
+        "text": "上升",
+        "correct": true
+      },
+      {
+        "text": "一定跌到零",
+        "correct": false
+      },
+      {
+        "text": "完全不受影響",
+        "correct": false
+      },
+      {
+        "text": "供給量會自動變成無限大",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-11",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "關於臺灣直轄市長的產生方式，哪項敘述正確？",
+    "options": [
+      {
+        "text": "由市民投票選舉產生",
+        "correct": true
+      },
+      {
+        "text": "一律由總統直接指派",
+        "correct": false
+      },
+      {
+        "text": "由鄰近縣市議長圈選",
+        "correct": false
+      },
+      {
+        "text": "由學校校長會議決定",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "gsat-society-12",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "關於言論自由，哪項理解較正確？",
+    "options": [
+      {
+        "text": "可以毫無限制地誹謗他人而不負責任",
+        "correct": false
+      },
+      {
+        "text": "是受保障的權利，但仍不得任意侵害他人名譽或觸犯法律",
+        "correct": true
+      },
+      {
+        "text": "只保障政府官員發言",
+        "correct": false
+      },
+      {
+        "text": "只要在網路發言就不受任何規範",
+        "correct": false
+      }
+    ]
+  }
+]

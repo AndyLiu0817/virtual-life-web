@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { elementaryIds } from "./main-story";
+import { elementaryIds, snapshotStage } from "./main-story";
 import { isBoardStage, schoolBoards } from "../data/school-board";
 import {
   BLOOD_TYPES,
@@ -13,7 +13,7 @@ import {
 import { clubStages } from "./clubs";
 import { contestEventIds } from "./contests";
 import { minigameIds, minigameTiers } from "./minigames";
-import { attemptSchema } from "./questions";
+import { allowsAssists, attemptSchema } from "./questions";
 
 export const SAVE_VERSION = 1;
 export const SLOT_NAMES = [
@@ -54,13 +54,12 @@ const saveFields = z.object({
   entranceAttempt: attemptSchema
     .refine(
       ({ kind, items }) =>
-        (kind === "highEntrance" || kind === "universityEntrance") &&
-        items.some(({ answer }) => answer === null),
+        allowsAssists(kind) && items.some(({ answer }) => answer === null),
     )
     .nullable()
     .default(null),
   ending: z
-    .enum(["juniorEarlyExit", "universityExamFail", "universityGraduate"])
+    .enum(["universityExamFail", "universityGraduate"])
     .nullable()
     .default(null),
   stageIntroSeen: z.array(z.enum(["high", "university"])).default([]),
@@ -139,8 +138,6 @@ const saveSchema = saveFields
       .default({}),
   })
   .transform((save) => {
-    if (save.stage === "earlyExit" && save.ending === null)
-      return { ...save, ending: "juniorEarlyExit" as const };
     if (!isBoardStage(save.stage)) return save;
     const board = schoolBoards[save.stage];
     const tile = board.tiles[save.boardTile];
@@ -229,6 +226,25 @@ export function createSave(profile: Profile): Save {
 export const exportSave = (save: Save) =>
   JSON.stringify(saveSchema.parse(save), null, 2);
 
+function isLegacyJuniorExit(data: unknown) {
+  if (!data || typeof data !== "object") return;
+  const save = data as Record<string, unknown>;
+  const attempt = save.entranceAttempt as { kind?: string } | null | undefined;
+  if (
+    attempt?.kind === "highEntrance" ||
+    save.ending === "juniorEarlyExit" ||
+    (save.stage === "earlyExit" &&
+      save.education !== "high" &&
+      save.ending == null) ||
+    (save.stage === "high" &&
+      save.education === "junior" &&
+      save.examResultPending === true &&
+      Array.isArray(save.exams) &&
+      save.exams.at(-1)?.id === "highEntrance")
+  )
+    return save;
+}
+
 export function importSave(text: string): Save {
   let data: unknown;
   try {
@@ -244,9 +260,26 @@ export function importSave(text: string): Save {
   ) {
     throw new Error("此存檔版本與目前遊戲不相容。");
   }
-  const parsed = saveSchema.safeParse(data);
+  const legacy = isLegacyJuniorExit(data);
+  const parsed = saveSchema.safeParse(
+    legacy
+      ? {
+          ...legacy,
+          stage: "high",
+          education: "junior",
+          turn: 0,
+          boardTile: schoolBoards.high.start,
+          previousTile: null,
+          nextTile: null,
+          ending: null,
+          entranceAttempt: null,
+          examResultPending: false,
+        }
+      : data,
+  );
+
   if (!parsed.success) throw new Error("存檔內容不完整或格式不正確。");
-  return parsed.data;
+  return legacy ? snapshotStage(parsed.data) : parsed.data;
 }
 
 export function saveStorage(storage: Pick<Storage, "getItem" | "setItem">) {

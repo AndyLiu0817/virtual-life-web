@@ -1,0 +1,1462 @@
+[
+  {
+    "id": "joint-life-01",
+    "category": "生活",
+    "difficulty": "easy",
+    "prompt": "室內火災且濃煙密布時，移動求生較適當的做法是什麼？",
+    "options": [
+      {
+        "text": "站直身體快速往最上樓層跑",
+        "correct": false
+      },
+      {
+        "text": "壓低身體，以濕布掩口鼻，朝安全出口移動",
+        "correct": true
+      },
+      {
+        "text": "打開所有電風扇把煙吹向自己",
+        "correct": false
+      },
+      {
+        "text": "躲進沒有出口的壁櫥等待煙自己散去",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-life-02",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "在臺灣，雇主對受僱者最基本的法定義務之一是什麼？",
+    "options": [
+      {
+        "text": "可以任意拖欠工資不必說明",
+        "correct": false
+      },
+      {
+        "text": "給付工資，並依法為勞工投保相關社會保險",
+        "correct": true
+      },
+      {
+        "text": "要求勞工放棄所有休息時間",
+        "correct": false
+      },
+      {
+        "text": "把勞工的健保卡借給其他人使用",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-life-03",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "商店在未告知、也未經同意的情況下，把顧客的手機號碼賣給其他公司做行銷，這樣最主要侵害了什麼？",
+    "options": [
+      {
+        "text": "個人資料應受保護的權利",
+        "correct": true
+      },
+      {
+        "text": "商店自己的進貨折扣",
+        "correct": false
+      },
+      {
+        "text": "顧客的身高體重紀錄",
+        "correct": false
+      },
+      {
+        "text": "電力公司的供電契約",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-life-04",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "發現有人突然倒地、叫喚沒有反應且沒有正常呼吸時，下列做法哪項最優先且適當？",
+    "options": [
+      {
+        "text": "先灌水試圖叫醒，再獨自離開",
+        "correct": false
+      },
+      {
+        "text": "立即呼叫救援，必要時依指示進行 CPR 並使用 AED",
+        "correct": true
+      },
+      {
+        "text": "先搬到車後座送去很遠的診所，途中不要呼救",
+        "correct": false
+      },
+      {
+        "text": "圍觀錄影即可，等待他自己醒來",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-life-05",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "夏天想節省冷氣用電，哪項做法通常較合理？",
+    "options": [
+      {
+        "text": "把溫度開到極低並長時間開著門",
+        "correct": false
+      },
+      {
+        "text": "適當提高設定溫度，並搭配風扇與關緊門窗",
+        "correct": true
+      },
+      {
+        "text": "白天拉開窗簾讓陽光直射室內再猛開冷氣",
+        "correct": false
+      },
+      {
+        "text": "在室外機上蓋厚布讓它更努力運轉",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-life-06",
+    "category": "生活",
+    "difficulty": "normal",
+    "prompt": "已解凍過的生肉，若反覆解凍再冷凍多次，最主要的風險是什麼？",
+    "options": [
+      {
+        "text": "肉會自動變成全素食品",
+        "correct": false
+      },
+      {
+        "text": "細菌較容易滋生，食安風險上升",
+        "correct": true
+      },
+      {
+        "text": "冷凍庫會因此永久故障",
+        "correct": false
+      },
+      {
+        "text": "肉的重量會每次準確增加一倍",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-life-07",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "門號月租 399 元，含 10 GB 流量，超出的部分每 GB 再收 50 元。這個月用了 13 GB，應付多少？",
+    "options": [
+      {
+        "text": "399 元",
+        "correct": false
+      },
+      {
+        "text": "449 元",
+        "correct": false
+      },
+      {
+        "text": "549 元",
+        "correct": true
+      },
+      {
+        "text": "699 元",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-life-08",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "一件商品原價 2,400 元，先打八折，再折抵 200 元。實際應付多少？",
+    "options": [
+      {
+        "text": "1,600 元",
+        "correct": false
+      },
+      {
+        "text": "1,720 元",
+        "correct": true
+      },
+      {
+        "text": "1,760 元",
+        "correct": false
+      },
+      {
+        "text": "1,920 元",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-life-09",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "油箱可裝 40 公升汽油，平均油耗是每公升行駛 16 公里。加滿後大約能走多遠？",
+    "options": [
+      {
+        "text": "400 公里",
+        "correct": false
+      },
+      {
+        "text": "560 公里",
+        "correct": false
+      },
+      {
+        "text": "640 公里",
+        "correct": true
+      },
+      {
+        "text": "800 公里",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-life-10",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "蓮蓬頭的流量是每分鐘 8 公升。若每天洗澡用水 15 分鐘，一連 7 天大約用掉多少水？",
+    "options": [
+      {
+        "text": "84 公升",
+        "correct": false
+      },
+      {
+        "text": "560 公升",
+        "correct": false
+      },
+      {
+        "text": "840 公升",
+        "correct": true
+      },
+      {
+        "text": "1,200 公升",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-life-11",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "銀行牌價是 1 美元兌換 32 元新臺幣，另外收 3% 手續費。兌換 300 美元並把手續費算進去，約需準備多少新臺幣？",
+    "options": [
+      {
+        "text": "9,000 元",
+        "correct": false
+      },
+      {
+        "text": "9,600 元",
+        "correct": false
+      },
+      {
+        "text": "9,888 元",
+        "correct": true
+      },
+      {
+        "text": "10,300 元",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-life-12",
+    "category": "生活",
+    "difficulty": "hard",
+    "prompt": "營養標示寫每份 30 克含糖 8 克，整包重量是 150 克。若吃完整包，攝取的糖約是多少？",
+    "options": [
+      {
+        "text": "8 克",
+        "correct": false
+      },
+      {
+        "text": "24 克",
+        "correct": false
+      },
+      {
+        "text": "40 克",
+        "correct": true
+      },
+      {
+        "text": "150 克",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-geo-01",
+    "category": "史地",
+    "difficulty": "easy",
+    "prompt": "阿里山的主要範圍位於哪個縣市？",
+    "options": [
+      {
+        "text": "嘉義縣",
+        "correct": true
+      },
+      {
+        "text": "基隆市",
+        "correct": false
+      },
+      {
+        "text": "連江縣",
+        "correct": false
+      },
+      {
+        "text": "澎湖縣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-02",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "臺灣本島東岸多岩岸、西岸多沙岸平原，和下列哪項地理特色關係最直接？",
+    "options": [
+      {
+        "text": "山地偏東、西側沖積平原較寬廣",
+        "correct": true
+      },
+      {
+        "text": "全島高度完全相同",
+        "correct": false
+      },
+      {
+        "text": "只有東岸會下雨",
+        "correct": false
+      },
+      {
+        "text": "西岸沒有任何河川",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-03",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "臺灣解除戒嚴是在哪一年？",
+    "options": [
+      {
+        "text": "1947 年",
+        "correct": false
+      },
+      {
+        "text": "1971 年",
+        "correct": false
+      },
+      {
+        "text": "1987 年",
+        "correct": true
+      },
+      {
+        "text": "2000 年",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-04",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "亞馬遜河流域以哪種自然景觀最廣為人知？",
+    "options": [
+      {
+        "text": "熱帶雨林",
+        "correct": true
+      },
+      {
+        "text": "永久冰原",
+        "correct": false
+      },
+      {
+        "text": "沙漠綠洲",
+        "correct": false
+      },
+      {
+        "text": "針葉疏林凍原",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-05",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "歷史上的絲路，主要功能是連結哪些地區之間的貿易與文化交流？",
+    "options": [
+      {
+        "text": "東亞與中亞、西亞以至歐洲",
+        "correct": true
+      },
+      {
+        "text": "南極與北極的科學考察站",
+        "correct": false
+      },
+      {
+        "text": "只有臺灣西部各鄉鎮",
+        "correct": false
+      },
+      {
+        "text": "澳大利亞內陸的牧場",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-06",
+    "category": "史地",
+    "difficulty": "normal",
+    "prompt": "近代工業革命首先大規模興起於哪個國家？",
+    "options": [
+      {
+        "text": "英國",
+        "correct": true
+      },
+      {
+        "text": "埃及",
+        "correct": false
+      },
+      {
+        "text": "秘魯",
+        "correct": false
+      },
+      {
+        "text": "紐西蘭",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-07",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "地圖比例尺是 1：25,000。圖上兩點直線距離 8 公分，實際直線距離是多少？",
+    "options": [
+      {
+        "text": "200 公尺",
+        "correct": false
+      },
+      {
+        "text": "2 公里",
+        "correct": true
+      },
+      {
+        "text": "8 公里",
+        "correct": false
+      },
+      {
+        "text": "25 公里",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-geo-08",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "臺灣多地震，最主要是因為位於哪兩大板塊的交界地帶？",
+    "options": [
+      {
+        "text": "歐亞板塊與菲律賓海板塊",
+        "correct": true
+      },
+      {
+        "text": "南極板塊與北美板塊",
+        "correct": false
+      },
+      {
+        "text": "非洲板塊與南極板塊",
+        "correct": false
+      },
+      {
+        "text": "印度板塊與南美板塊",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-09",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "中華民國在臺灣首次舉辦總統直接民選，是在哪一年？",
+    "options": [
+      {
+        "text": "1949 年",
+        "correct": false
+      },
+      {
+        "text": "1987 年",
+        "correct": false
+      },
+      {
+        "text": "1996 年",
+        "correct": true
+      },
+      {
+        "text": "2008 年",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-10",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "地球自轉一周約 24 小時，經度每隔 15 度，地方時大約相差 1 小時。若從東經 120 度飛到東經 150 度，地方時差約是多少？",
+    "options": [
+      {
+        "text": "半小時",
+        "correct": false
+      },
+      {
+        "text": "1 小時",
+        "correct": false
+      },
+      {
+        "text": "2 小時",
+        "correct": true
+      },
+      {
+        "text": "5 小時",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-geo-11",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "清廷在臺灣建省後，首任臺灣巡撫是誰？",
+    "options": [
+      {
+        "text": "鄭成功",
+        "correct": false
+      },
+      {
+        "text": "劉銘傳",
+        "correct": true
+      },
+      {
+        "text": "蔣渭水",
+        "correct": false
+      },
+      {
+        "text": "八田與一",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-geo-12",
+    "category": "史地",
+    "difficulty": "hard",
+    "prompt": "從馬關條約使臺灣進入日治，到第二次世界大戰結束、日治時期結束，大約經歷多少年？",
+    "options": [
+      {
+        "text": "25 年",
+        "correct": false
+      },
+      {
+        "text": "40 年",
+        "correct": false
+      },
+      {
+        "text": "50 年",
+        "correct": true
+      },
+      {
+        "text": "75 年",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-nature-01",
+    "category": "自然",
+    "difficulty": "easy",
+    "prompt": "地球繞太陽公轉一圈，大約需要多少時間？",
+    "options": [
+      {
+        "text": "一天",
+        "correct": false
+      },
+      {
+        "text": "一個月",
+        "correct": false
+      },
+      {
+        "text": "365 天左右",
+        "correct": true
+      },
+      {
+        "text": "十年",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-02",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "國際單位制中，電流的單位是什麼？",
+    "options": [
+      {
+        "text": "安培",
+        "correct": true
+      },
+      {
+        "text": "公升",
+        "correct": false
+      },
+      {
+        "text": "牛頓公尺每秒的平方",
+        "correct": false
+      },
+      {
+        "text": "莫耳溫度",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-03",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "細胞裡攜帶遺傳訊息的主要物質是什麼？",
+    "options": [
+      {
+        "text": "澱粉顆粒",
+        "correct": false
+      },
+      {
+        "text": "DNA",
+        "correct": true
+      },
+      {
+        "text": "只存在於細胞壁的鐵屑",
+        "correct": false
+      },
+      {
+        "text": "液胞裡的空氣",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-04",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "海洋每天的潮汐變化，最主要受到哪個天體重力的影響？",
+    "options": [
+      {
+        "text": "北極星",
+        "correct": false
+      },
+      {
+        "text": "月球",
+        "correct": true
+      },
+      {
+        "text": "土星環",
+        "correct": false
+      },
+      {
+        "text": "最遠的銀河系",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-05",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "鐵製品在潮濕空氣中生鏽，主要是鐵與哪些物質作用？",
+    "options": [
+      {
+        "text": "只有純氮氣",
+        "correct": false
+      },
+      {
+        "text": "氧氣與水氣",
+        "correct": true
+      },
+      {
+        "text": "只有氦氣",
+        "correct": false
+      },
+      {
+        "text": "完全乾燥的惰性氣體",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-06",
+    "category": "自然",
+    "difficulty": "normal",
+    "prompt": "在生態系中，真菌和許多細菌常被稱為分解者，主要是因為它們會做什麼？",
+    "options": [
+      {
+        "text": "把枯枝落葉與屍體分解，使物質回到環境",
+        "correct": true
+      },
+      {
+        "text": "只負責製造地震",
+        "correct": false
+      },
+      {
+        "text": "專門把陽光反射回太空",
+        "correct": false
+      },
+      {
+        "text": "只吃活的大型肉食動物",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-07",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "一只電阻 10 歐姆的燈泡，接到 20 伏特的電源上。它消耗的電功率是多少？",
+    "options": [
+      {
+        "text": "2 瓦",
+        "correct": false
+      },
+      {
+        "text": "10 瓦",
+        "correct": false
+      },
+      {
+        "text": "20 瓦",
+        "correct": false
+      },
+      {
+        "text": "40 瓦",
+        "correct": true
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-nature-08",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "一輛車以每秒 10 公尺的均勻速度行駛 6 秒，接著用相同速度再行駛 4 秒。這 10 秒內的總位移是多少？",
+    "options": [
+      {
+        "text": "24 公尺",
+        "correct": false
+      },
+      {
+        "text": "40 公尺",
+        "correct": false
+      },
+      {
+        "text": "60 公尺",
+        "correct": false
+      },
+      {
+        "text": "100 公尺",
+        "correct": true
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-nature-09",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "日食發生時，三個天體的位置關係最接近哪一種？",
+    "options": [
+      {
+        "text": "地球位在太陽與月球中間",
+        "correct": false
+      },
+      {
+        "text": "月球走到太陽與地球之間",
+        "correct": true
+      },
+      {
+        "text": "太陽走到地球與月球中間且距離不變",
+        "correct": false
+      },
+      {
+        "text": "三個天體分別位在銀河三端，彼此無關",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-10",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "減數分裂對有性生殖最重要的意義是什麼？",
+    "options": [
+      {
+        "text": "讓體細胞數量無限加倍且染色體不斷增加",
+        "correct": false
+      },
+      {
+        "text": "使生殖細胞染色體數目減半，受精後再恢復原有數目",
+        "correct": true
+      },
+      {
+        "text": "讓植物立刻停止光合作用",
+        "correct": false
+      },
+      {
+        "text": "把所有突變一次全部消除",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-nature-11",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "在高山上煮水，因為氣壓較低，下列敘述哪一項最合理？",
+    "options": [
+      {
+        "text": "水會在低於攝氏 100 度時就沸騰，食物未必較快煮熟",
+        "correct": true
+      },
+      {
+        "text": "水一定要到攝氏 200 度才會沸騰",
+        "correct": false
+      },
+      {
+        "text": "氣壓變低會讓沸點大幅高於 100 度",
+        "correct": false
+      },
+      {
+        "text": "高山上的水無法吸收任何熱量",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-nature-12",
+    "category": "自然",
+    "difficulty": "hard",
+    "prompt": "一杯 0°C 的冰正在融化成 0°C 的水。在冰尚未完全融化前，下列敘述哪一項正確？",
+    "options": [
+      {
+        "text": "溫度維持在 0°C，但仍持續吸收熔解所需的熱",
+        "correct": true
+      },
+      {
+        "text": "溫度會立刻跳到 100°C",
+        "correct": false
+      },
+      {
+        "text": "過程完全不需要吸收熱量",
+        "correct": false
+      },
+      {
+        "text": "水會先結得更硬，溫度降到 −40°C",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-math-01",
+    "category": "數學邏輯",
+    "difficulty": "easy",
+    "prompt": "5 的平方是多少？",
+    "options": [
+      {
+        "text": "10",
+        "correct": false
+      },
+      {
+        "text": "20",
+        "correct": false
+      },
+      {
+        "text": "25",
+        "correct": true
+      },
+      {
+        "text": "52",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-02",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "sin 30° 的值是多少？",
+    "options": [
+      {
+        "text": "0",
+        "correct": false
+      },
+      {
+        "text": "1／2",
+        "correct": true
+      },
+      {
+        "text": "√3／2",
+        "correct": false
+      },
+      {
+        "text": "1",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-03",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "方程式 x²－5x＋6＝0 的兩個解是什麼？",
+    "options": [
+      {
+        "text": "1 與 6",
+        "correct": false
+      },
+      {
+        "text": "2 與 3",
+        "correct": true
+      },
+      {
+        "text": "−2 與 −3",
+        "correct": false
+      },
+      {
+        "text": "0 與 5",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-04",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "若 10ˣ＝1,000，x 的值是多少？",
+    "options": [
+      {
+        "text": "2",
+        "correct": false
+      },
+      {
+        "text": "3",
+        "correct": true
+      },
+      {
+        "text": "4",
+        "correct": false
+      },
+      {
+        "text": "100",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-05",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "3 本彼此不同的書排成一列，有多少種排法？",
+    "options": [
+      {
+        "text": "3 種",
+        "correct": false
+      },
+      {
+        "text": "6 種",
+        "correct": true
+      },
+      {
+        "text": "9 種",
+        "correct": false
+      },
+      {
+        "text": "27 種",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-06",
+    "category": "數學邏輯",
+    "difficulty": "normal",
+    "prompt": "函數 f(x)＝2x＋1。f(5)＋f(1) 的值是多少？",
+    "options": [
+      {
+        "text": "11",
+        "correct": false
+      },
+      {
+        "text": "12",
+        "correct": false
+      },
+      {
+        "text": "14",
+        "correct": true
+      },
+      {
+        "text": "16",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-07",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "一筆 20,000 元的投資，第一年上漲 10%，第二年下跌 10%。兩年結束後的金額是多少？",
+    "options": [
+      {
+        "text": "18,000 元",
+        "correct": false
+      },
+      {
+        "text": "19,800 元",
+        "correct": true
+      },
+      {
+        "text": "20,000 元",
+        "correct": false
+      },
+      {
+        "text": "20,200 元",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-math-08",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "一輛車先以時速 60 公里行駛 30 公里，再以時速 90 公里行駛 30 公里。全程的平均時速是多少？",
+    "options": [
+      {
+        "text": "70 公里",
+        "correct": false
+      },
+      {
+        "text": "72 公里",
+        "correct": true
+      },
+      {
+        "text": "75 公里",
+        "correct": false
+      },
+      {
+        "text": "80 公里",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-math-09",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "等差數列的首項是 3、公差是 5。這個數列裡等於 48 的那一項，從首項加到該項的總和是多少？",
+    "options": [
+      {
+        "text": "210",
+        "correct": false
+      },
+      {
+        "text": "240",
+        "correct": false
+      },
+      {
+        "text": "255",
+        "correct": true
+      },
+      {
+        "text": "288",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-math-10",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "6 位同學要選出 2 位分別擔任社長與副社（兩人職務不同），有多少種選法？",
+    "options": [
+      {
+        "text": "12 種",
+        "correct": false
+      },
+      {
+        "text": "15 種",
+        "correct": false
+      },
+      {
+        "text": "30 種",
+        "correct": true
+      },
+      {
+        "text": "36 種",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-math-11",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "參加一次遊戲要先付 30 元。擲一枚公正硬幣，正面可得 80 元獎金，反面可得 20 元獎金。扣除參加費後，期望淨收益是多少？",
+    "options": [
+      {
+        "text": "10 元",
+        "correct": false
+      },
+      {
+        "text": "20 元",
+        "correct": true
+      },
+      {
+        "text": "30 元",
+        "correct": false
+      },
+      {
+        "text": "50 元",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-math-12",
+    "category": "數學邏輯",
+    "difficulty": "hard",
+    "prompt": "二次函數 y＝x²－4x＋1 的最小值是多少？",
+    "options": [
+      {
+        "text": "−4",
+        "correct": false
+      },
+      {
+        "text": "−3",
+        "correct": true
+      },
+      {
+        "text": "1",
+        "correct": false
+      },
+      {
+        "text": "4",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-society-01",
+    "category": "社會",
+    "difficulty": "easy",
+    "prompt": "在民主社會中，公民參與公共事務最常見、也最基本的方式之一是什麼？",
+    "options": [
+      {
+        "text": "依法參加投票",
+        "correct": true
+      },
+      {
+        "text": "拒絕使用任何公共設施",
+        "correct": false
+      },
+      {
+        "text": "把選票轉賣給他人",
+        "correct": false
+      },
+      {
+        "text": "要求取消所有法律",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-02",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "目前在臺灣，由司法院設立、職掌解釋憲法與審理相關違憲爭議的機關是哪個？",
+    "options": [
+      {
+        "text": "憲法法庭",
+        "correct": true
+      },
+      {
+        "text": "戶政事務所",
+        "correct": false
+      },
+      {
+        "text": "農會總幹事室",
+        "correct": false
+      },
+      {
+        "text": "里民活動中心",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-03",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "你選擇下午去打工，因此放棄了同一時段在圖書館複習的機會。這種被放棄的價值，在經濟學裡稱為什麼？",
+    "options": [
+      {
+        "text": "機會成本",
+        "correct": true
+      },
+      {
+        "text": "法定資本額",
+        "correct": false
+      },
+      {
+        "text": "外匯存底",
+        "correct": false
+      },
+      {
+        "text": "社會保險費率",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-04",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "民法與刑法的主要差別，下列哪項最恰當？",
+    "options": [
+      {
+        "text": "民法處理私人之間的權利義務，刑法處理犯罪與刑罰",
+        "correct": true
+      },
+      {
+        "text": "民法只適用於外國人，刑法只適用於政府機關",
+        "correct": false
+      },
+      {
+        "text": "兩者完全相同，只是封面顏色不一樣",
+        "correct": false
+      },
+      {
+        "text": "刑法專門規定商品標價方式",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-05",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "國內生產毛額（GDP）主要衡量的是什麼？",
+    "options": [
+      {
+        "text": "一段期間在一國境內生產的最終商品與勞務價值",
+        "correct": true
+      },
+      {
+        "text": "全國所有河流的總長度",
+        "correct": false
+      },
+      {
+        "text": "下一年度即將出生的人口數",
+        "correct": false
+      },
+      {
+        "text": "每戶廚房擁有的碗盤數量",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-06",
+    "category": "社會",
+    "difficulty": "normal",
+    "prompt": "全民健康保險這類社會保險，和針對經濟困難者的社會救助相比，最突出的特點是什麼？",
+    "options": [
+      {
+        "text": "強調強制納保與風險分擔，不是只在事後針對少數困苦者發放救助",
+        "correct": true
+      },
+      {
+        "text": "完全不需要任何法律依據",
+        "correct": false
+      },
+      {
+        "text": "只服務外國觀光客",
+        "correct": false
+      },
+      {
+        "text": "保證每個人都不必再就醫",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-07",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "依五權憲法的分工，哪一個機關職掌對公務人員的彈劾、糾舉，並監督政府審計？",
+    "options": [
+      {
+        "text": "行政院",
+        "correct": false
+      },
+      {
+        "text": "立法院議事組",
+        "correct": false
+      },
+      {
+        "text": "司法院民事廳",
+        "correct": false
+      },
+      {
+        "text": "監察院",
+        "correct": true
+      }
+    ]
+  },
+  {
+    "id": "joint-society-08",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "若新臺幣對美元升值，下列敘述哪一項較合理？",
+    "options": [
+      {
+        "text": "以新臺幣計算，進口商品通常會變得較便宜",
+        "correct": true
+      },
+      {
+        "text": "所有出口商品對國外買方都會自動變得更便宜",
+        "correct": false
+      },
+      {
+        "text": "國內物價必然立刻變成零",
+        "correct": false
+      },
+      {
+        "text": "美元會從世界上消失",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-society-09",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "民主國家強調行政、立法、司法等權力分立，最主要的目的是什麼？",
+    "options": [
+      {
+        "text": "讓權力互相制衡，避免過度集中",
+        "correct": true
+      },
+      {
+        "text": "讓同一個人同時擔任所有職務更有效率",
+        "correct": false
+      },
+      {
+        "text": "取消人民的納稅義務",
+        "correct": false
+      },
+      {
+        "text": "停止一切公開選舉",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-10",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "工廠污染的成本如果沒有反映在售價上，可能導致產量偏多。這種情況在經濟學裡通常被稱為什麼？它可用哪類方式改善？",
+    "options": [
+      {
+        "text": "市場失靈中的外部成本，可用管制或課污染費等方式處理",
+        "correct": true
+      },
+      {
+        "text": "一定是通貨緊縮，只能增發貨幣",
+        "correct": false
+      },
+      {
+        "text": "屬於地震災害，只能等待板塊停止移動",
+        "correct": false
+      },
+      {
+        "text": "這是機會成本為負，所以不需要處理",
+        "correct": false
+      }
+    ],
+    "multiStep": true
+  },
+  {
+    "id": "joint-society-11",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "若法定最低工資調高，對勞動市場較全面的理解是哪一項？",
+    "options": [
+      {
+        "text": "部分工作者收入可能提高，但也可能使部分雇主減少僱用，實際影響要看市場狀況",
+        "correct": true
+      },
+      {
+        "text": "所有失業會在隔天立刻消失",
+        "correct": false
+      },
+      {
+        "text": "所有物價會立刻降到零",
+        "correct": false
+      },
+      {
+        "text": "這項政策只會影響出國觀光，與就業無關",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "id": "joint-society-12",
+    "category": "社會",
+    "difficulty": "hard",
+    "prompt": "機關或商家蒐集個人資料時，下列哪項做法才符合保護個資的基本原則？",
+    "options": [
+      {
+        "text": "應有特定目的，並在當事人知情或法令允許的範圍內使用，不得任意提供給第三人做無關行銷",
+        "correct": true
+      },
+      {
+        "text": "只要已經蒐集，就可以無限轉賣",
+        "correct": false
+      },
+      {
+        "text": "可以在當事人不知情時公開完整身分證字號",
+        "correct": false
+      },
+      {
+        "text": "個資只保護公司，不保護自然人",
+        "correct": false
+      }
+    ]
+  }
+]

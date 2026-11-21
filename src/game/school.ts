@@ -13,20 +13,17 @@ export function enterSchool(save: Save, stage: "high" | "university"): Save {
   };
 }
 
-export function finishEntrance(save: Save, attempt: Attempt): Save {
-  const correct = scoreAttempt(attempt);
-  const university = attempt.kind === "universityEntrance";
-  const passed = passesExam(correct);
-  const completed: Save = {
+export function gsatDue(save: Save) {
+  return (
+    save.stage === "high" &&
+    save.turn === 16 &&
+    !save.exams.some(({ id }) => id === "gsat")
+  );
+}
+
+function recordExam(save: Save, attempt: Attempt, correct: number): Save {
+  return {
     ...save,
-    education: university ? "high" : "junior",
-    stage: "earlyExit",
-    ending: passed
-      ? null
-      : university
-        ? "universityExamFail"
-        : "juniorEarlyExit",
-    hiddenJobUnlock: save.hiddenJobUnlock || (university && !passed),
     updatedAt: new Date().toISOString(),
     entranceAttempt: null,
     examResultPending: true,
@@ -38,9 +35,43 @@ export function finishEntrance(save: Save, attempt: Attempt): Save {
       ]),
     ],
   };
-  return passed
-    ? enterSchool(completed, university ? "university" : "high")
-    : completed;
+}
+
+export const gsatReward = (correct: number) =>
+  correct >= 9
+    ? { intellect: 45, cash: 1500 }
+    : passesExam(correct)
+      ? { intellect: 30, cash: 800 }
+      : { intellect: 8, cash: 200 };
+
+export function settleGsat(save: Save, attempt: Attempt): Save {
+  if (save.exams.some(({ id }) => id === "gsat")) return save;
+  const correct = scoreAttempt(attempt);
+  const reward = gsatReward(correct);
+  return {
+    ...recordExam(save, attempt, correct),
+    stats: {
+      ...save.stats,
+      intellect: Math.min(9999, save.stats.intellect + reward.intellect),
+    },
+    cash: save.cash + reward.cash,
+  };
+}
+
+export function finishEntrance(save: Save, attempt: Attempt): Save {
+  const correct = scoreAttempt(attempt);
+  const completed = {
+    ...recordExam(save, attempt, correct),
+    education: "high" as const,
+  };
+  return passesExam(correct)
+    ? enterSchool(completed, "university")
+    : {
+        ...completed,
+        stage: "earlyExit",
+        ending: "universityExamFail",
+        hiddenJobUnlock: true,
+      };
 }
 
 export function graduate(save: Save): Save {

@@ -198,12 +198,7 @@ export async function confirmStoryRestart(stage: BoardStage) {
 }
 
 function isLocked(stage: StoryStage, save?: Save) {
-  return (
-    (stage === "high" && save?.ending === "juniorEarlyExit") ||
-    (stage === "university" &&
-      (save?.ending === "juniorEarlyExit" ||
-        save?.ending === "universityExamFail"))
-  );
+  return stage === "university" && save?.ending === "universityExamFail";
 }
 
 export const replayButtons = (save: Save) =>
@@ -306,7 +301,7 @@ export function showBittersweet(save: Save) {
 
 const truePages = [
   {
-    scene: "graduation",
+    scene: "worldmap",
     figure: null,
     text: "畢業那晚，你推阿公回家，兩個人一起把最後一根圖釘插上世界地圖。阿公看了很久，說：「插滿了。」又輕輕說了一句：「阿誠，你的孩子，我顧好了。」",
   },

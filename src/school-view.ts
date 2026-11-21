@@ -82,7 +82,7 @@ export function graduationDetails(save: Save) {
     </section>
     <section><h2>社團經歷</h2><ul>${clubRows}</ul></section>
     <section><h2>虛擬城大賽</h2><ul>${contests || "<li>—</li>"}</ul></section>
-    <section><h2>考試</h2><p>升高中考試 ${exam("highEntrance") ?? "—"} ／ 10</p><p>大學聯考 ${exam("universityEntrance") ?? "—"} ／ 10</p><p>小考 ${quizCount} 次</p></section>
+    <section><h2>考試</h2><p>高中學測 ${exam("gsat") ?? "—"} ／ 10</p><p>大學聯考 ${exam("universityEntrance") ?? "—"} ／ 10</p><p>小考 ${quizCount} 次</p></section>
     <section><h2>小遊戲</h2><p>${games}</p></section>
     <section><h2>其他紀錄</h2><p>收集卡 ${save.cards.length} 張・人生經驗 ${save.experience}</p><p>附身神祇 ${deity ? deities[deity.id].name : "—"}</p><p>交往對象 —</p></section>
   </div>`;
