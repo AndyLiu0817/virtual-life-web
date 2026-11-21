@@ -19,6 +19,8 @@ import {
   finishEntrance,
   graduate,
   handleLoveTile,
+  settleGsat,
+  gsatDue,
 } from "../src/game/school";
 
 const player = chooseClub(
@@ -96,7 +98,7 @@ describe("學段棋盤", () => {
   });
 });
 
-it("聯考十題四難題，智力輔助與作答進度可匯入", () => {
+it("聯考十題六難題，智力輔助與作答進度可匯入", () => {
   const high = enterSchool(player, "high");
   const attempt = startAssessment("universityEntrance", []);
   expect(attempt.items).toHaveLength(10);
@@ -104,7 +106,7 @@ it("聯考十題四難題，智力輔助與作答進度可匯入", () => {
     attempt.items.filter(
       ({ id }) => questionsById.get(id)?.difficulty === "hard",
     ),
-  ).toHaveLength(4);
+  ).toHaveLength(6);
   expect(remainingAssists(attempt, 399)).toBe(3);
   useAssist(attempt, 399, () => 0);
   const item = attempt.items[0];
@@ -209,8 +211,12 @@ it("舊高中存檔從起點換裝，舊落榜仍可讀取，換社只一次", (
   expect(chooseClub(opted, "high", "sports")).toBe(opted);
   expect(importSave(exportSave(opted))).toEqual(opted);
   expect(
-    importSave(JSON.stringify({ ...old, stage: "earlyExit" })).ending,
-  ).toBe("juniorEarlyExit");
+    importSave(JSON.stringify({ ...old, stage: "earlyExit" })),
+  ).toMatchObject({
+    stage: "high",
+    turn: 0,
+    ending: null,
+  });
 });
 
 it.each([
@@ -340,3 +346,89 @@ it.each(["high", "university"] as const)(
     }
   },
 );
+
+it.each([
+  [5, 8, 200],
+  [6, 30, 800],
+  [8, 30, 800],
+  [9, 45, 1500],
+  [10, 45, 1500],
+])("學測答對 %i 題時發獎並留在高中", (correct, intellect, cash) => {
+  const save = {
+    ...enterSchool(player, "high"),
+    turn: 16,
+    education: "junior" as const,
+  };
+  const attempt = startAssessment("gsat", []);
+  attempt.items.forEach((item, index) => {
+    item.answer = questionsById
+      .get(item.id)!
+      .options.findIndex((option) => option.correct === index < correct);
+  });
+  expect(gsatDue(save)).toBe(true);
+  const completed = settleGsat(save, attempt);
+  expect(completed).toMatchObject({
+    stage: "high",
+    turn: 16,
+    education: "junior",
+    ending: null,
+    hiddenJobUnlock: false,
+    exams: [{ id: "gsat", correct }],
+    stats: { intellect: save.stats.intellect + intellect },
+    cash: save.cash + cash,
+    entranceAttempt: null,
+    examResultPending: true,
+  });
+  expect(completed.seenQuestionIds).toHaveLength(10);
+  expect(gsatDue(completed)).toBe(false);
+  expect(settleGsat(completed, attempt)).toBe(completed);
+  expect(importSave(exportSave(completed))).toEqual(completed);
+});
+
+it.each([
+  {
+    stage: "junior",
+    entranceAttempt: {
+      ...startAssessment("contestTrivia", []),
+      kind: "highEntrance",
+    },
+  },
+  {
+    stage: "earlyExit",
+    ending: "juniorEarlyExit",
+    examResultPending: true,
+    exams: [{ id: "highEntrance", correct: 5 }],
+  },
+  {
+    stage: "high",
+    examResultPending: true,
+    exams: [{ id: "highEntrance", correct: 6 }],
+  },
+])("舊升高中考試存檔可從高中第 1 回續玩", (legacy) => {
+  const loaded = importSave(
+    JSON.stringify({
+      ...player,
+      turn: 15,
+      boardTile: 3,
+      previousTile: 2,
+      nextTile: 4,
+      education: "junior",
+      ...legacy,
+    }),
+  );
+  expect(loaded).toMatchObject({
+    stage: "high",
+    turn: 0,
+    education: "junior",
+    boardTile: schoolBoards.high.start,
+    previousTile: null,
+    nextTile: null,
+    ending: null,
+    examResultPending: false,
+    entranceAttempt: null,
+    cash: player.cash,
+    stats: player.stats,
+    stageSnapshots: { high: { stage: "high", turn: 0 } },
+  });
+  expect(importSave(exportSave(loaded))).toEqual(loaded);
+});

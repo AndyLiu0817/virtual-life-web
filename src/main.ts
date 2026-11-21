@@ -18,7 +18,14 @@ import {
   type SchoolBoard,
   type BoardStage,
 } from "./data/school-board";
-import { finishEntrance, graduate } from "./game/school";
+import {
+  enterSchool,
+  finishEntrance,
+  graduate,
+  gsatReward,
+  gsatDue,
+  settleGsat,
+} from "./game/school";
 import { graduationDetails, introArt, endingScene } from "./school-view";
 import firstJob from "../art/cg_first_job_final.jpg";
 import graduation from "../art/cg_graduation_final.jpg";
@@ -45,7 +52,12 @@ import {
   type Save,
 } from "./game/saves";
 import { stageFinished } from "./game/board";
-import { startAssessment } from "./game/questions";
+import {
+  allowsAssists,
+  passesExam,
+  startAssessment,
+  type MajorExam,
+} from "./game/questions";
 import { resultScene, scoreText, showAssessment } from "./exam-view";
 import "./style.css";
 
@@ -300,7 +312,7 @@ function confirmOpening(profile: Profile) {
   });
 }
 
-function board(save: Save, message = "") {
+function board(save: Save, message = ""): void {
   rememberStory(save);
   if (save.examResultPending) return schoolResult(save, message);
   if (save.stage === "earlyExit" || save.stage === "graduated")
@@ -318,10 +330,17 @@ function board(save: Save, message = "") {
   }
 
   const school = schoolBoards[save.stage];
+  const exam = save.entranceAttempt?.kind;
+  if (save.stage === "high" && exam && allowsAssists(exam))
+    return schoolExam(save, exam);
+  if (gsatDue(save)) return schoolExam(save, "gsat");
   setMusic(`board_${school.stage}`);
-  if (stageFinished(school, save)) return completeSchool(save);
+  if (stageFinished(school, save)) {
+    void completeSchool(save);
+    return;
+  }
   if (school.stage === "junior") return openBoard(save, school, message);
-  return loadSchool(save, school, message);
+  void loadSchool(save, school, message);
 }
 
 function openBoard(save: Save, school: SchoolBoard, message: string) {
@@ -408,8 +427,9 @@ async function gallery(save: Save) {
   return restarted;
 }
 
-async function completeSchool(save: Save) {
-  if (isBoardStage(save.stage) && !save.entranceAttempt) {
+async function completeSchool(save: Save): Promise<void> {
+  if (gsatDue(save)) return schoolExam(save, "gsat");
+  if (isBoardStage(save.stage)) {
     const stage = save.stage;
     while (true) {
       const choice = await stageStoryReminder(save, stage);
@@ -422,7 +442,13 @@ async function completeSchool(save: Save) {
     const completed = graduate(save);
     return showEnding(completed, persistExam(completed));
   }
-  entranceExam(save);
+  if (save.stage === "junior") {
+    const updated = snapshotStage(
+      enterSchool({ ...save, education: "junior" }, "high"),
+    );
+    return board(updated, persistExam(updated));
+  }
+  if (save.stage === "high") schoolExam(save, "universityEntrance");
 }
 
 function persistExam(save: Save) {
@@ -434,14 +460,10 @@ function persistExam(save: Save) {
   }
 }
 
-function entranceExam(save: Save) {
+function schoolExam(save: Save, kind: MajorExam) {
   setMusic("mg_memory");
   const attempt =
-    save.entranceAttempt ??
-    startAssessment(
-      save.stage === "high" ? "universityEntrance" : "highEntrance",
-      save.seenQuestionIds,
-    );
+    save.entranceAttempt ?? startAssessment(kind, save.seenQuestionIds);
   const inProgress = { ...save, entranceAttempt: attempt };
   show('<main class="stage assessment-screen"></main>', false);
   function persistProgress() {
@@ -458,7 +480,10 @@ function entranceExam(save: Save) {
     save.stats.intellect,
     persistProgress,
     () => {
-      const completed = finishEntrance(save, attempt);
+      const completed =
+        kind === "gsat"
+          ? settleGsat(save, attempt)
+          : finishEntrance(save, attempt);
       schoolResult(completed, persistExam(completed));
     },
   );
@@ -466,21 +491,28 @@ function entranceExam(save: Save) {
 }
 
 function schoolResult(save: Save, message: string) {
-  const university = save.education === "high";
   const exam = [...save.exams]
     .reverse()
-    .find(
-      ({ id }) => id === (university ? "universityEntrance" : "highEntrance"),
-    );
-  const passed = save.stage === (university ? "university" : "high");
-  setMusic(passed ? (university ? "board_high" : "board_junior") : "story");
+    .find(({ id }) => id === "gsat" || id === "universityEntrance");
+  const gsat = exam?.id === "gsat";
+  const correct = exam?.correct ?? 0;
+  const passed = gsat ? passesExam(correct) : save.stage === "university";
+  const reward = gsatReward(correct);
+  setMusic(passed ? "board_high" : "story");
   show(
     resultScene(
-      university ? "大學聯考放榜" : "升高中考試放榜",
-      `<h2>${passed ? "錄取！" : "未錄取"}</h2>
-      ${exam ? `<p>${scoreText(exam.correct)}</p>` : ""}
-      <div class="actions">${button("continue-result", passed ? (university ? "前往大學篇" : "前往高中篇") : "查看結局")}</div>`,
+      gsat ? "高中學測放榜" : "大學聯考放榜",
+      `<h2>${gsat ? (correct >= 9 ? "高分通過！" : passed ? "通過！" : "未通過") : passed ? "錄取！" : "未錄取"}</h2>
+      ${exam ? `<p>${scoreText(correct, gsat ? "通過" : "錄取")}</p>` : ""}
+      ${
+        gsat
+          ? `<p>智力 ＋${reward.intellect}・現金 ＋${reward.cash.toLocaleString("zh-TW")} 元</p>
+      <p>${passed ? "帶著這次的成果迎接高三。" : "把這次的經驗帶進高三，繼續努力吧。"}高三結束仍要參加大學聯考。</p>`
+          : ""
+      }
+      <div class="actions">${button("continue-result", gsat ? "繼續前往高三、仍須參加大學聯考" : passed ? "前往大學篇" : "查看結局")}</div>`,
       passed,
+      gsat ? "classroom" : "gate_dusk",
     ),
   );
   element("#continue-result").dataset.audioAction = "";
@@ -501,16 +533,13 @@ function showEnding(save: Save, message: string) {
   setMusic("story");
   const graduated =
     save.ending === "universityGraduate" || save.stage === "graduated";
-  const high = save.ending === "universityExamFail";
   const exam = [...save.exams]
     .reverse()
-    .find(({ id }) => id === (high ? "universityEntrance" : "highEntrance"));
-  const title = graduated ? "大學畢業" : high ? "聯考落榜" : "提前出社會";
+    .find(({ id }) => id === "universityEntrance");
+  const title = graduated ? "大學畢業" : "聯考落榜";
   const copy = graduated
     ? "<p>畢業帽飛起來的那一刻，連趕報告的鬧鐘也終於可以關掉了。</p>"
-    : high
-      ? "<p>畢業證書已經到手。下一份考卷可能是午餐訂單，答錯還能加點。</p><p>學歷：高中畢業</p><p>知識型工作不能選</p><p>之後可解鎖隱藏職業</p>"
-      : "<p>制服先收進衣櫃，鬧鐘還得留著。下一站是職場，從第一份工作慢慢練等吧。</p><p>學歷・國中畢業</p>";
+    : "<p>畢業證書已經到手。下一份考卷可能是午餐訂單，答錯還能加點。</p><p>學歷：高中畢業</p><p>知識型工作不能選</p><p>之後可解鎖隱藏職業</p>";
   show(
     endingScene(
       title,

@@ -1,4 +1,5 @@
 import { openAudioDialog, playEffect } from "./audio";
+import { isBoardStage } from "./data/school-board";
 import { activityPrompt } from "./activity-view";
 import { changeText, sceneArt } from "./event-view";
 import { showAssessment } from "./exam-view";
@@ -22,7 +23,11 @@ import { playRhythmRound, rhythmArt } from "./rhythm-round";
 const auditorium = () => sceneArt("auditorium", "host");
 
 async function playTrivia(dialog: HTMLDialogElement, save: Save) {
-  const attempt = startAssessment("contestTrivia", save.seenQuestionIds);
+  const attempt = startAssessment(
+    "contestTrivia",
+    save.seenQuestionIds,
+    isBoardStage(save.stage) ? save.stage : undefined,
+  );
   const elapsedMs = await new Promise<number>((resolve) => {
     showAssessment(dialog, attempt, 0, undefined, () =>
       resolve(Math.round(performance.now() - start)),

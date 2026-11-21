@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { measureTrack } from "../../src/board-track";
 import { schoolBoards, type BoardStage } from "../../src/data/school-board";
 import { chooseClub } from "../../src/game/clubs";
-import { questionBank } from "../../src/game/questions";
+import { schoolQuestionBanks } from "../../src/game/questions";
 import { createSave, type Save } from "../../src/game/saves";
 import { enterSchool } from "../../src/game/school";
 
@@ -242,7 +242,9 @@ for (const viewport of [landscape, portrait]) {
       }
       for (let i = 0; i < 10; i++) {
         const prompt = await page.locator(".assessment-question").textContent();
-        const question = questionBank.find((q) => q.prompt === prompt)!;
+        const question = schoolQuestionBanks.university.find(
+          (q) => q.prompt === prompt,
+        )!;
         const answer = question.options.findIndex(
           (option, j) =>
             option.correct === i < (pass ? 6 : 5) &&

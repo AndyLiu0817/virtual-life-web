@@ -84,8 +84,6 @@ export function storyEnding(save: Save) {
         : "bittersweet";
     case "universityExamFail":
       return "阿公還在等郵差，你也還在等一個答案。";
-    case "juniorEarlyExit":
-      return "牆上的地圖，還有好多圖釘沒插上。";
   }
 }
 

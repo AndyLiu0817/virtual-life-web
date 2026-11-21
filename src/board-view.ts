@@ -103,6 +103,8 @@ export function boardView(
     </g>`,
   }));
   // Rounded corners are baked into the faces, avoiding a per-image SVG clip.
+  // Story tiles overlay a feathered, enlarged crop of the existing postcard
+  // in tile coordinates so the footprint and projection stay the same.
   for (const [id, center] of centers.entries()) {
     const { kind } = tiles[id];
     layers.push({
@@ -114,12 +116,23 @@ export function boardView(
           <use href="#clay-body" fill="url(#clay-side-light)"/>
         </g>
         <image class="paver-top" href="${sprite(`${kind}-clay`)}" x="${-tileArtSize / 2}" y="${-tileArtSize / 2}" width="${tileArtSize}" height="${tileArtSize}" preserveAspectRatio="none" transform="${tileTop(center)}"/>
+        ${
+          kind === "story"
+            ? `<svg class="story-tile-postcard" x="-123" y="-116" width="246" height="224" viewBox="23 29 226 204" transform="${tileTop(center)}" aria-hidden="true">
+          <image href="${sprite("story-clay")}" width="272" height="272" mask="url(#story-postcard-mask)"/>
+        </svg>`
+            : ""
+        }
       </g>`,
     });
   }
   svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
   svg.innerHTML = `
     <defs>
+      <mask id="story-postcard-mask" maskUnits="userSpaceOnUse" x="23" y="29" width="226" height="204">
+        <rect x="28" y="34" width="216" height="194" rx="20" fill="white" filter="url(#story-postcard-feather)"/>
+      </mask>
+      <filter id="story-postcard-feather"><feGaussianBlur stdDeviation="3"/></filter>
       <path id="clay-body" d="${body}"/>
       <path id="clay-footprint" d="${footprint}"/>
       <linearGradient id="clay-side-light" x2="100%" y2="56%">

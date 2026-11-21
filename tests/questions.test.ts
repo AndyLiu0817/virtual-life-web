@@ -10,6 +10,7 @@ import {
   quizReward,
   remainingAssists,
   scoreAttempt,
+  schoolQuestionBanks,
   startAssessment,
   useAssist,
 } from "../src/game/questions";
@@ -50,11 +51,11 @@ it("按考試類型配置難度，並在題庫不足時才重用舊題", () => {
     4,
   );
   const exam = drawQuestions(
-    "highEntrance",
+    "gsat",
     quiz.map(({ id }) => id),
   );
   expect(exam.filter(({ difficulty }) => difficulty === "hard")).toHaveLength(
-    2,
+    3,
   );
   expect(new Set([...quiz, ...exam].map(({ id }) => id)).size).toBe(15);
   const fresh = questionBank.slice(-2);
@@ -65,7 +66,7 @@ it("按考試類型配置難度，並在題庫不足時才重用舊題", () => {
 });
 
 it("依答對題數計分，升學考答對六題開始錄取", () => {
-  const attempt = startAssessment("highEntrance", []);
+  const attempt = startAssessment("gsat", []);
   attempt.items.forEach((item, index) => {
     item.answer = questionsById
       .get(item.id)!
@@ -93,7 +94,7 @@ it("智力每達 100 給一次輔助，上限三次，每題最多刪去一個�
     0, 0, 1, 1, 2, 2, 3, 3,
   ]);
   expect(remainingAssists(startAssessment("quiz", []), 999)).toBe(0);
-  const attempt = startAssessment("highEntrance", []);
+  const attempt = startAssessment("gsat", []);
   const first = attempt.items[0];
   useAssist(attempt, 200);
   expect(questionsById.get(first.id)!.options[first.removed!].correct).toBe(
@@ -109,3 +110,84 @@ it("智力每達 100 給一次輔助，上限三次，每題最多刪去一個�
   useAssist(attempt, 200);
   expect(remainingAssists(attempt, 200)).toBe(0);
 });
+
+it("三個題庫各有五類、每類 12 題，題號與題幹全域唯一", () => {
+  for (const bank of Object.values(schoolQuestionBanks)) {
+    expect(bankSchema.parse(bank)).toHaveLength(60);
+    for (const category of categories) {
+      expect(
+        bank.filter((question) => question.category === category),
+      ).toHaveLength(12);
+    }
+  }
+  expect(
+    bankSchema.parse(Object.values(schoolQuestionBanks).flat()),
+  ).toHaveLength(180);
+});
+
+it.each([
+  ["gsat", "high", { easy: 2, normal: 5, hard: 3 }],
+  ["universityEntrance", "university", { easy: 1, normal: 3, hard: 6 }],
+] as const)("%s 只用本庫，平衡分類及難度", (kind, stage, counts) => {
+  const bank = schoolQuestionBanks[stage];
+  const seen = bank.slice(0, 5).map(({ id }) => id);
+  const draw = drawQuestions(kind, seen, () => 0.5);
+  expect(
+    draw.every(
+      (question) => bank.includes(question) && !seen.includes(question.id),
+    ),
+  ).toBe(true);
+  for (const category of categories) {
+    expect(
+      draw.filter((question) => question.category === category),
+    ).toHaveLength(2);
+  }
+  for (const [difficulty, count] of Object.entries(counts)) {
+    expect(
+      draw.filter((question) => question.difficulty === difficulty),
+    ).toHaveLength(count);
+  }
+});
+
+it("大考優先耗用各類新題，放寬難度後才重用同庫舊題", () => {
+  const bank = schoolQuestionBanks.high;
+  const seen = bank
+    .filter(
+      ({ category, difficulty }) =>
+        category === "生活" || difficulty !== "normal",
+    )
+    .map(({ id }) => id);
+  const draw = drawQuestions("gsat", seen, () => 0.5);
+  expect(new Set(draw.map(({ id }) => id)).size).toBe(10);
+  expect(draw.every((question) => bank.includes(question))).toBe(true);
+  expect(draw.filter(({ id }) => seen.includes(id))).toHaveLength(2);
+  expect(
+    draw.filter(({ difficulty }) => difficulty === "normal").length,
+  ).toBeGreaterThanOrEqual(8);
+  for (const category of categories) {
+    expect(
+      draw.filter((question) => question.category === category),
+    ).toHaveLength(2);
+  }
+});
+
+it.each(["quiz", "contestTrivia"] as const)(
+  "%s 隨學段換題庫，大學只出易與中",
+  (kind) => {
+    for (const stage of ["junior", "high", "university"] as const) {
+      const bank = schoolQuestionBanks[stage];
+      const draw = drawQuestions(
+        kind,
+        bank.map(({ id }) => id),
+        () => 0.5,
+        stage,
+      );
+      expect(draw).toHaveLength(kind === "quiz" ? 5 : 10);
+      expect(draw.every((question) => bank.includes(question))).toBe(true);
+      if (stage === "university")
+        expect(draw.every(({ difficulty }) => difficulty !== "hard")).toBe(
+          true,
+        );
+    }
+  },
+);

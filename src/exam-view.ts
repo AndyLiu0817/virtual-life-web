@@ -20,7 +20,7 @@ export function showAssessment(
 ) {
   const presentation = {
     quiz: ["小考", "classroom", "teacher"],
-    highEntrance: ["升高中考試", "exam", "proctor"],
+    gsat: ["高中學測", "exam", "proctor"],
     universityEntrance: ["大學聯考", "exam", "proctor"],
     contestTrivia: ["智囊搶答", "auditorium", "host"],
   };
@@ -90,12 +90,17 @@ export function showAssessment(
   heading.focus();
 }
 
-export function resultScene(title: string, details: string, passed: boolean) {
+export function resultScene(
+  title: string,
+  details: string,
+  passed: boolean,
+  failureScene = "gate_dusk",
+) {
   return `<main class="stage assessment-result">
-    ${passed ? `<img class="event-background" src="${examResult}" alt="">` : sceneArt("gate_dusk")}
+    ${passed ? `<img class="event-background" src="${examResult}" alt="">` : sceneArt(failureScene)}
     <section class="assessment-card"><h1 tabindex="-1">${title}</h1>${details}<p id="notice" role="status"></p></section>
   </main>`;
 }
 
-export const scoreText = (correct: number) =>
-  `答對 ${correct} ／ 10 題・錄取門檻 ${passScore} 題`;
+export const scoreText = (correct: number, threshold = "錄取") =>
+  `答對 ${correct} ／ 10 題・${threshold}門檻 ${passScore} 題`;

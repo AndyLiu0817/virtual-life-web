@@ -205,12 +205,12 @@ for (const [direction, width, height] of [
       await capture(page, "stage-complete", direction);
       await complete.getByRole("button", { name: "繼續" }).click();
       await expect(
-        page.getByRole("heading", { name: "升高中考試" }),
+        page.getByRole("heading", { name: "高中棋盤" }),
       ).toBeVisible();
     });
 
     for (const gender of ["boy", "girl"] as const) {
-      test(`真結局 ${gender} 使用對應畢業圖`, async ({ page }) => {
+      test(`真結局 ${gender} 使用世界地圖`, async ({ page }) => {
         await load(page, {
           ...chapters("university"),
           stage: "graduated",
@@ -222,13 +222,20 @@ for (const [direction, width, height] of [
         const first = await visibleStory(page, "阿公的明信片");
         await expect(first.locator(".event-background")).toHaveAttribute(
           "src",
-          new RegExp(
-            gender === "boy" ? "graduation_male" : "graduation_female",
-          ),
+          /cg_world_map/,
         );
         await expect(first.getByRole("button", { name: "略過" })).toHaveCount(
           0,
         );
+        if (process.env.STEP11_SCREENSHOTS) {
+          await first
+            .locator(".event-background")
+            .evaluate((image: HTMLImageElement) => image.decode());
+          await page.screenshot({
+            path: `${process.env.STEP11_SCREENSHOTS}/true-ending-1-${gender}-${direction}.jpg`,
+            quality: 88,
+          });
+        }
         await capture(page, `true-ending-1-${gender}`, direction);
         if (gender === "boy") return;
         const next = () =>
@@ -276,7 +283,7 @@ for (const [direction, width, height] of [
       });
     }
 
-    test("苦甜版與兩種提早結局文案", async ({ page }) => {
+    test("苦甜版與聯考落榜文案", async ({ page }) => {
       await load(page, {
         ...snapshotStage(chapters("university")),
         stage: "graduated",
@@ -290,38 +297,23 @@ for (const [direction, width, height] of [
         bittersweet.getByRole("button", { name: "從大學起點重玩" }),
       ).toBeVisible();
       await capture(page, "bittersweet", direction);
-      for (const [ending, title, line, photo] of [
-        [
-          "universityExamFail",
-          "聯考落榜",
-          "阿公還在等郵差，你也還在等一個答案。",
-          "exam-fail",
-        ],
-        [
-          "juniorEarlyExit",
-          "提前出社會",
-          "牆上的地圖，還有好多圖釘沒插上。",
-          "early-exit",
-        ],
-      ] as const) {
-        await load(page, {
-          ...snapshotStage(chapters("junior")),
-          stage: "earlyExit",
-          ending,
-        });
-        await expect(page.getByRole("heading", { name: title })).toBeVisible();
-        await expect(page.getByText(line)).toBeVisible();
-        await capture(page, photo, direction);
-        await page.getByRole("button", { name: "記憶畫廊" }).click();
-        const gallery = await visibleStory(page, "記憶畫廊");
-        await expect(
-          gallery.getByRole("heading", { name: "大學・尚未開放" }),
-        ).toBeVisible();
-        if (ending === "juniorEarlyExit")
-          await expect(
-            gallery.getByRole("heading", { name: "高中・尚未開放" }),
-          ).toBeVisible();
-      }
+      await load(page, {
+        ...snapshotStage(chapters("junior")),
+        stage: "earlyExit",
+        ending: "universityExamFail",
+      });
+      await expect(
+        page.getByRole("heading", { name: "聯考落榜" }),
+      ).toBeVisible();
+      await expect(
+        page.getByText("阿公還在等郵差，你也還在等一個答案。"),
+      ).toBeVisible();
+      await capture(page, "exam-fail", direction);
+      await page.getByRole("button", { name: "記憶畫廊" }).click();
+      const gallery = await visibleStory(page, "記憶畫廊");
+      await expect(
+        gallery.getByRole("heading", { name: "大學・尚未開放" }),
+      ).toBeVisible();
     });
 
     test("三學段都顯示故事格圖示", async ({ page }) => {
@@ -332,15 +324,25 @@ for (const [direction, width, height] of [
       ] as const) {
         await load(page, { ...chapters(stage), boardTile: tile });
         await expect(page.locator("#roll")).toBeEnabled();
-        if (direction === "landscape") {
-          await page.getByRole("button", { name: "選單", exact: true }).click();
-          await page.getByRole("button", { name: "看全圖" }).click();
-        }
         const face = page.locator(
           `.board-tile[data-tile="${tile}"][data-kind="story"] .paver-top`,
         );
         await expect(face).toHaveAttribute("href", /story-clay/);
         await expect(face).toBeInViewport();
+        await expect(
+          page.locator(`[data-tile="${tile}"] .story-tile-postcard`),
+        ).toBeVisible();
+        if (process.env.STEP11_SCREENSHOTS) {
+          await face.evaluate(async (element) => {
+            const img = new Image();
+            img.src = element.getAttribute("href")!;
+            await img.decode();
+          });
+          await page.screenshot({
+            path: `${process.env.STEP11_SCREENSHOTS}/board-${stage}-${direction}.jpg`,
+            quality: 88,
+          });
+        }
         await capture(page, `board-${stage}`, direction);
       }
     });

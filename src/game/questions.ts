@@ -1,6 +1,9 @@
 import { z } from "zod";
 import questions from "../data/questions.json" with { type: "json" };
 
+import gsatQuestions from "../data/gsat-questions.json" with { type: "json" };
+import jointQuestions from "../data/joint-questions.json" with { type: "json" };
+
 const text = z.string().trim().min(1);
 export const categories = ["生活", "史地", "自然", "數學邏輯", "社會"] as const;
 const questionSchema = z
@@ -27,8 +30,15 @@ export const bankSchema = z
   );
 export const questionBank = bankSchema.parse(questions);
 export type Question = z.infer<typeof questionSchema>;
+export const schoolQuestionBanks = {
+  junior: questionBank,
+  high: bankSchema.parse(gsatQuestions),
+  university: bankSchema.parse(jointQuestions),
+};
 export const questionsById = new Map(
-  questionBank.map((question) => [question.id, question]),
+  bankSchema
+    .parse(Object.values(schoolQuestionBanks).flat())
+    .map((question) => [question.id, question]),
 );
 export const examPlans = {
   quiz: ["easy", "easy", "easy", "easy", "normal"],
@@ -44,7 +54,7 @@ export const examPlans = {
     "normal",
     "normal",
   ],
-  highEntrance: [
+  gsat: [
     "normal",
     "normal",
     "normal",
@@ -52,7 +62,7 @@ export const examPlans = {
     "normal",
     "easy",
     "easy",
-    "easy",
+    "hard",
     "hard",
     "hard",
   ],
@@ -60,9 +70,9 @@ export const examPlans = {
     "normal",
     "normal",
     "normal",
-    "normal",
     "easy",
-    "easy",
+    "hard",
+    "hard",
     "hard",
     "hard",
     "hard",
@@ -70,8 +80,9 @@ export const examPlans = {
   ],
 } as const;
 export type Assessment = keyof typeof examPlans;
-export const allowsAssists = (kind: Assessment) =>
-  kind === "highEntrance" || kind === "universityEntrance";
+export type MajorExam = "gsat" | "universityEntrance";
+export const allowsAssists = (kind: Assessment): kind is MajorExam =>
+  kind === "gsat" || kind === "universityEntrance";
 
 function shuffle<T>(items: readonly T[], random: () => number): T[] {
   const result = [...items];
@@ -82,13 +93,84 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
   return result;
 }
 
+// Keep two questions per category. For each difficulty total, retain the
+// selection with the fewest repeats, then compare totals against the plan.
+function drawMajorExam(
+  pool: Question[],
+  seen: ReadonlySet<string>,
+  kind: MajorExam,
+) {
+  type Selection = {
+    items: Question[];
+    easy: number;
+    hard: number;
+    repeats: number;
+  };
+  let selections: Selection[] = [{ items: [], easy: 0, hard: 0, repeats: 0 }];
+  for (const category of categories) {
+    const candidates = pool.filter(
+      (question) => question.category === category,
+    );
+    const next = new Map<string, Selection>();
+    for (const selection of selections) {
+      for (const [index, first] of candidates.entries()) {
+        for (const second of candidates.slice(index + 1)) {
+          const pair = [first, second];
+          const easy =
+            selection.easy + pair.filter((q) => q.difficulty === "easy").length;
+          const hard =
+            selection.hard + pair.filter((q) => q.difficulty === "hard").length;
+          const repeats =
+            selection.repeats + pair.filter((q) => seen.has(q.id)).length;
+          const key = `${easy}:${hard}`;
+          if (repeats < (next.get(key)?.repeats ?? Infinity)) {
+            next.set(key, {
+              items: [...selection.items, ...pair],
+              easy,
+              hard,
+              repeats,
+            });
+          }
+        }
+      }
+    }
+    selections = [...next.values()];
+  }
+  const plan: readonly Question["difficulty"][] = examPlans[kind];
+  const easy = plan.filter((difficulty) => difficulty === "easy").length;
+  const hard = plan.filter((difficulty) => difficulty === "hard").length;
+  const deviation = (selection: Selection) =>
+    Math.abs(selection.easy - easy) +
+    Math.abs(selection.hard - hard) +
+    Math.abs(selection.easy + selection.hard - easy - hard);
+  return selections.sort(
+    (a, b) => a.repeats - b.repeats || deviation(a) - deviation(b),
+  )[0].items;
+}
+
 export function drawQuestions(
   kind: Assessment,
   seenIds: readonly string[],
   random = Math.random,
+  stage: keyof typeof schoolQuestionBanks = "junior",
 ) {
   const seen = new Set(seenIds);
-  const available = shuffle(questionBank, random);
+  const bank =
+    schoolQuestionBanks[
+      kind === "gsat"
+        ? "high"
+        : kind === "universityEntrance"
+          ? "university"
+          : stage
+    ];
+  const available = shuffle(
+    stage === "university" && !allowsAssists(kind)
+      ? bank.filter(({ difficulty }) => difficulty !== "hard")
+      : bank,
+    random,
+  );
+  if (allowsAssists(kind))
+    return shuffle(drawMajorExam(available, seen, kind), random);
   const fresh = available.filter(({ id }) => !seen.has(id));
   const selected: Question[] = [];
   const missing: Question["difficulty"][] = [];
@@ -108,7 +190,6 @@ export function drawQuestions(
     if (!take(fresh, difficulty)) missing.push(difficulty);
   }
   for (const difficulty of missing) {
-    if (kind === "universityEntrance" && take(available, difficulty)) continue;
     if (!take(fresh)) take(available, difficulty) || take(available);
   }
   return shuffle(selected, random);
@@ -128,12 +209,7 @@ export const quizReward = (correct: number) =>
 const optionIndex = z.number().int().min(0).max(3);
 export const attemptSchema = z
   .object({
-    kind: z.enum([
-      "quiz",
-      "highEntrance",
-      "universityEntrance",
-      "contestTrivia",
-    ]),
+    kind: z.enum(["quiz", "gsat", "universityEntrance", "contestTrivia"]),
     items: z.array(
       z.object({
         id: text.refine((id) => questionsById.has(id)),
@@ -169,10 +245,11 @@ export type Attempt = z.infer<typeof attemptSchema>;
 export function startAssessment(
   kind: Assessment,
   seenIds: readonly string[],
+  stage?: keyof typeof schoolQuestionBanks,
 ): Attempt {
   return {
     kind,
-    items: drawQuestions(kind, seenIds).map(({ id }) => ({
+    items: drawQuestions(kind, seenIds, Math.random, stage).map(({ id }) => ({
       id,
       answer: null,
       removed: null,

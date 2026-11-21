@@ -12,7 +12,7 @@ import {
 } from "./game/clubs";
 import { nextMatch } from "./game/contests";
 import type { SchoolBoard } from "./data/school-board";
-import { handleLoveTile } from "./game/school";
+import { gsatDue, handleLoveTile } from "./game/school";
 import { tileLabels } from "./data/junior";
 import routeArrow from "../art/route-arrow.webp";
 import { boardCamera } from "./board-camera";
@@ -383,7 +383,7 @@ export function showStageBoard(
   }
 
   async function playQuiz() {
-    const attempt = startAssessment("quiz", save.seenQuestionIds);
+    const attempt = startAssessment("quiz", save.seenQuestionIds, board.stage);
     await new Promise<void>((resolve) => {
       showAssessment(
         quizDialog,
@@ -587,7 +587,7 @@ export function showStageBoard(
     persist();
     if (finished.turnaroundStarted)
       await prompt("否極泰來！", "水星逆行已結束。接下來 3 回合為否極泰來。");
-    if (stageFinished(board, save)) {
+    if (stageFinished(board, save) || gsatDue(save)) {
       orientationChange.disconnect();
       actions.complete(save);
       return;

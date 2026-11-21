@@ -175,9 +175,6 @@ it("只有畢業且 19 片齊全才是真結局，其餘結局使用各自的故
       ending: "universityExamFail",
     }),
   ).toBe("阿公還在等郵差，你也還在等一個答案。");
-  expect(
-    storyEnding({ ...player, stage: "earlyExit", ending: "juniorEarlyExit" }),
-  ).toBe("牆上的地圖，還有好多圖釘沒插上。");
 });
 
 it.each([
