@@ -4,9 +4,11 @@
   "private": true,
   "main": "main.cjs",
   "scripts": {
-    "build": "npm --prefix .. run build -- --outDir desktop/dist/game && electron-builder --win portable --x64 --publish never"
+    "build:game": "npm --prefix .. run build -- --outDir desktop/dist/game && node stage-game.mjs",
+    "build": "npm run build:game && electron-builder --win portable --x64 --publish never"
   },
   "devDependencies": {
+    "@fontsource-variable/noto-sans-tc": "5.3.1",
     "electron": "45.4.1",
     "electron-builder": "26.18.0"
   },

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdir, mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -44,6 +44,7 @@ async function launch() {
   browser = await chromium.connectOverCDP(endpoint);
   const context = browser.contexts()[0];
   const page = context.pages()[0] ?? (await context.waitForEvent("page"));
+  page.setDefaultTimeout(15_000);
   await page.waitForURL("life-game://local/shell.html");
   return { page, game: page.frameLocator("iframe") };
 }
@@ -77,21 +78,33 @@ try {
       return img.currentSrc;
     }),
   ).toMatch(/life-game:\/\/local\/assets\/title_kv_landscape_final/);
+  expect(
+    await game.locator("body").evaluate(async () => {
+      const fonts = await document.fonts.load(
+        '16px "Noto Sans TC Variable"',
+        "未來人生",
+      );
+      return fonts.some((font) => font.status === "loaded");
+    }),
+  ).toBe(true);
   await page.screenshot({ path: path.join(output, "title.png") });
 
   const music = page.waitForResponse((response) =>
     /bgm_title-.*\.mp3/.test(response.url()),
   );
-  await game.getByRole("button", { name: "開始新人生" }).click();
+  await game.getByRole("button", { name: "音訊設定" }).click();
   const audio = await music;
   expect(audio.ok()).toBe(true);
-  const frames = await image.evaluate(async (_img, url) => {
+  const frames = await game.locator("body").evaluate(async (_img, url) => {
     const response = await fetch(url);
     const context = new OfflineAudioContext(1, 1, 44100);
     return (await context.decodeAudioData(await response.arrayBuffer())).length;
   }, audio.url());
   expect(frames).toBeGreaterThan(0);
 
+  await game.locator('[name="sfxVolume"]').fill("0.4");
+  await game.getByRole("button", { name: "關閉" }).click();
+  await game.getByRole("button", { name: "開始新人生" }).click();
   await game.getByLabel("名字").fill("安安");
   await game.getByRole("button", { name: "查看開局結果" }).click();
   await game.getByRole("button", { name: "確認開局" }).click();
@@ -100,10 +113,21 @@ try {
   await expect(game.getByRole("heading", { name: "國中棋盤" })).toBeVisible();
   await expect(game.locator(".board-tile")).toHaveCount(42);
   await image.evaluate((img) => img.decode());
+  await game
+    .locator("body")
+    .evaluate(() => document.fonts.ready.then(() => {}));
   await page.screenshot({ path: path.join(output, "junior-board.png") });
 
   await close();
+  const savedWindow = JSON.parse(
+    await readFile(path.join(profile, "window.json"), "utf8"),
+  );
+  expect(savedWindow.bounds.width).toBeGreaterThanOrEqual(960);
+  expect(savedWindow.bounds.height).toBeGreaterThanOrEqual(600);
   const reopened = await launch();
+  await reopened.game.getByRole("button", { name: "音訊設定" }).click();
+  await expect(reopened.game.locator('[name="sfxVolume"]')).toHaveValue("0.4");
+  await reopened.game.getByRole("button", { name: "關閉" }).click();
   await reopened.game.getByRole("button", { name: "繼續遊戲" }).click();
   await reopened.game.locator("#use-0").click();
   await expect(

@@ -5,8 +5,5 @@ function fitGame() {
   game.style.setProperty("--game-scale", String(scale));
 }
 
-game.addEventListener("load", () => {
-  game.contentDocument.documentElement.style.scrollbarWidth = "none";
-});
 window.addEventListener("resize", fitGame);
 fitGame();
