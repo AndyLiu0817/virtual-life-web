@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { freshman, jobNames } from "../data/chenxi-jobs";
 import { snapshotStage } from "./main-story";
 import { isBoardStage, schoolBoards } from "../data/school-board";
 import {
@@ -26,6 +27,12 @@ const count = z.number().int().nonnegative();
 const stat = count.max(9999);
 const nullableId = z.string().min(1).nullable();
 const school = z.enum(["elementary", "junior", "high", "university"]);
+export const jobLevelSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+]);
+const jobName = z.enum(jobNames);
 const saveFields = z.object({
   version: z.literal(SAVE_VERSION),
   updatedAt: z.iso.datetime(),
@@ -45,7 +52,7 @@ const saveFields = z.object({
   level: count.min(1),
   experience: count,
   cards: z.array(z.string()),
-  stage: z.enum([...school.options, "graduated", "earlyExit"]),
+  stage: z.enum([...school.options, "graduated", "earlyExit", "chenxi"]),
   turn: count,
   education: school.nullable(),
   hiddenJobUnlock: z.boolean(),
@@ -95,7 +102,7 @@ const saveFields = z.object({
   minigames: z
     .array(
       z.object({
-        stage: z.enum([...school.options, "graduated", "earlyExit"]),
+        stage: z.enum([...school.options, "graduated", "earlyExit", "chenxi"]),
         game: z.enum(minigameIds),
         score: z.number().nonnegative(),
         tier: z.enum(minigameTiers),
@@ -129,11 +136,37 @@ const saveFields = z.object({
       }),
     )
     .default([]),
+  chenxi: z
+    .object({
+      job: jobName.default(freshman),
+      jobLevel: jobLevelSchema.default(1),
+      history: z.partialRecord(jobName, jobLevelSchema).default({}),
+      districts: z
+        .record(
+          z.string(),
+          z.object({
+            owner: z.string().min(1),
+            level: jobLevelSchema,
+            invested: count,
+          }),
+        )
+        .default({}),
+      debt: count.default(0),
+      clues: count.default(0),
+      introSeen: z.boolean().default(false),
+      conditionsAnnounced: z.boolean().default(false),
+      lastRerollTurn: count.nullable().default(null),
+    })
+    .prefault({}),
   boardTile: count.default(0),
   previousTile: count.nullable().default(null),
   nextTile: count.nullable().default(null),
 });
 const saveWithSnapshots = saveFields.extend({
+  chenxiStart: saveFields
+    .extend({ stage: z.literal("chenxi") })
+    .nullable()
+    .default(null),
   stageSnapshots: z
     .object({
       junior: saveFields.extend({ stage: z.literal("junior") }).optional(),
@@ -158,6 +191,18 @@ const saveSchema = saveWithSnapshots
         previousTile: null,
         nextTile: null,
       });
+    if (save.stage === "chenxi")
+      return {
+        ...save,
+        turn: Math.min(save.turn, 60),
+        boardTile: save.boardTile < 48 ? save.boardTile : 0,
+        previousTile:
+          save.previousTile === (save.boardTile + 47) % 48 &&
+          save.boardTile < 48
+            ? save.previousTile
+            : null,
+        nextTile: null,
+      };
     if (!isBoardStage(save.stage)) return save;
     const board = schoolBoards[save.stage];
     const tile = board.tiles[save.boardTile];

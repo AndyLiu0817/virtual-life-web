@@ -1,3 +1,4 @@
+import { enterChenxi } from "./game/chenxi";
 import { playEffect, setMusic } from "./audio";
 import { openAudioSettings } from "./audio-settings";
 import {
@@ -16,7 +17,7 @@ import {
   showStoryFragment,
   stageStoryReminder,
 } from "./story-view";
-import { showStageBoard } from "./junior-board";
+import { showChenxiBoard, showStageBoard } from "./junior-board";
 import { preloadSchool } from "./board-view";
 import {
   isBoardStage,
@@ -68,6 +69,10 @@ import { resultScene, scoreText, showAssessment } from "./exam-view";
 import "./style.css";
 
 const app = document.querySelector<HTMLElement>("#app")!;
+const debugSlots = saveStorage({
+  getItem: (key) => localStorage.getItem(`${key}:debug-chenxi`),
+  setItem: (key, value) => localStorage.setItem(`${key}:debug-chenxi`, value),
+});
 const slots = saveStorage({
   getItem: (key) => localStorage.getItem(key),
   setItem: (key, value) => localStorage.setItem(key, value),
@@ -119,10 +124,13 @@ function readSlots() {
 function title() {
   setMusic("title");
   const records = readSlots();
+  const debugChenxi =
+    new URLSearchParams(location.search).get("debug") === "chenxi";
   show(`<div class="stage title">${backdrop("title")}
     <h1 class="brand"><img alt="${gameName}" src="${assets.logo}"></h1>
     <nav class="title-actions" aria-label="遊戲選單">
       ${button("start", "開始新人生")}
+      ${debugChenxi ? button("debug-chenxi", "除錯：前往晨曦市") : ""}
       ${button("continue", "繼續遊戲", !records.some((record) => record.save))}
       ${button("gallery", "記憶畫廊")}
       ${button("import", "匯入存檔")}
@@ -133,6 +141,17 @@ function title() {
   </div>`);
   action("title-audio", openAudioSettings);
   action("start", () => setup());
+  if (debugChenxi)
+    action("debug-chenxi", () =>
+      startChenxiDebug({
+        ...createSave({ ...initialProfile, name: "晨曦旅人" }),
+        stage: "graduated",
+        education: "university",
+        ending: "universityGraduate",
+        cash: 200000,
+        stats: { intellect: 600, morality: 600, fitness: 600, charm: 600 },
+      }),
+    );
   action("continue", () => selectSlot("load"));
   const file = element<HTMLInputElement>("#file");
   element("#gallery").dataset.audioAction = "";
@@ -329,6 +348,11 @@ function confirmOpening(profile: Profile) {
 
 function board(save: Save, message = ""): void {
   rememberStory(save);
+  if (save.stage === "chenxi") {
+    setMusic("board_university");
+    showChenxiBoard(app, save, message, boardNavigation());
+    return;
+  }
   if (save.examResultPending) return schoolResult(save, message);
   if (save.stage === "earlyExit" || save.stage === "graduated")
     return showEnding(save, message);
@@ -358,14 +382,20 @@ function board(save: Save, message = ""): void {
   void loadSchool(save, school, message);
 }
 
-function openBoard(save: Save, school: SchoolBoard, message: string) {
-  showStageBoard(app, save, school, message, {
-    autoSave: (updated) => slots.write(0, updated),
-    manualSave: (updated) => selectSlot("write", updated),
+function boardNavigation() {
+  return {
+    autoSave: (updated: Save) => slots.write(0, updated),
+    manualSave: (updated: Save) => selectSlot("write", updated),
     exportSave: download,
     home: title,
+    gallery,
+  };
+}
+
+function openBoard(save: Save, school: SchoolBoard, message: string) {
+  showStageBoard(app, save, school, message, {
+    ...boardNavigation(),
     complete: (save) => void completeSchool(save),
-    gallery: (save) => gallery(save),
   });
 }
 
@@ -554,14 +584,14 @@ function showEnding(save: Save, message: string) {
   const title = graduated ? "大學畢業" : "聯考落榜";
   const copy = graduated
     ? "<p>畢業帽飛起來的那一刻，連趕報告的鬧鐘也終於可以關掉了。</p>"
-    : "<p>畢業證書已經到手。下一份考卷可能是午餐訂單，答錯還能加點。</p><p>學歷：高中畢業</p><p>知識型工作不能選</p><p>之後可解鎖隱藏職業</p>";
+    : "<p>畢業證書已經到手。下一份考卷可能是午餐訂單，答錯還能加點。</p><p>學歷：高中畢業</p><p>部分知識型職業不能選</p>";
   show(
     endingScene(
       title,
       `${copy}
     ${!graduated && storyEnding(save) ? `<p>${storyEnding(save)}</p>` : ""}
     ${!graduated && exam ? `<p>${scoreText(exam.correct)}</p>` : ""}
-    <div class="actions">${button("advance-ending", graduated ? "查看結算" : "下一章預告")}</div>
+    <div class="actions">${button("advance-ending", graduated ? "查看結算" : "前往晨曦市")}</div>
     ${graduated ? "" : endingActions(save)}`,
       graduated ? graduation : firstJob,
     ),
@@ -569,7 +599,7 @@ function showEnding(save: Save, message: string) {
   element("#notice").textContent = message;
   if (!graduated) bindEndingActions(save);
   action("advance-ending", () =>
-    graduated ? finishStory(save) : showPreview(save),
+    graduated ? finishStory(save) : arriveChenxi(save),
   );
 }
 
@@ -629,25 +659,34 @@ function showGraduation(save: Save) {
     endingScene(
       "大學畢業結算",
       `${graduationDetails(save)}
-    <div class="actions">${button("next-chapter", "下一章預告")}</div>${endingActions(save)}`,
+    <div class="actions">${button("next-chapter", "前往晨曦市")}</div>${endingActions(save)}`,
       graduation,
       true,
     ),
   );
   element("#graduate-name").textContent = save.name;
   bindEndingActions(save);
-  action("next-chapter", () => showPreview(save));
+  action("next-chapter", () => arriveChenxi(save));
 }
 
-function showPreview(save: Save) {
-  show(
-    endingScene(
-      "下一章預告",
-      `<p>社會篇敬請期待</p>${endingActions()}`,
-      firstJob,
-    ),
-  );
-  bindEndingActions(save);
+function arriveChenxi(save: Save) {
+  const city = enterChenxi(save);
+  let message = "";
+  try {
+    slots.write(0, city);
+  } catch {
+    message = "無法自動存檔，請確認瀏覽器允許儲存網站資料。";
+  }
+  board(city, message);
+}
+
+function startChenxiDebug(save: Save) {
+  setMusic("board_university");
+  const navigation = boardNavigation();
+  showChenxiBoard(app, enterChenxi(save), "", {
+    ...navigation,
+    autoSave: (updated) => debugSlots.write(0, updated),
+  });
 }
 
 function download(save: Save) {
@@ -696,7 +735,7 @@ function selectSlot(mode: SlotMode, pending?: Save) {
   );
   for (const { index, label, save, unreadable } of available) {
     element("#slot-" + index).textContent = save
-      ? `${save.name} · ${new Date(save.updatedAt).toLocaleString("zh-TW")}`
+      ? `${save.name}${save.stage === "chenxi" ? " · 晨曦市" : ""} · ${new Date(save.updatedAt).toLocaleString("zh-TW")}`
       : unreadable
         ? "無法讀取"
         : "空白";

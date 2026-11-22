@@ -1,7 +1,7 @@
 import type { BoardLayout, Cell, Orientation } from "./board-layout";
 import { juniorLayouts } from "./junior-layout";
 
-function juniorBrick(orientation: Orientation, width: number) {
+export function juniorBrick(orientation: Orientation, width: number) {
   const reference = juniorLayouts[orientation];
   const scale = width / reference.width;
   return {
@@ -11,7 +11,7 @@ function juniorBrick(orientation: Orientation, width: number) {
 }
 
 // Walk each straight leg one grid cell at a time, keeping tile IDs in play order.
-function loopThrough(vertices: readonly Cell[]): Cell[] {
+export function loopThrough(vertices: readonly Cell[]): Cell[] {
   return vertices.flatMap(([column, row], index) => {
     const [endColumn, endRow] = vertices[(index + 1) % vertices.length];
     const length = Math.abs(endColumn - column) + Math.abs(endRow - row);

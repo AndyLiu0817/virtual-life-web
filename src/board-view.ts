@@ -1,8 +1,8 @@
 import { paverClearance } from "./board-clearance";
 import { debugGrid, measureTrack, tileArtSize } from "./board-track";
 import type { BoardLayout, Orientation } from "./data/board-layout";
-import type { SchoolBoard } from "./data/school-board";
-import { tileLabels, type TileKind } from "./data/junior";
+import type { BoardPresentation } from "./data/school-board";
+import { chenxiTileLabels, tileLabels, type TileKind } from "./data/junior";
 
 const sprites = import.meta.glob<string>(
   "./board-art/{*-clay,boy-{stand,win},girl-{stand,win},walk-junior/*,high/*,high/walk/*,university/*,university/walk/*}.webp",
@@ -29,10 +29,16 @@ const claySides = {
   love: "#af5857",
   shop: "#7a4e8e",
   fork: "#a59e97",
+  job: "#8d6158",
+  district: "#55755b",
+  card: "#70618a",
+  battle: "#a25748",
+  lot: "#877347",
+  metro: "#426f8a",
 } satisfies Record<TileKind, string>;
 
 export async function preloadSchool(
-  board: SchoolBoard,
+  board: BoardPresentation,
   gender: "boy" | "girl",
   progress: (done: number, total: number) => void,
   intro?: string,
@@ -70,7 +76,7 @@ export function boardView(
   svg: SVGSVGElement,
   layout: BoardLayout,
   orientation: Orientation,
-  board: SchoolBoard,
+  board: BoardPresentation,
   gender: "boy" | "girl",
   debug: boolean,
   mapArt: string,
@@ -90,6 +96,10 @@ export function boardView(
   const walkWidth = (walkHeight * 104) / 192;
   const pawnLabel = gender === "boy" ? "男主角棋子" : "女主角棋子";
   const { tiles } = board;
+  const labels =
+    board.stage === "chenxi"
+      ? { ...tileLabels, ...chenxiTileLabels }
+      : { ...chenxiTileLabels, ...tileLabels };
   const objects =
     mapArt === board.maps[orientation] ? board.scenery[orientation] : [];
   const scenery = objects.map((object, id) => {
@@ -109,7 +119,7 @@ export function boardView(
     const { kind } = tiles[id];
     layers.push({
       y: center.y,
-      markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${tileLabels[kind]}">
+      markup: `<g class="board-tile" data-depth="${center.y}" data-kind="${kind}" data-tile="${id}" role="img" aria-label="${labels[kind]}">
         <g transform="translate(${center.x} ${center.y})">
           <use href="#clay-footprint" class="paver-shadow" transform="translate(0 ${thickness})"/>
           <use href="#clay-body" fill="${claySides[kind]}"/>
@@ -302,7 +312,7 @@ export function boardView(
     if (pawn.dataset.tile !== String(id)) pawn.dataset.tile = String(id);
     pawn.setAttribute(
       "aria-label",
-      `${pawnLabel}，位於第 ${id + 1} 格${tileLabels[tiles[id].kind]}`,
+      `${pawnLabel}，位於第 ${id + 1} 格${labels[tiles[id].kind]}`,
     );
   }
 

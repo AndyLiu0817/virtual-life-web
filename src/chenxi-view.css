@@ -1,0 +1,65 @@
+.chenxi-progress {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.chenxi-tree {
+  max-height: 82dvh;
+  width: min(42rem, 92vw);
+}
+
+.chenxi-tree ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.chenxi-tree li {
+  padding: 0.5rem;
+  background: #f5e8d6;
+  color: #33291e;
+  border-radius: 0.6rem;
+}
+
+.chenxi-tree small,
+.chenxi-tree li span {
+  display: block;
+}
+
+[data-board-stage="chenxi"] .hud-identity h1 {
+  position: static;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  color: #31545a;
+}
+
+[data-board-stage="chenxi"] .hud-turn dd {
+  white-space: nowrap;
+}
+
+[data-board-stage="chenxi"] .hud-stage {
+  font-size: clamp(0.78rem, 2.1vh, 1.35rem);
+}
+
+[data-board-stage="chenxi"] .hud-turn {
+  font-size: clamp(0.8rem, 2.1vh, 1.35rem);
+}
+
+.chenxi-intro-portrait {
+  display: block;
+  max-width: min(100%, 15rem);
+  max-height: 36dvh;
+  margin: 0 auto 0.75rem;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+[data-board-stage="chenxi"] .hud-turn dt {
+  display: none;
+}

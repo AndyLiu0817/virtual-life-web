@@ -49,10 +49,11 @@ export function collectStory(save: Save, stage: BoardStage, tile: number) {
 }
 
 export function snapshotStage(save: Save) {
-  const { stage, stageSnapshots, ...snapshot } = save;
+  const { stage, stageSnapshots, chenxiStart, ...snapshot } = save;
   if (!isBoardStage(stage) || save.turn !== 0) return save;
   return {
     ...save,
+    chenxiStart,
     stageSnapshots: { ...stageSnapshots, [stage]: { ...snapshot, stage } },
   };
 }
@@ -73,6 +74,7 @@ export function restartStage(save: Save, stage: BoardStage): Save | undefined {
     ),
     exams: save.exams,
     stageSnapshots: save.stageSnapshots,
+    chenxiStart: null,
   };
 }
 

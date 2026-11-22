@@ -20,6 +20,20 @@ const player = chooseClub(
 const landscape = { width: 1280, height: 800 };
 const portrait = { width: 390, height: 844 };
 const reviewPath = process.env.SCHOOL_SCREENSHOTS;
+async function captureChenxiEntry(
+  page: Page,
+  scene: string,
+  direction: string,
+) {
+  const path = process.env.CHENXI_SCREENSHOTS;
+  if (path)
+    await page.screenshot({
+      path: `${path}/${scene}-${direction}.jpg`,
+      type: "jpeg",
+      quality: 87,
+      animations: "disabled",
+    });
+}
 
 function schoolSave(stage: Exclude<BoardStage, "junior">): Save {
   let save = enterSchool(player, "high");
@@ -278,14 +292,24 @@ for (const viewport of [landscape, portrait]) {
         await expect(
           page.getByRole("heading", { name: "聯考落榜" }),
         ).toBeVisible();
-        await expect(page.getByText("之後可解鎖隱藏職業")).toBeVisible();
+        await expect(page.getByText("部分知識型職業不能選")).toBeVisible();
         await capture(page, "university-fail-ending");
-        await page.getByRole("button", { name: "下一章預告" }).click();
-        await expect(page.getByText("社會篇敬請期待")).toBeVisible();
+        await captureChenxiEntry(page, "02-exam-fail-entry", direction);
+        await page.getByRole("button", { name: "前往晨曦市" }).click();
+        await expect(
+          page.getByRole("heading", { name: "開場劇情之後開放" }),
+        ).toBeVisible();
+        await page
+          .locator(".board-dialog")
+          .getByRole("button", { name: "確定" })
+          .click();
+        await expect(
+          page.getByRole("heading", { name: "晨曦市棋盤" }),
+        ).toBeVisible();
       }
     });
 
-    test("大學第 40 回畢業、結算與預告", async ({ page }) => {
+    test("大學第 40 回畢業、結算與前往晨曦市", async ({ page }) => {
       const save = completeScheduledContests(schoolSave("university"));
       await seed(page, {
         ...save,
@@ -321,9 +345,21 @@ for (const viewport of [landscape, portrait]) {
       ).toBeVisible();
       await expect(page.getByText("9999", { exact: true })).toBeVisible();
       await capture(page, `graduation-summary-${direction}`);
-      await page.getByRole("button", { name: "下一章預告" }).click();
-      await expect(page.getByText("社會篇敬請期待")).toBeVisible();
-      if (viewport === landscape) await capture(page, "next-chapter");
+      await captureChenxiEntry(page, "01-graduation-entry", direction);
+      await page.getByRole("button", { name: "前往晨曦市" }).click();
+      await expect(
+        page.getByRole("heading", { name: "開場劇情之後開放" }),
+      ).toBeVisible();
+      await page
+        .locator(".board-dialog")
+        .getByRole("button", { name: "確定" })
+        .click();
+      await expect(
+        page.getByRole("heading", { name: "晨曦市棋盤" }),
+      ).toBeVisible();
+      await expect(page.locator(".hud-stage")).toHaveText("實習生");
+      await expect(page.locator(".hud-turn dd")).toHaveText("第 1 ／ 60 回");
+      await captureChenxiEntry(page, "01-graduation-city", direction);
     });
   });
 }

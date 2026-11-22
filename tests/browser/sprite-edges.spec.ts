@@ -1,13 +1,13 @@
 import { readdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
-test("every minigame, deity, HUD and school sprite has clean transparent edges", async ({
+test("every minigame, deity, HUD and board sprite has clean transparent edges", async ({
   page,
 }) => {
   const clay = readdirSync("src/board-art")
     .filter((file) => file.endsWith("-clay.webp"))
     .map((file) => `/src/board-art/${file}`);
-  expect(clay).toHaveLength(10);
+  expect(clay).toHaveLength(16);
   const sprites = [
     "art/minigames",
     "art/shop",
