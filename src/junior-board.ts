@@ -11,10 +11,16 @@ import {
   visitClub,
 } from "./game/clubs";
 import { nextMatch } from "./game/contests";
-import type { SchoolBoard } from "./data/school-board";
+import type {
+  BoardPresentation,
+  BoardStage,
+  SchoolBoard,
+} from "./data/school-board";
+import { chenxiBoard } from "./data/chenxi-board";
+import { bindChenxiTurns } from "./chenxi-view";
 import { gsatDue } from "./game/school";
 import { playLoveTile } from "./love-view";
-import { tileLabels } from "./data/junior";
+import { chenxiTileLabels, tileLabels } from "./data/junior";
 import routeArrow from "../art/route-arrow.webp";
 import { boardCamera } from "./board-camera";
 import { playDiceFlight } from "./board-dice-flight";
@@ -49,12 +55,11 @@ import "./junior-board.css";
 import "./event-view.css";
 
 const walkStepMs = 550;
-interface BoardActions {
+interface BoardNavigation {
   autoSave: (save: Save) => void;
   manualSave: (save: Save) => void;
   exportSave: (save: Save) => void;
   home: () => void;
-  complete: (save: Save) => void;
   gallery: (save: Save) => Promise<boolean>;
 }
 
@@ -63,12 +68,34 @@ export function showStageBoard(
   initial: Save,
   board: SchoolBoard,
   message: string,
-  actions: BoardActions,
+  actions: BoardNavigation & { complete: (save: Save) => void },
+) {
+  showBoard(app, initial, board, message, actions, actions.complete);
+}
+
+export function showChenxiBoard(
+  app: HTMLElement,
+  save: Save,
+  message: string,
+  actions: BoardNavigation,
+) {
+  showBoard(app, save, chenxiBoard, message, actions);
+}
+
+function showBoard(
+  app: HTMLElement,
+  initial: Save,
+  board: BoardPresentation,
+  message: string,
+  actions: BoardNavigation,
+  complete?: (save: Save) => void,
 ) {
   let save = initial;
   const debugMode = new URLSearchParams(location.search).get("debug");
   const debugLove =
     import.meta.env.DEV && debugMode === "love" && board.stage === "university";
+  const city = board.stage === "chenxi";
+  const debugChenxi = city && debugMode === "chenxi";
   const showRoadArt = debugMode === "road" && !!board.roadMaps;
   const debug = debugMode === "path" || showRoadArt;
   const maps = showRoadArt ? board.roadMaps! : board.maps;
@@ -87,7 +114,7 @@ export function showStageBoard(
       </svg>
       <div class="board-routes" role="group" hidden></div></div>
     </div>
-    ${boardHudMarkup(debug, debugLove)}
+    ${boardHudMarkup(debug, debugLove, city, debugChenxi)}
     <dialog class="love-dialog" aria-labelledby="love-title"></dialog>
     <dialog class="board-dialog" aria-labelledby="board-prompt"><form method="dialog">
       <h2 id="board-prompt"></h2><p class="board-detail"></p><div class="actions"></div>
@@ -323,7 +350,7 @@ export function showStageBoard(
         button.value = String(tile);
         button.setAttribute(
           "aria-label",
-          `${index === 0 ? "沿外圈" : "走捷徑"}・第 ${tile + 1} 格${tileLabels[board.tiles[tile].kind]}`,
+          `${index === 0 ? "沿外圈" : "走捷徑"}・第 ${tile + 1} 格${{ ...chenxiTileLabels, ...tileLabels }[board.tiles[tile].kind]}`,
         );
         button.innerHTML = `<img src="${routeArrow}" alt="" draggable="false">`;
         button.onclick = () => resolve(tile);
@@ -387,8 +414,8 @@ export function showStageBoard(
     dice.innerHTML = values.map((value) => `<span>${value}</span>`).join("");
   }
 
-  async function playQuiz() {
-    const attempt = startAssessment("quiz", save.seenQuestionIds, board.stage);
+  async function playQuiz(stage: BoardStage) {
+    const attempt = startAssessment("quiz", save.seenQuestionIds, stage);
     await new Promise<void>((resolve) => {
       showAssessment(
         quizDialog,
@@ -492,7 +519,7 @@ export function showStageBoard(
     }
   }
 
-  async function playTurn() {
+  async function playTurn(stage: BoardStage) {
     if (roll.disabled || stageFinished(board, save)) return;
     hud.closeMenu(false);
     playEffect("dice_roll");
@@ -564,7 +591,7 @@ export function showStageBoard(
     const kind = board.tiles[save.boardTile].kind;
     const deityJustArrived = kind === "event" && (await playEvent());
     if (kind === "story") {
-      const result = collectStory(save, board.stage, save.boardTile);
+      const result = collectStory(save, stage, save.boardTile);
       save = result.save;
       status();
       if (result.fragment) {
@@ -574,7 +601,7 @@ export function showStageBoard(
         await prompt("這段記憶你已經拼過了", "人生經驗 ＋3");
       }
     }
-    if (kind === "quiz") await playQuiz();
+    if (kind === "quiz") await playQuiz(stage);
     if (kind === "club") await playClubVisit();
     if (kind === "contest") await contestTile();
     if (kind === "shop")
@@ -594,7 +621,7 @@ export function showStageBoard(
       await prompt("否極泰來！", "水星逆行已結束。接下來 3 回合為否極泰來。");
     if (stageFinished(board, save) || gsatDue(save)) {
       orientationChange.disconnect();
-      actions.complete(save);
+      complete?.(save);
       return;
     }
     await automaticContest();
@@ -614,7 +641,42 @@ export function showStageBoard(
 
   status();
   placePawn("stand");
-  roll.onclick = () => void playTurn();
+  if (board.stage === "chenxi") {
+    bindChenxiTurns({
+      app,
+      prompt,
+      roll,
+      debug: debugChenxi,
+      persist,
+      getSave: () => save,
+      update(updated) {
+        save = updated;
+        status();
+      },
+      place: () => placePawn("stand"),
+      animateStep,
+      follow(active) {
+        walking = active;
+        syncOverview();
+      },
+      lock(active) {
+        if (active) hud.closeMenu(false);
+        roll.disabled = active;
+        navigation.forEach((button) => (button.disabled = active));
+      },
+      async dice(values) {
+        if (!reducedMotion) {
+          showDice([]);
+          await playDiceFlight(find(".junior"), viewport, roll, values);
+        }
+        showDice(values);
+        total.textContent = `共 ${values.reduce((sum, value) => sum + value, 0)} 點`;
+      },
+    });
+    return;
+  }
+  const stage = board.stage;
+  roll.onclick = () => void playTurn(stage);
   if (debugLove) {
     find<HTMLButtonElement>("#debug-love").onclick = async () => {
       if (roll.disabled || stageFinished(board, save)) return;
@@ -635,13 +697,13 @@ export function showStageBoard(
   find("h1").focus({ preventScroll: true });
 
   async function startBoard() {
-    const needsClub = clubChoice(save, board.stage);
+    const needsClub = clubChoice(save, stage);
     if (!needsClub && !nextMatch(save, "turn")) return;
     hud.closeMenu(false);
     roll.disabled = true;
     navigation.forEach((button) => (button.disabled = true));
     if (needsClub) {
-      save = await promptForClub(activityDialog, save, board.stage);
+      save = await promptForClub(activityDialog, save, stage);
       status();
       persist(!message);
     }

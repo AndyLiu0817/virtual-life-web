@@ -1,3 +1,5 @@
+import { jobByName } from "./data/chenxi-jobs";
+import { progress as chenxiProgress } from "./game/chenxi";
 import { isBoardStage } from "./data/school-board";
 import { playEffect } from "./audio";
 import { storyProgress } from "./game/main-story";
@@ -46,6 +48,8 @@ const hudFrame = (position: "desktop" | "mobile") =>
 export const boardHudMarkup = (
   debug: boolean,
   debugLove = false,
+  city = false,
+  debugChenxi = false,
 ) => `<section class="board-controls" aria-label="玩家儀表板">
   ${hudFrame("desktop")}
   <div class="board-status">
@@ -75,6 +79,7 @@ export const boardHudMarkup = (
       <div class="hud-cash"><dt>現金</dt><dd><span class="hud-value"></span></dd></div>
       <div class="hud-turn"><dt>回合</dt><dd></dd></div>
     </dl>
+    ${city ? '<p class="chenxi-progress"></p>' : ""}
     <div class="hud-attached" hidden>
       <span class="hud-deity-head"><img alt=""></span><span class="hud-attached-detail"></span>
     </div>
@@ -100,6 +105,26 @@ export const boardHudMarkup = (
       <p class="hud-love" hidden><img alt=""><span></span></p>
       <dl class="hud-badges hud-badges-drawer"></dl>
       <div class="actions">
+        ${city ? '<button class="hud-clay" id="job-tree" type="button">轉職樹</button>' : ""}
+        ${
+          debugChenxi
+            ? [
+                ["job", "跳到職業格"],
+                ["buy", "跳到無主街區"],
+                ["build", "跳到自己的街區"],
+                ["metro", "跳到捷運"],
+                ["stub", "跳到主線故事格"],
+                ["10", "下一回提醒剩 10 回"],
+                ["5", "下一回提醒剩 5 回"],
+                ["0", "下一回結束第 60 回"],
+              ]
+                .map(
+                  ([id, label]) =>
+                    `<button class="hud-clay" data-chenxi-debug="${id}" type="button">${label}</button>`,
+                )
+                .join("")
+            : ""
+        }
         ${debugLove ? '<button class="hud-clay" id="debug-love" type="button">除錯：跳到愛情格</button>' : ""}
         <button class="hud-clay" id="overview" type="button" aria-pressed="false">看全圖</button>
         <button class="hud-clay" id="save" type="button">儲存到存檔格</button>
@@ -222,8 +247,11 @@ export function boardHud(root: HTMLElement, turns: number) {
       : save.education && isBoardStage(save.education)
         ? save.education
         : "junior";
-    const { title, art, target } = schools[school];
-    const deity = activeDeity(save);
+    const city = save.stage === "chenxi";
+    const { title, art, target } = city
+      ? { ...schools.university, title: "晨曦市" }
+      : schools[school];
+    const deity = city ? undefined : activeDeity(save);
     const partner = currentPartner(save.partner);
     love.hidden = !partner;
     if (partner) {
@@ -232,18 +260,34 @@ export function boardHud(root: HTMLElement, turns: number) {
         `${partner.name} ・ ${save.dating ? "交往中" : "已認識"} ・ 愛情度 ${save.affection} ／ ${save.dating ? 99 : 60}`;
     }
     name.textContent = save.name;
-    date.textContent = `生日 ${save.birthday.month}/${save.birthday.day}`;
+    date.textContent = city
+      ? ""
+      : `生日 ${save.birthday.month}/${save.birthday.day}`;
     heading.textContent = `${title}棋盤`;
     // The junior grade is decorative. Each of its three labels spans five turns.
-    stageLabel.textContent =
-      school === "junior"
+    stageLabel.textContent = city
+      ? jobByName(save.chenxi.job).titles[save.chenxi.jobLevel - 1]
+      : school === "junior"
         ? `${title} ${Math.min(3, Math.floor(save.turn / 5) + 1)} 年級`
         : school === "high"
           ? `${title} ${Math.min(3, Math.floor(save.turn / 8) + 1)} 年級`
           : school === "university"
             ? `${title} ${Math.min(4, Math.floor(save.turn / 10) + 1)} 年級`
             : title;
-    turn.textContent = `${Math.min(save.turn + 1, turns)} ／ ${turns}`;
+    turn.textContent = city
+      ? `第 ${Math.min(save.turn + 1, turns)} ／ ${turns} 回`
+      : `${Math.min(save.turn + 1, turns)} ／ ${turns}`;
+    if (city) {
+      const line = root.querySelector<HTMLElement>(".chenxi-progress")!;
+      line.textContent = [
+        ...chenxiProgress(save).map(
+          ({ label, value, target }) => `${label} ${value}／${target}`,
+        ),
+        ...(save.chenxi.debt
+          ? [`負債 ${save.chenxi.debt.toLocaleString("zh-TW")} 元`]
+          : []),
+      ].join("　");
+    }
     avatars.forEach((element) => {
       const hero = element.querySelector<HTMLImageElement>(".hud-hero")!;
       hero.src = sprite(`avatar-${save.gender}-${art}-${hero.dataset.size}`);
@@ -307,7 +351,7 @@ export function boardHud(root: HTMLElement, turns: number) {
       attachedHead.src = head;
       attachedDetail.textContent = deityLabel;
     }
-    const fields = [
+    const schoolFields = [
       ["骰子顆數", `${diceCount(save)} 顆`, true],
       ["水星逆行", `${save.retrogradeTurns} 回合`, save.retrogradeTurns > 0],
       ["否極泰來", `${save.turnaroundTurns} 回合`, save.turnaroundTurns > 0],
@@ -317,6 +361,9 @@ export function boardHud(root: HTMLElement, turns: number) {
       ["人生經驗", String(save.experience), save.experience > 0],
       ["收集卡", `${save.cards.length} 張`, save.cards.length > 0],
     ] as const;
+    const fields = city
+      ? ([["骰子顆數", "2 顆", true]] as const)
+      : schoolFields;
     const markup = fields
       .map(
         ([label, value, active]) =>

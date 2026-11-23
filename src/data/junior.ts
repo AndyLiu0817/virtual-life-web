@@ -15,7 +15,22 @@ export const tileLabels = {
   shop: "福利社",
 };
 
-export type TileKind = keyof typeof tileLabels;
+export const chenxiTileLabels = {
+  start: "起點",
+  event: "事件",
+  story: "故事",
+  game: "遊戲",
+  love: "約會",
+  shop: "道具店",
+  job: "職業",
+  district: "街區",
+  card: "卡片",
+  battle: "平常戰",
+  lot: "空地",
+  metro: "捷運",
+} as const;
+
+export type TileKind = keyof typeof tileLabels | keyof typeof chenxiTileLabels;
 interface Tile {
   kind: TileKind;
   next: readonly number[];

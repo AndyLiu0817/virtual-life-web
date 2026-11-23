@@ -7,14 +7,18 @@ import { universityBoard } from "./university-board";
 
 export type BoardStage = "junior" | "high" | "university";
 
-export interface SchoolBoard extends Board {
-  stage: BoardStage;
+export interface BoardPresentation extends Board {
+  stage: BoardStage | "chenxi";
   label: string;
   maps: Record<Orientation, string>;
   roadMaps?: Record<Orientation, string>;
   scenery: Record<Orientation, readonly SceneryObject[]>;
   pawnFolder: string;
   walkFolder: string;
+}
+
+export interface SchoolBoard extends BoardPresentation {
+  stage: BoardStage;
 }
 
 export const schoolBoards: Record<BoardStage, SchoolBoard> = {
